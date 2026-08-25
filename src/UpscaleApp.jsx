@@ -984,7 +984,12 @@ export default function UpscaleApp() {
                   <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Today's content</h2></div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Update</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{subject.update}</div>
+                    <a href={`https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + subject.update)}&tbm=nws`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="block bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700 hover:border-gray-300">
+                      {subject.update}
+                      <span className="text-[11px] block mt-1" style={{ color: BLUE }}>Read more →</span>
+                    </a>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Trend</div>
@@ -992,13 +997,15 @@ export default function UpscaleApp() {
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Video</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3">
+                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(subject.video.title)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
                       <PlayCircle size={24} style={{ color: BLUE }} />
                       <div>
                         <div className="text-sm text-gray-800">{subject.video.title}</div>
                         <div className="text-xs text-gray-400">{subject.video.duration}</div>
                       </div>
-                    </div>
+                    </a>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Success story</div>
