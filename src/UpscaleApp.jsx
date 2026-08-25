@@ -11,6 +11,14 @@ const BLUE = "#2955E0";
 const BLUE_BG = "#EAF0FD";
 const ORANGE = "#E8672B";
 
+// Real numbers come from the VITE_ADMIN_CONTACTS build-time env var (comma
+// separated), never committed to the repo — see .env.example. Matching
+// contacts log in straight to the Admin view, bypassing the normal flow.
+const ADMIN_CONTACTS = (import.meta.env.VITE_ADMIN_CONTACTS || "")
+  .split(",")
+  .map((n) => n.trim())
+  .filter(Boolean);
+
 const CURATED = {
   "Home loan advisory": {
     trend: "RBI repo rate held steady this quarter — a useful talking point for rate-sensitive leads.",
@@ -281,7 +289,6 @@ export default function UpscaleApp() {
   const [sharePlatform, setSharePlatform] = useState("whatsapp");
   const [postProduct, setPostProduct] = useState("");
   const [posts, setPosts] = useState([]);
-  const [adminView, setAdminView] = useState(false);
 
   const subject = SUBJECTS[form.interest];
   const totalDays = PERIOD_DAYS[period];
@@ -349,6 +356,7 @@ export default function UpscaleApp() {
 
   // --- Login (existing users) ---
   if (screen === "login") {
+    const isAdminContact = ADMIN_CONTACTS.includes(loginContact.trim());
     return (
       <div className="w-full min-h-[600px] rounded-xl flex items-center justify-center px-6" style={{ background: "#F7F8FA" }}>
         {style}
@@ -359,16 +367,24 @@ export default function UpscaleApp() {
             <p className="text-sm text-gray-500 mb-5">Enter the number you signed up with.</p>
             <input value={loginContact} onChange={(e) => setLoginContact(e.target.value)} placeholder="Contact number / WhatsApp"
               className="w-full border border-gray-200 rounded-lg p-2.5 text-sm mb-2" />
-            <div className="flex gap-2 mb-5">
-              {[{ key: "proprietor", label: "Proprietor" }, { key: "collaborator", label: "Collaborator" }].map((r) => (
-                <button key={r.key} onClick={() => setRole(r.key)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg border"
-                  style={{ borderColor: role === r.key ? BLUE : "#E5E7EB", color: role === r.key ? BLUE : "#374151", background: role === r.key ? BLUE_BG : "#fff" }}>
-                  {r.label}
-                </button>
-              ))}
-            </div>
-            <PrimaryButton onClick={() => setScreen(role === "collaborator" ? "collab-dashboard" : "app")} disabled={!loginContact.trim() || !role}>
+            {isAdminContact ? (
+              <div className="text-xs font-medium mb-5 flex items-center gap-1" style={{ color: "#0F6E56" }}>
+                <ShieldCheck size={13} /> Recognized as admin — you'll go straight to the Admin view.
+              </div>
+            ) : (
+              <div className="flex gap-2 mb-5">
+                {[{ key: "proprietor", label: "Proprietor" }, { key: "collaborator", label: "Collaborator" }].map((r) => (
+                  <button key={r.key} onClick={() => setRole(r.key)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border"
+                    style={{ borderColor: role === r.key ? BLUE : "#E5E7EB", color: role === r.key ? BLUE : "#374151", background: role === r.key ? BLUE_BG : "#fff" }}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <PrimaryButton
+              onClick={() => setScreen(isAdminContact ? "admin" : role === "collaborator" ? "collab-dashboard" : "app")}
+              disabled={!loginContact.trim() || (!isAdminContact && !role)}>
               Log in <ArrowRight size={15} />
             </PrimaryButton>
             <div className="text-[11px] text-gray-400 mt-3">Prototype only — this doesn't check real credentials yet.</div>
@@ -713,6 +729,56 @@ export default function UpscaleApp() {
     );
   }
 
+  // --- Admin (restricted, reached only via admin login) ---
+  if (screen === "admin") {
+    return (
+      <div className="w-full min-h-[600px] rounded-xl border border-gray-200 overflow-hidden">
+        {style}
+        <div className="px-6 py-4 flex items-center justify-between" style={{ background: NAVY }}>
+          <div className="flex items-center gap-3">
+            <Logo dark />
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white">Admin</span>
+          </div>
+          <button onClick={() => { setScreen("welcome"); setLoginContact(""); }} className="text-xs px-2.5 py-1 rounded-full border border-white/25 text-white hover:bg-white/10">
+            Log out
+          </button>
+        </div>
+        <div className="px-6 py-6 bg-white">
+          <h2 className="text-sm font-medium mb-4" style={{ color: NAVY }}>All firms — AKORA9 admin</h2>
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Active firms</div>
+              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.length}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Leads delivered today</div>
+              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.length * 3}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Agent subscriptions</div>
+              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.reduce((n, f) => n + f.agents.length, 0)}</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {MOCK_FIRMS.map((f, i) => (
+              <div key={i} className="flex items-center justify-between rounded-lg px-4 py-3 border border-gray-200">
+                <div>
+                  <div className="text-sm text-gray-900">{f.name}</div>
+                  <div className="text-xs text-gray-500 capitalize">{f.role} · {f.role === "collaborator" ? "10% commission, lifetime access paid" : "free plan"} · {f.subject} · "{f.target}"</div>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <span>{f.agents.length} agent(s)</span>
+                  <span className="flex items-center gap-1"><Flame size={12} /> {f.streak}</span>
+                  <span>{f.daysDone}d done</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // --- Main app ---
   const LOOP_STAGES = [
     { key: "content", label: "Today's content", icon: Newspaper, done: contentDone },
@@ -756,59 +822,9 @@ export default function UpscaleApp() {
             <t.icon size={14} /> {t.label}
           </button>
         ))}
-        <button onClick={() => setAdminView((v) => !v)} className="ml-auto flex items-center gap-1 text-xs px-2.5 py-1.5 my-1.5 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50">
-          <LayoutGrid size={13} /> {adminView ? "Close admin" : "Admin view"}
-        </button>
       </div>
 
-      {adminView ? (
-        <div className="px-6 py-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium" style={{ color: NAVY }}>All firms — AKORA9 admin</h2>
-            <button onClick={() => setAdminView(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
-          </div>
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Active firms</div>
-              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.length + 1}</div>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Leads delivered today</div>
-              <div className="text-xl font-medium" style={{ color: NAVY }}>{(MOCK_FIRMS.length + 1) * 3}</div>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Agent subscriptions</div>
-              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.reduce((n, f) => n + f.agents.length, 0) + purchasedAgents.length}</div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between rounded-lg px-4 py-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
-              <div>
-                <div className="text-sm font-medium" style={{ color: NAVY }}>{form.name || "You"}</div>
-                <div className="text-xs text-gray-500 capitalize">{role} · {role === "collaborator" ? `10% commission${feePaid ? ", ₹500 paid" : ""}` : "free plan"} · {subject.name} · "{goal}"</div>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span>{purchasedAgents.length} agent(s)</span>
-                <span className="flex items-center gap-1"><Flame size={12} /> {streak}</span>
-                <span>{daysDone}/{totalDays}d</span>
-              </div>
-            </div>
-            {MOCK_FIRMS.map((f, i) => (
-              <div key={i} className="flex items-center justify-between rounded-lg px-4 py-3 border border-gray-200">
-                <div>
-                  <div className="text-sm text-gray-900">{f.name}</div>
-                  <div className="text-xs text-gray-500 capitalize">{f.role} · {f.role === "collaborator" ? "10% commission, lifetime access paid" : "free plan"} · {f.subject} · "{f.target}"</div>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <span>{f.agents.length} agent(s)</span>
-                  <span className="flex items-center gap-1"><Flame size={12} /> {f.streak}</span>
-                  <span>{f.daysDone}d done</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : tab === "progress" ? (
+      {tab === "progress" ? (
         <div className="px-6 py-6 bg-white">
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Your target</div>
           <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{goal}" — over {period}</div>
