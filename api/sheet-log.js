@@ -18,10 +18,21 @@ const HEADERS = [
   "Notes",
 ];
 
+// Strips accidental wrapping quotes (common when a .env-style value is
+// pasted verbatim into a dashboard field) before converting literal "\n"
+// sequences into real newlines.
+function normalizePrivateKey(raw) {
+  let key = (raw || "").trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+  return key.replace(/\\n/g, "\n");
+}
+
 let sheetsClient;
 function getSheetsClient() {
   if (sheetsClient) return sheetsClient;
-  const privateKey = (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY);
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: privateKey,
