@@ -217,7 +217,7 @@ const MOCK_FIRMS = [
   { name: "S. Patwardhan", role: "collaborator", subject: "Sports retail", target: "Launch a coaching camp", daysDone: 9, streak: 4, agents: ["marketing", "advisory"] },
 ];
 
-const ONB_STEPS = ["interest", "name", "contact", "facebook", "instagram", "linkedin"];
+const ONB_STEPS = ["interest", "name", "contact", "city", "facebook", "instagram", "linkedin"];
 const COLLAB_STEPS = ["name", "businessName", "expertise", "city", "govId"];
 function GENERIC_COLLAB_REQUESTS(name) {
   return [
@@ -227,6 +227,21 @@ function GENERIC_COLLAB_REQUESTS(name) {
 }
 const PERIODS = ["Monthly", "Quarterly", "Semi-yearly", "Annually"];
 const PERIOD_DAYS = { "Monthly": 30, "Quarterly": 90, "Semi-yearly": 182, "Annually": 365 };
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Fire-and-forget: pilot tracking must never block the app's own flow, so
+// failures are logged and swallowed rather than surfaced to the user.
+function logToSheet(payload) {
+  fetch("/api/sheet-log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch((err) => console.error("logToSheet failed:", err));
+}
 
 function Logo({ dark }) {
   return (
@@ -257,7 +272,7 @@ export default function UpscaleApp() {
   const [role, setRole] = useState(null);
   const [loginContact, setLoginContact] = useState("");
   const [obStep, setObStep] = useState(0);
-  const [form, setForm] = useState({ interest: "home-loan-advisory", name: "", contact: "", facebook: "", instagram: "", linkedin: "" });
+  const [form, setForm] = useState({ interest: "home-loan-advisory", name: "", contact: "", city: "", facebook: "", instagram: "", linkedin: "" });
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
@@ -307,7 +322,32 @@ export default function UpscaleApp() {
     setTimeout(() => { setValidating(false); setValidated(true); }, 1200);
   }
 
+  function submitObservation() {
+    setStage("validation");
+    runValidation();
+    logToSheet({
+      name: form.name,
+      subject: subject.name,
+      target: goal,
+      city: form.city,
+      contact: form.contact,
+      date: todayStr(),
+      observationText: obsText,
+      streak,
+    });
+  }
+
   function claimReward() {
+    logToSheet({
+      name: form.name,
+      subject: subject.name,
+      target: goal,
+      city: form.city,
+      contact: form.contact,
+      date: todayStr(),
+      observationText: obsText,
+      streak: streak + 1,
+    });
     setPurchasedAgents((pa) => [...new Set([...pa, ...agentPicks])]);
     setDaysDone((d) => d + 1);
     setStreak((s) => s + 1);
@@ -401,6 +441,7 @@ export default function UpscaleApp() {
       interest: role === "collaborator" ? "What's your area of expertise?" : "What's your area of interest?",
       name: "What's your name?",
       contact: "Your contact number / WhatsApp",
+      city: "Which city are you based in?",
       facebook: "Your Facebook profile or page link (optional)",
       instagram: "Your Instagram link (optional)",
       linkedin: "Your LinkedIn link (optional)",
@@ -1040,7 +1081,7 @@ export default function UpscaleApp() {
                   <textarea value={obsText} onChange={(e) => setObsText(e.target.value)}
                     placeholder="What have you noticed in your business this week?"
                     className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[110px] bg-white" />
-                  <PrimaryButton onClick={() => { setStage("validation"); runValidation(); }} disabled={!obsComplete}>
+                  <PrimaryButton onClick={submitObservation} disabled={!obsComplete}>
                     Submit for validation <ArrowRight size={14} />
                   </PrimaryButton>
                 </div>

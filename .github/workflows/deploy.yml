@@ -27,6 +27,7 @@ jobs:
       - run: npm run build
         env:
           VITE_ADMIN_CONTACTS: ${{ secrets.VITE_ADMIN_CONTACTS }}
+          VITE_BASE_PATH: /upscale-app/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
