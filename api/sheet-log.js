@@ -121,6 +121,8 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true });
   } catch (err) {
     console.error("sheet-log error:", err);
-    res.status(500).json({ error: "Failed to log to sheet" });
+    // TEMPORARY: surfacing err.message for setup debugging — revert to a
+    // generic message before this handles real tester traffic.
+    res.status(500).json({ error: "Failed to log to sheet", detail: err?.response?.data || err?.message });
   }
 }
