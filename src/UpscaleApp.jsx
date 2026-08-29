@@ -907,7 +907,7 @@ export default function UpscaleApp() {
                 { icon: Newspaper, label: "Daily content", desc: `An update, trend, short video, and success story on ${subject.name} every day.` },
                 { icon: Eye, label: "Your observation", desc: "One overall observation — what you've noticed in your business." },
                 { icon: ShieldCheck, label: "AI validation", desc: "Your observation is checked before it unlocks the next step." },
-                { icon: Gift, label: "Daily reward", desc: "Leads, collaboration requests, and events unlocked for your business." },
+                { icon: Gift, label: "Leads & Collaboration", desc: "Leads, collaboration requests, and events unlocked for your business." },
               ].map((s, i) => (
                 <div key={i} className="rounded-xl p-3 border border-gray-200 flex gap-3">
                   <s.icon size={16} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
@@ -975,7 +975,7 @@ export default function UpscaleApp() {
     { key: "content", label: "Today's content", icon: Newspaper, done: contentDone },
     { key: "observation", label: "Observation", icon: Eye, done: !!obsComplete },
     { key: "validation", label: "AI Validation", icon: ShieldCheck, done: validated },
-    { key: "reward", label: "Reward", icon: Gift, done: rewardClaimed },
+    { key: "reward", label: "Leads & Collaboration", icon: Gift, done: rewardClaimed },
   ];
   const canReachReward = contentDone && obsComplete && validated;
 
@@ -1209,7 +1209,7 @@ export default function UpscaleApp() {
                         This looks like a real, specific observation tied to today's content — worth acting on.
                       </div>
                       <PrimaryButton onClick={() => setStage("reward")}>
-                        Unlock today's reward <ArrowRight size={14} />
+                        Unlock leads & collaboration <ArrowRight size={14} />
                       </PrimaryButton>
                     </>
                   )}
@@ -1218,7 +1218,7 @@ export default function UpscaleApp() {
 
               {stage === "reward" && !adDone && (
                 <div className="space-y-4 text-center py-2">
-                  <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Sponsored — watch to unlock today's reward</div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Sponsored — watch to unlock leads & collaboration</div>
                   <div className="bg-white rounded-lg border border-gray-200 p-6 text-left">
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{subject.ad.advertiser}</div>
                     <div className="text-base font-medium mb-2" style={{ color: NAVY }}>{subject.ad.headline}</div>
@@ -1240,7 +1240,7 @@ export default function UpscaleApp() {
 
               {stage === "reward" && adDone && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Today's reward</h2></div>
+                  <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Leads & Collaboration</h2></div>
 
                   <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">{MOCK_LEADS.length} leads for you today</div>
                   {MOCK_LEADS.map((l, i) => (
