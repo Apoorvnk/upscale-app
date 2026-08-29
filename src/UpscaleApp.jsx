@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
-  PlayCircle, HelpCircle, Eye, Megaphone, Users, Bot, LayoutGrid, X,
+  PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Share2, Image as ImageIcon, Newspaper
+  Plus, Newspaper, BookOpen
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -33,6 +33,15 @@ const CURATED = {
       { name: "Pune Real Estate & Home Finance Expo", date: "14 Sept", price: "₹499", type: "Expo", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "NBFC-Bank Lending Roundtable", date: "22 Sept", price: "Free", type: "Networking", venue: "Lemon Tree Premier, Pune", stars: 3, secured: true },
     ],
+    bookSuggestions: [
+      { title: "The Trusted Advisor", author: "David H. Maister", why: "On earning client trust fast — core to closing loans where clients are anxious about fees and terms." },
+      { title: "Influence", author: "Robert Cialdini", why: "The psychology behind why clients say yes — useful for explaining terms without sounding like a pitch." },
+    ],
+    analytics: {
+      demand: [42, 48, 55, 60, 58, 66],
+      demandChangePct: 8,
+      insight: "Enquiries typically rise after rate announcements — this week's steady repo rate is a good outreach moment.",
+    },
   },
   "Insurance advisory": {
     trend: "IRDAI's claim settlement timeline circular was updated last week.",
@@ -47,6 +56,15 @@ const CURATED = {
       { name: "Insurance Agents' Summit", date: "18 Sept", price: "₹799", type: "Summit", venue: "Hyatt Regency, Pune", stars: 5, secured: true },
       { name: "IRDAI Compliance Update Webinar", date: "10 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
     ],
+    bookSuggestions: [
+      { title: "Exactly What to Say", author: "Phil M. Jones", why: "Short, specific phrases for renewal calls that avoid sounding scripted." },
+      { title: "The Greatest Salesman in the World", author: "Og Mandino", why: "A classic on persistence and habit-building in relationship-driven sales." },
+    ],
+    analytics: {
+      demand: [50, 52, 49, 57, 61, 64],
+      demandChangePct: 5,
+      insight: "Renewal-season enquiries are trending up — claim settlement news is a good conversation opener right now.",
+    },
   },
   "Sports retail": {
     trend: "Local school sports season starts next month — footfall usually rises 2-3 weeks prior.",
@@ -61,6 +79,15 @@ const CURATED = {
       { name: "Retail Sports Trade Fair", date: "20 Sept", price: "₹599", type: "Trade fair", venue: "Sheraton Grand, Pune", stars: 5, secured: true },
       { name: "Local School Sports Sponsors Meet", date: "5 Sept", price: "Free", type: "Networking", venue: "Ginger, Pune", stars: 3, secured: true },
     ],
+    bookSuggestions: [
+      { title: "The Retail Doctor's Guide to Growing Your Business", author: "Bob Phibbs", why: "Practical, store-floor-level advice for independent retailers, not big-box theory." },
+      { title: "Delivering Happiness", author: "Tony Hsieh", why: "On building repeat customers through service — relevant to coaching-camp style loyalty plays." },
+    ],
+    analytics: {
+      demand: [30, 35, 44, 58, 70, 68],
+      demandChangePct: 15,
+      insight: "Footfall is climbing ahead of school sports season — the next 2-3 weeks are your peak window.",
+    },
   },
   "General business": {
     trend: "Most small businesses lose more to inconsistent follow-up than to competition.",
@@ -75,6 +102,15 @@ const CURATED = {
       { name: "SME Owners' Networking Breakfast", date: "12 Sept", price: "₹299", type: "Networking", venue: "Lemon Tree Premier, Pune", stars: 3, secured: true },
       { name: "Small Business Growth Webinar", date: "8 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
     ],
+    bookSuggestions: [
+      { title: "The E-Myth Revisited", author: "Michael Gerber", why: "On why working IN the business isn't the same as building one that runs without you." },
+      { title: "Traction", author: "Gino Wickman", why: "A simple operating system for getting a small team aligned on priorities." },
+    ],
+    analytics: {
+      demand: [55, 54, 58, 56, 60, 63],
+      demandChangePct: 5,
+      insight: "Businesses responding same-day are converting noticeably better this week than those following up later.",
+    },
   },
   "Stock broking": {
     trend: "SEBI's revised intraday margin norms take effect this month.",
@@ -89,6 +125,15 @@ const CURATED = {
       { name: "Share Market Investors' Summit", date: "16 Sept", price: "₹999", type: "Summit", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "SEBI Regulatory Update Webinar", date: "9 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
     ],
+    bookSuggestions: [
+      { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", why: "Understand the biases driving client panic during margin or volatility news." },
+      { title: "The Psychology of Money", author: "Morgan Housel", why: "Short, client-friendly stories that reframe risk — useful talking points for anxious traders." },
+    ],
+    analytics: {
+      demand: [40, 46, 52, 61, 59, 57],
+      demandChangePct: -3,
+      insight: "Client queries about margin changes have picked up — proactive explainers are outperforming reactive ones this week.",
+    },
   },
   "Mutual fund advisory": {
     trend: "SIP inflows hit a fresh high this quarter — a good moment to talk consistency with clients.",
@@ -103,16 +148,41 @@ const CURATED = {
       { name: "Mutual Fund Distributors' Conclave", date: "19 Sept", price: "₹699", type: "Conclave", venue: "Hyatt Regency, Pune", stars: 5, secured: true },
       { name: "AMFI Continuing Education Webinar", date: "11 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
     ],
+    bookSuggestions: [
+      { title: "The Psychology of Money", author: "Morgan Housel", why: "Reframes market dips as behavior, not math — good material for client check-in calls." },
+      { title: "Let's Talk Money", author: "Monika Halan", why: "India-specific, plain-language framing of investing basics clients actually relate to." },
+    ],
+    analytics: {
+      demand: [48, 53, 60, 65, 70, 74],
+      demandChangePct: 6,
+      insight: "SIP inflows are at a fresh quarterly high — clients getting a mid-month check-in are staying invested through dips.",
+    },
   },
   "Jewelry retail": {
-    trend: "Gold rates have stabilized this week after last month's volatility — a good moment to talk fixed-rate booking with customers.",
-    update: "Footfall for wedding-season bookings is picking up earlier than usual this year.",
-    successStory: "A jeweler in Camp grew bridal bookings 30% by offering fixed-rate price locks.",
-    video: { title: "Turning gold-rate anxiety into a booked sale", duration: "5 min" },
-    quiz: [
-      { q: "What's happened to gold rates this week, per today's trend?", options: ["Stabilized", "Doubled", "Fell to zero"], correct: 0 },
-      { q: "What's the suggested angle today?", options: ["Fixed-rate booking", "Discount everything", "Wait and see"], correct: 0 },
-    ],
+    subcategories: {
+      "precious-metal": {
+        label: "Precious metal jewellery (gold, silver, diamond)",
+        trend: "Gold rates have stabilized this week after last month's volatility — a good moment to talk fixed-rate booking with customers.",
+        update: "Footfall for wedding-season bookings is picking up earlier than usual this year.",
+        successStory: "A jeweler in Camp grew bridal bookings 30% by offering fixed-rate price locks.",
+        video: { title: "Turning gold-rate anxiety into a booked sale", duration: "5 min" },
+        quiz: [
+          { q: "What's happened to gold rates this week, per today's trend?", options: ["Stabilized", "Doubled", "Fell to zero"], correct: 0 },
+          { q: "What's the suggested angle today?", options: ["Fixed-rate booking", "Discount everything", "Wait and see"], correct: 0 },
+        ],
+      },
+      "imitation-fashion": {
+        label: "Imitation / fashion jewellery",
+        trend: "Festive and wedding-season demand for statement fashion pieces is rising ahead of the calendar — customers shop by look, not metal price.",
+        update: "Customers are increasingly walking in already knowing the exact style they saw on social media, and expect stores to have it or match it fast.",
+        successStory: "A fashion jewellery store in Camp doubled Instagram-driven walk-ins by posting new arrivals daily instead of weekly.",
+        video: { title: "Using Instagram reels to sell fashion jewellery faster", duration: "5 min" },
+        quiz: [
+          { q: "What are fashion jewellery customers mainly shopping by?", options: ["Metal price", "Look/style trend", "Certification"], correct: 1 },
+          { q: "What's driving faster walk-ins in the success story?", options: ["Daily social posts", "Print ads", "Discount coupons"], correct: 0 },
+        ],
+      },
+    },
     events: [
       { name: "Jewelry Trade & Design Expo", date: "21 Sept", price: "₹599", type: "Expo", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "Local Jewellers' Association Meet", date: "6 Sept", price: "Free", type: "Networking", venue: "Ginger, Pune", stars: 3, secured: true },
@@ -132,6 +202,15 @@ const CURATED = {
         { name: "Bharat Silver Show 2026", date: "5–7 Sept 2026", venue: "Auto Cluster Exhibition Center, Pune", url: "https://exhibitionglobe.com/bharat-silver-show-2026/" },
         { name: "14th Delhi Jewellery & Gem Fair", date: "26–28 Sept 2026", venue: "Pragati Maidan, New Delhi", url: "https://www.tradeindia.com/tradeshows/jewelry-gemstones/" },
       ],
+    },
+    bookSuggestions: [
+      { title: "The Retail Doctor's Guide to Growing Your Business", author: "Bob Phibbs", why: "Floor-level retail sales tactics that apply whether you're selling gold or fashion pieces." },
+      { title: "Selling the Invisible", author: "Harry Beckwith", why: "On selling trust and experience, not just the product — relevant to both jewellery segments." },
+    ],
+    analytics: {
+      demand: [45, 50, 58, 63, 69, 72],
+      demandChangePct: 4,
+      insight: "Wedding-season bookings are picking up earlier than usual this year across both precious and fashion segments.",
     },
   },
 };
@@ -187,11 +266,39 @@ function genericContent(name) {
       requests: GENERIC_COLLAB_REQUESTS(name),
       external: [],
     },
+    bookSuggestions: [
+      { title: "The E-Myth Revisited", author: "Michael Gerber", why: "On why working IN the business isn't the same as building one that runs without you." },
+      { title: "Never Split the Difference", author: "Chris Voss", why: "Negotiation tactics that apply to pricing conversations in almost any business." },
+    ],
+    analytics: {
+      demand: [45, 48, 50, 55, 58, 60],
+      demandChangePct: 5,
+      insight: `Businesses in ${lower} that respond fastest to inquiries this week are seeing better conversion.`,
+    },
   };
 }
 const SUBJECTS = Object.fromEntries(
   INTEREST_NAMES.map((name) => [slugify(name), { name, ...(CURATED[name] || genericContent(name)) }])
 );
+
+// Some subjects (e.g. Jewelry retail) are too broad for one set of daily
+// content — a "precious metal" jeweler and an "imitation/fashion" jeweler
+// need different trend/update/story content. Where subcategories exist,
+// events/collab/bookSuggestions/analytics stay shared at the parent level;
+// only the daily-content fields are subcategory-specific.
+function resolveSubject(interestKey, subcategoryKey) {
+  const base = SUBJECTS[interestKey];
+  if (!base?.subcategories) return base;
+  const subKeys = Object.keys(base.subcategories);
+  const sub = base.subcategories[subcategoryKey] || base.subcategories[subKeys[0]];
+  const { subcategories: _subcategories, ...shared } = base;
+  return { ...shared, ...sub };
+}
+function getOnbSteps(interestKey) {
+  const base = ["interest", "name", "contact", "city", "facebook", "instagram", "linkedin"];
+  if (SUBJECTS[interestKey]?.subcategories) base.splice(1, 0, "subcategory");
+  return base;
+}
 
 const MOCK_LEADS = [
   { name: "Priya Nair", detail: "Enquired about services in your area this week", source: "Google" },
@@ -199,25 +306,12 @@ const MOCK_LEADS = [
   { name: "Ritu Deshmukh", detail: "Referred by a nearby business owner", source: "Suggested" },
 ];
 
-const AGENTS = [
-  { key: "marketing", name: "Marketing Agent", price: "₹999/mo", desc: "Connect Facebook, Instagram, and Google — upload a post once, it goes out everywhere.", stub: false },
-  { key: "advisory", name: "Advisory Agent", price: "₹1,499/mo", desc: "A more personalized, ongoing version of your daily plan and guidance.", stub: true },
-];
-const SHARE_DESTINATIONS = [
-  { key: "whatsapp", label: "WhatsApp" },
-  { key: "family", label: "Family/friends group" },
-  { key: "facebook", label: "Facebook" },
-  { key: "instagram", label: "Instagram" },
-  { key: "google", label: "Google Business Profile" },
-];
-
 const MOCK_FIRMS = [
-  { name: "R. Deshpande", role: "proprietor", subject: "Home loan advisory", target: "Close 10 loans this quarter", daysDone: 12, streak: 6, agents: ["marketing"] },
-  { name: "A. Kulkarni", role: "proprietor", subject: "Insurance advisory", target: "Grow renewal rate to 80%", daysDone: 4, streak: 2, agents: [] },
-  { name: "S. Patwardhan", role: "collaborator", subject: "Sports retail", target: "Launch a coaching camp", daysDone: 9, streak: 4, agents: ["marketing", "advisory"] },
+  { name: "R. Deshpande", role: "proprietor", subject: "Home loan advisory", target: "Close 10 loans this quarter", daysDone: 12, streak: 6 },
+  { name: "A. Kulkarni", role: "proprietor", subject: "Insurance advisory", target: "Grow renewal rate to 80%", daysDone: 4, streak: 2 },
+  { name: "S. Patwardhan", role: "collaborator", subject: "Sports retail", target: "Launch a coaching camp", daysDone: 9, streak: 4 },
 ];
 
-const ONB_STEPS = ["interest", "name", "contact", "city", "facebook", "instagram", "linkedin"];
 const COLLAB_STEPS = ["name", "businessName", "expertise", "city", "govId"];
 function GENERIC_COLLAB_REQUESTS(name) {
   return [
@@ -272,11 +366,10 @@ export default function UpscaleApp() {
   const [role, setRole] = useState(null);
   const [loginContact, setLoginContact] = useState("");
   const [obStep, setObStep] = useState(0);
-  const [form, setForm] = useState({ interest: "home-loan-advisory", name: "", contact: "", city: "", facebook: "", instagram: "", linkedin: "" });
+  const [form, setForm] = useState({ interest: "home-loan-advisory", subcategory: "", name: "", contact: "", city: "", facebook: "", instagram: "", linkedin: "" });
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
-  const [agentPicks, setAgentPicks] = useState([]);
   const [feePaid, setFeePaid] = useState(false);
 
   const [collabStep, setCollabStep] = useState(0);
@@ -300,21 +393,15 @@ export default function UpscaleApp() {
 
   const [daysDone, setDaysDone] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [purchasedAgents, setPurchasedAgents] = useState([]);
-  const [sharePlatform, setSharePlatform] = useState("whatsapp");
-  const [postProduct, setPostProduct] = useState("");
-  const [posts, setPosts] = useState([]);
 
-  const subject = SUBJECTS[form.interest];
+  const subject = resolveSubject(form.interest, form.subcategory);
+  const onbSteps = getOnbSteps(form.interest);
   const totalDays = PERIOD_DAYS[period];
   const obsComplete = obsText.trim().length > 0;
 
-  function toggleAgentPick(key) {
-    setAgentPicks((a) => (a.includes(key) ? a.filter((x) => x !== key) : [...a, key]));
-  }
   function confirmTarget() { setScreen("plan"); }
 
-  function nextOnb() { if (obStep < ONB_STEPS.length - 1) setObStep(obStep + 1); else setScreen("target"); }
+  function nextOnb() { if (obStep < onbSteps.length - 1) setObStep(obStep + 1); else setScreen("target"); }
   function backOnb() { if (obStep > 0) setObStep(obStep - 1); }
 
   function runValidation() {
@@ -348,7 +435,6 @@ export default function UpscaleApp() {
       observationText: obsText,
       streak: streak + 1,
     });
-    setPurchasedAgents((pa) => [...new Set([...pa, ...agentPicks])]);
     setDaysDone((d) => d + 1);
     setStreak((s) => s + 1);
     setContentDone(false);
@@ -436,9 +522,10 @@ export default function UpscaleApp() {
 
   // --- Onboarding ---
   if (screen === "onboarding") {
-    const step = ONB_STEPS[obStep];
+    const step = onbSteps[obStep];
     const labels = {
       interest: role === "collaborator" ? "What's your area of expertise?" : "What's your area of interest?",
+      subcategory: `More specifically, what kind of ${SUBJECTS[form.interest]?.name?.toLowerCase() || "business"} is it?`,
       name: "What's your name?",
       contact: "Your contact number / WhatsApp",
       city: "Which city are you based in?",
@@ -446,7 +533,7 @@ export default function UpscaleApp() {
       instagram: "Your Instagram link (optional)",
       linkedin: "Your LinkedIn link (optional)",
     };
-    const canProceed = step === "interest" || step === "facebook" || step === "instagram" || step === "linkedin" ? true : form[step].trim().length > 0;
+    const canProceed = step === "interest" || step === "subcategory" || step === "facebook" || step === "instagram" || step === "linkedin" ? true : form[step].trim().length > 0;
     return (
       <div className="w-full min-h-[600px] rounded-xl flex items-center justify-center px-6" style={{ background: "#F7F8FA" }}>
         {style}
@@ -454,13 +541,23 @@ export default function UpscaleApp() {
           <div className="w-full max-w-md bg-white rounded-xl p-8 border border-gray-200">
             <Logo />
             <div className="flex gap-1.5 my-6">
-              {ONB_STEPS.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full transition-colors duration-300" style={{ background: i <= obStep ? ORANGE : "#E5E7EB" }} />)}
+              {onbSteps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full transition-colors duration-300" style={{ background: i <= obStep ? ORANGE : "#E5E7EB" }} />)}
             </div>
-            <div className="text-xs font-medium mb-1.5" style={{ color: BLUE }}>Question {obStep + 1} of {ONB_STEPS.length}</div>
+            <div className="text-xs font-medium mb-1.5" style={{ color: BLUE }}>Question {obStep + 1} of {onbSteps.length}</div>
             <h2 className="text-lg font-medium mb-5" style={{ color: NAVY }}>{labels[step]}</h2>
             {step === "interest" ? (
-              <select className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form.interest} onChange={(e) => setForm({ ...form, interest: e.target.value })}>
+              <select className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form.interest}
+                onChange={(e) => {
+                  const newInterest = e.target.value;
+                  const subs = SUBJECTS[newInterest]?.subcategories;
+                  setForm({ ...form, interest: newInterest, subcategory: subs ? Object.keys(subs)[0] : "" });
+                }}>
                 {Object.entries(SUBJECTS).map(([key, s]) => <option key={key} value={key}>{s.name}</option>)}
+              </select>
+            ) : step === "subcategory" ? (
+              <select className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form.subcategory}
+                onChange={(e) => setForm({ ...form, subcategory: e.target.value })}>
+                {Object.entries(SUBJECTS[form.interest]?.subcategories || {}).map(([key, sc]) => <option key={key} value={key}>{sc.label}</option>)}
               </select>
             ) : (
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form[step]}
@@ -475,7 +572,7 @@ export default function UpscaleApp() {
                 </button>
               ) : <div />}
               <PrimaryButton onClick={nextOnb} disabled={!canProceed}>
-                {obStep === ONB_STEPS.length - 1 ? "Set my target" : "Next"} <ArrowRight size={14} />
+                {obStep === onbSteps.length - 1 ? "Set my target" : "Next"} <ArrowRight size={14} />
               </PrimaryButton>
             </div>
           </div>
@@ -705,27 +802,13 @@ export default function UpscaleApp() {
               <div className="flex items-start gap-2">
                 <IndianRupee size={14} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
                 <p className="text-xs" style={{ color: NAVY }}>
-                  Upscale's core app is free for proprietors. The only paid parts are the AI Agents below, if you choose to add one.
+                  Upscale's core app is completely free for proprietors.
                 </p>
               </div>
             </div>
 
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Optional: add an AI Agent</div>
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              {AGENTS.map((a) => (
-                <button key={a.key} onClick={() => toggleAgentPick(a.key)} className="text-left border rounded-lg p-3"
-                  style={{ borderColor: agentPicks.includes(a.key) ? BLUE : "#E5E7EB", background: agentPicks.includes(a.key) ? BLUE_BG : "#fff" }}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Bot size={14} style={{ color: NAVY }} />
-                    <span className="text-xs font-medium" style={{ color: NAVY }}>{a.name}</span>
-                  </div>
-                  <div className="text-[11px] text-gray-500 mb-1">{a.desc}</div>
-                  <div className="text-[11px] font-medium" style={{ color: BLUE }}>{a.price}</div>
-                </button>
-              ))}
-            </div>
             <PrimaryButton onClick={confirmTarget} disabled={!goal.trim()}>
-              {agentPicks.length ? "Continue with agents" : "Skip agents — continue"} <ArrowRight size={15} />
+              Continue <ArrowRight size={15} />
             </PrimaryButton>
           </div>
         </FadeIn>
@@ -786,7 +869,7 @@ export default function UpscaleApp() {
         </div>
         <div className="px-6 py-6 bg-white">
           <h2 className="text-sm font-medium mb-4" style={{ color: NAVY }}>All firms — AKORA9 admin</h2>
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="border border-gray-200 rounded-lg p-3">
               <div className="text-xs text-gray-400 mb-1">Active firms</div>
               <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.length}</div>
@@ -794,10 +877,6 @@ export default function UpscaleApp() {
             <div className="border border-gray-200 rounded-lg p-3">
               <div className="text-xs text-gray-400 mb-1">Leads delivered today</div>
               <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.length * 3}</div>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Agent subscriptions</div>
-              <div className="text-xl font-medium" style={{ color: NAVY }}>{MOCK_FIRMS.reduce((n, f) => n + f.agents.length, 0)}</div>
             </div>
           </div>
           <div className="space-y-2">
@@ -808,7 +887,6 @@ export default function UpscaleApp() {
                   <div className="text-xs text-gray-500 capitalize">{f.role} · {f.role === "collaborator" ? "10% commission, lifetime access paid" : "free plan"} · {f.subject} · "{f.target}"</div>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <span>{f.agents.length} agent(s)</span>
                   <span className="flex items-center gap-1"><Flame size={12} /> {f.streak}</span>
                   <span>{f.daysDone}d done</span>
                 </div>
@@ -855,7 +933,7 @@ export default function UpscaleApp() {
           { key: "loop", label: "Loop", icon: Target },
           { key: "progress", label: "Progress", icon: TrendingUp },
           { key: "collaborate", label: "Collaborate", icon: Handshake },
-          { key: "agents", label: "AI Agents", icon: Bot },
+          { key: "recommendations", label: "Recommendations", icon: BookOpen },
         ].map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="flex items-center gap-1.5 text-sm px-3 py-3 border-b-2 -mb-px"
@@ -873,7 +951,7 @@ export default function UpscaleApp() {
             <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (daysDone / totalDays) * 100)}%`, background: BLUE }} />
           </div>
           <div className="text-xs text-gray-500 mb-6">{daysDone} of {totalDays} days completed</div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="text-xs text-gray-400 mb-1">Current streak</div>
               <div className="text-xl font-medium flex items-center gap-1" style={{ color: NAVY }}><Flame size={16} /> {streak} days</div>
@@ -882,6 +960,22 @@ export default function UpscaleApp() {
               <div className="text-xs text-gray-400 mb-1">Leads received so far</div>
               <div className="text-xl font-medium" style={{ color: NAVY }}>{daysDone * 3}</div>
             </div>
+          </div>
+
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Market analytics — {subject.name}</div>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
+              <span className="text-xs font-medium" style={{ color: subject.analytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {subject.analytics.demandChangePct >= 0 ? "+" : ""}{subject.analytics.demandChangePct}% vs last month
+              </span>
+            </div>
+            <div className="flex items-end gap-2 h-16 mb-1">
+              {subject.analytics.demand.map((v, i) => (
+                <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">{subject.analytics.insight}</p>
           </div>
         </div>
       ) : tab === "collaborate" ? (
@@ -934,83 +1028,21 @@ export default function UpscaleApp() {
             </div>
           )}
         </div>
-      ) : tab === "agents" ? (
+      ) : tab === "recommendations" ? (
         <div className="px-6 py-6 bg-white">
-          <p className="text-sm text-gray-500 mb-4">Optional add-ons on top of your daily loop.</p>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {AGENTS.map((a) => {
-              const owned = purchasedAgents.includes(a.key);
-              return (
-                <div key={a.key} className="border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Bot size={15} style={{ color: NAVY }} />
-                    <span className="text-sm font-medium" style={{ color: NAVY }}>{a.name}</span>
-                  </div>
-                  <div className="text-xs text-gray-500 mb-3">{a.desc}</div>
-                  {a.stub && <div className="text-[11px] text-amber-700 bg-amber-50 rounded px-2 py-1 mb-3 inline-block">Coming soon — stub only</div>}
-                  {owned ? (
-                    <div className="text-xs font-medium flex items-center gap-1" style={{ color: "#0F6E56" }}><Check size={13} /> Active</div>
-                  ) : (
-                    <button onClick={() => setPurchasedAgents((pa) => [...pa, a.key])}
-                      className="text-xs font-medium px-3 py-1.5 rounded-lg text-white" style={{ background: BLUE }}>
-                      Add {a.price}
-                    </button>
-                  )}
+          <p className="text-sm text-gray-500 mb-4">Book suggestions and recommendations for {subject.name}.</p>
+          <div className="space-y-3">
+            {(subject.bookSuggestions || []).map((b, i) => (
+              <div key={i} className="border border-gray-200 rounded-xl p-4 flex gap-3">
+                <BookOpen size={18} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-medium" style={{ color: NAVY }}>{b.title}</div>
+                  <div className="text-xs text-gray-500 mb-1">{b.author}</div>
+                  <div className="text-xs text-gray-600">{b.why}</div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
-
-          {purchasedAgents.includes("marketing") && (
-            <div className="border border-gray-200 rounded-xl p-5" style={{ background: "#F7F8FA" }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Share2 size={15} style={{ color: BLUE }} />
-                <h3 className="text-sm font-medium" style={{ color: NAVY }}>Marketing Agent</h3>
-              </div>
-              <p className="text-xs text-gray-500 mb-4">Turn a photo into a ready-to-share post — no business account needed.</p>
-
-              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Create a post</div>
-              <input value={postProduct} onChange={(e) => setPostProduct(e.target.value)} placeholder="New product or service (optional)"
-                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm mb-2 bg-white" />
-              <div className="flex items-center gap-2 border border-dashed border-gray-300 rounded-lg p-3 mb-3 text-xs text-gray-400 bg-white">
-                <ImageIcon size={16} /> Upload a photo
-              </div>
-
-              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Where will you share it? (optional)</div>
-              <div className="flex gap-2 mb-3 flex-wrap">
-                {SHARE_DESTINATIONS.map((d) => (
-                  <button key={d.key} onClick={() => setSharePlatform(d.key)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg border"
-                    style={{ borderColor: sharePlatform === d.key ? BLUE : "#E5E7EB", color: sharePlatform === d.key ? BLUE : "#374151", background: sharePlatform === d.key ? BLUE_BG : "#fff" }}>
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-
-              <PrimaryButton
-                onClick={() => {
-                  setPosts([{ product: postProduct, platform: sharePlatform }, ...posts]);
-                  setPostProduct("");
-                }}>
-                Create post <Sparkles size={14} />
-              </PrimaryButton>
-              <div className="text-[11px] text-gray-400 mt-2">
-                Download it, or share straight to WhatsApp, a family/friends group, or your own profiles — whatever's easiest for you.
-              </div>
-
-              {posts.length > 0 && (
-                <div className="mt-5">
-                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Your posts</div>
-                  {posts.map((p, i) => (
-                    <div key={i} className="bg-white border border-gray-200 rounded-lg p-3 mb-2 flex items-center justify-between gap-3">
-                      <div>{p.product && <div className="text-sm text-gray-800">{p.product}</div>}</div>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize shrink-0">{p.platform}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       ) : (
         <div className="px-6 py-6 bg-white">
@@ -1039,6 +1071,7 @@ export default function UpscaleApp() {
               {stage === "content" && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Today's content</h2></div>
+                  {subject.label && <p className="text-xs text-gray-400 -mt-2">For {subject.label.toLowerCase()}</p>}
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Update</div>
                     <a href={`https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + subject.update)}&tbm=nws`}
@@ -1077,7 +1110,9 @@ export default function UpscaleApp() {
               {stage === "observation" && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-1"><Eye size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Your observation</h2></div>
-                  <p className="text-xs text-gray-500 mb-1">Based on today's update, trend, video, and success story — what's your overall observation?</p>
+                  <p className="text-xs text-gray-500 mb-1">
+                    Based on today's update, trend, video, and success story{subject.label ? ` for ${subject.label.toLowerCase()}` : ""} — what's your overall observation?
+                  </p>
                   <textarea value={obsText} onChange={(e) => setObsText(e.target.value)}
                     placeholder="What have you noticed in your business this week?"
                     className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[110px] bg-white" />
