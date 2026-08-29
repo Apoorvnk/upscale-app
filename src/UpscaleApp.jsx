@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
@@ -42,6 +42,12 @@ const CURATED = {
       demandChangePct: 8,
       insight: "Enquiries typically rise after rate announcements — this week's steady repo rate is a good outreach moment.",
     },
+    ad: {
+      advertiser: "BuildRight Loan Comparison",
+      headline: "Compare top lender rates before your next client call",
+      body: "See live processing fees and interest rates across 12 lenders, side by side.",
+      cta: "Compare rates",
+    },
   },
   "Insurance advisory": {
     trend: "IRDAI's claim settlement timeline circular was updated last week.",
@@ -64,6 +70,12 @@ const CURATED = {
       demand: [50, 52, 49, 57, 61, 64],
       demandChangePct: 5,
       insight: "Renewal-season enquiries are trending up — claim settlement news is a good conversation opener right now.",
+    },
+    ad: {
+      advertiser: "PolicyDesk for Agents",
+      headline: "Bundle quotes from top insurers into one client-ready PDF",
+      body: "Stop switching between portals — generate comparison sheets in under a minute.",
+      cta: "Try free",
     },
   },
   "Sports retail": {
@@ -88,6 +100,12 @@ const CURATED = {
       demandChangePct: 15,
       insight: "Footfall is climbing ahead of school sports season — the next 2-3 weeks are your peak window.",
     },
+    ad: {
+      advertiser: "SportsSource Wholesale",
+      headline: "Bulk pricing on jerseys, kits, and coaching gear",
+      body: "Stock up ahead of season demand — minimum order discounts for independent retailers.",
+      cta: "Get catalog",
+    },
   },
   "General business": {
     trend: "Most small businesses lose more to inconsistent follow-up than to competition.",
@@ -110,6 +128,12 @@ const CURATED = {
       demand: [55, 54, 58, 56, 60, 63],
       demandChangePct: 5,
       insight: "Businesses responding same-day are converting noticeably better this week than those following up later.",
+    },
+    ad: {
+      advertiser: "Zenbooks Accounting",
+      headline: "Simple accounting built for small business owners",
+      body: "Invoicing, GST filing, and follow-up reminders in one app — no accountant required.",
+      cta: "Start free trial",
     },
   },
   "Stock broking": {
@@ -134,6 +158,12 @@ const CURATED = {
       demandChangePct: -3,
       insight: "Client queries about margin changes have picked up — proactive explainers are outperforming reactive ones this week.",
     },
+    ad: {
+      advertiser: "TradeMint Terminal",
+      headline: "Real-time market data and margin alerts for retail brokers",
+      body: "Flag margin-call risk before clients call you — live monitoring across all their positions.",
+      cta: "See pricing",
+    },
   },
   "Mutual fund advisory": {
     trend: "SIP inflows hit a fresh high this quarter — a good moment to talk consistency with clients.",
@@ -156,6 +186,12 @@ const CURATED = {
       demand: [48, 53, 60, 65, 70, 74],
       demandChangePct: 6,
       insight: "SIP inflows are at a fresh quarterly high — clients getting a mid-month check-in are staying invested through dips.",
+    },
+    ad: {
+      advertiser: "Groww for Partners",
+      headline: "Onboard clients to SIPs in under 5 minutes",
+      body: "Paperless KYC and fund selection your clients can complete from their phone.",
+      cta: "Learn more",
     },
   },
   "Jewelry retail": {
@@ -211,6 +247,12 @@ const CURATED = {
       demand: [45, 50, 58, 63, 69, 72],
       demandChangePct: 4,
       insight: "Wedding-season bookings are picking up earlier than usual this year across both precious and fashion segments.",
+    },
+    ad: {
+      advertiser: "GoldCraft Tools & Supplies",
+      headline: "Professional jewellery display and tools, wholesale pricing",
+      body: "Counters, lighting, and gemological tools shipped nationwide for independent stores.",
+      cta: "Shop wholesale",
     },
   },
 };
@@ -274,6 +316,12 @@ function genericContent(name) {
       demand: [45, 48, 50, 55, 58, 60],
       demandChangePct: 5,
       insight: `Businesses in ${lower} that respond fastest to inquiries this week are seeing better conversion.`,
+    },
+    ad: {
+      advertiser: `${name} Growth Toolkit`,
+      headline: `Tools and resources built for ${lower} businesses`,
+      body: `Templates, checklists, and supplier contacts curated for ${lower}.`,
+      cta: "Explore",
     },
   };
 }
@@ -390,6 +438,8 @@ export default function UpscaleApp() {
   const [validated, setValidated] = useState(false);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [ticketsBought, setTicketsBought] = useState([]);
+  const [adElapsed, setAdElapsed] = useState(0);
+  const [adDone, setAdDone] = useState(false);
 
   const [daysDone, setDaysDone] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -398,6 +448,26 @@ export default function UpscaleApp() {
   const onbSteps = getOnbSteps(form.interest);
   const totalDays = PERIOD_DAYS[period];
   const obsComplete = obsText.trim().length > 0;
+
+  // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
+  useEffect(() => {
+    if (stage !== "reward" || adDone) return;
+    const id = setInterval(() => {
+      setAdElapsed((e) => {
+        if (e + 1 >= 30) {
+          clearInterval(id);
+          setAdDone(true);
+          return 30;
+        }
+        return e + 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [stage, adDone]);
+
+  function skipAd() {
+    if (adElapsed >= 20) setAdDone(true);
+  }
 
   function confirmTarget() { setScreen("plan"); }
 
@@ -441,6 +511,8 @@ export default function UpscaleApp() {
     setObsText("");
     setValidated(false);
     setRewardClaimed(false);
+    setAdElapsed(0);
+    setAdDone(false);
     setStage("content");
   }
 
@@ -1144,7 +1216,29 @@ export default function UpscaleApp() {
                 </div>
               )}
 
-              {stage === "reward" && (
+              {stage === "reward" && !adDone && (
+                <div className="space-y-4 text-center py-2">
+                  <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Sponsored — watch to unlock today's reward</div>
+                  <div className="bg-white rounded-lg border border-gray-200 p-6 text-left">
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{subject.ad.advertiser}</div>
+                    <div className="text-base font-medium mb-2" style={{ color: NAVY }}>{subject.ad.headline}</div>
+                    <p className="text-sm text-gray-600 mb-4">{subject.ad.body}</p>
+                    <button className="text-sm font-medium px-4 py-2 rounded-lg text-white" style={{ background: BLUE }}>{subject.ad.cta}</button>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${Math.min(100, (adElapsed / 30) * 100)}%`, background: ORANGE, transition: "width 1s linear" }} />
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {adElapsed >= 20 ? (
+                      <button onClick={skipAd} className="font-medium underline" style={{ color: BLUE }}>Skip ad</button>
+                    ) : (
+                      `Skip available in ${20 - adElapsed}s`
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {stage === "reward" && adDone && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Today's reward</h2></div>
 
