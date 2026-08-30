@@ -435,7 +435,7 @@ export default function UpscaleApp() {
   const [contentDone, setContentDone] = useState(false);
   const [obsText, setObsText] = useState("");
   const [validating, setValidating] = useState(false);
-  const [validated, setValidated] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [ticketsBought, setTicketsBought] = useState([]);
   const [adElapsed, setAdElapsed] = useState(0);
@@ -474,14 +474,10 @@ export default function UpscaleApp() {
   function nextOnb() { if (obStep < onbSteps.length - 1) setObStep(obStep + 1); else setScreen("target"); }
   function backOnb() { if (obStep > 0) setObStep(obStep - 1); }
 
-  function runValidation() {
-    setValidating(true);
-    setTimeout(() => { setValidating(false); setValidated(true); }, 1200);
-  }
-
-  function submitObservation() {
+  async function submitObservation() {
     setStage("validation");
-    runValidation();
+    setValidating(true);
+    setValidationResult(null);
     logToSheet({
       name: form.name,
       subject: subject.name,
@@ -492,6 +488,30 @@ export default function UpscaleApp() {
       observationText: obsText,
       streak,
     });
+    try {
+      const res = await fetch("/api/validate-observation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          observationText: obsText,
+          subjectName: subject.name,
+          trend: subject.trend,
+          update: subject.update,
+          successStory: subject.successStory,
+        }),
+      });
+      if (!res.ok) throw new Error(`validate-observation returned ${res.status}`);
+      const data = await res.json();
+      setValidationResult({ valid: !!data.valid, feedback: data.feedback || "" });
+    } catch (err) {
+      console.error("submitObservation validation failed:", err);
+      setValidationResult({
+        valid: true,
+        feedback: "We couldn't reach the validator just now, so this was auto-approved — feel free to continue.",
+      });
+    } finally {
+      setValidating(false);
+    }
   }
 
   function claimReward() {
@@ -509,7 +529,7 @@ export default function UpscaleApp() {
     setStreak((s) => s + 1);
     setContentDone(false);
     setObsText("");
-    setValidated(false);
+    setValidationResult(null);
     setRewardClaimed(false);
     setAdElapsed(0);
     setAdDone(false);
@@ -974,10 +994,10 @@ export default function UpscaleApp() {
   const LOOP_STAGES = [
     { key: "content", label: "Today's content", icon: Newspaper, done: contentDone },
     { key: "observation", label: "Observation", icon: Eye, done: !!obsComplete },
-    { key: "validation", label: "AI Validation", icon: ShieldCheck, done: validated },
+    { key: "validation", label: "AI Validation", icon: ShieldCheck, done: !!validationResult?.valid },
     { key: "reward", label: "Leads & Collaboration", icon: Gift, done: rewardClaimed },
   ];
-  const canReachReward = contentDone && obsComplete && validated;
+  const canReachReward = contentDone && obsComplete && !!validationResult?.valid;
 
   return (
     <div className="w-full min-h-[600px] rounded-xl border border-gray-200 overflow-hidden">
@@ -1203,14 +1223,22 @@ export default function UpscaleApp() {
                       <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Validating your observation...
                     </div>
                   )}
-                  {validated && !validating && (
+                  {validationResult && !validating && (
                     <>
-                      <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
-                        This looks like a real, specific observation tied to today's content — worth acting on.
+                      <div className="bg-white border rounded-lg p-3 text-sm"
+                        style={{ borderColor: validationResult.valid ? "#E5E7EB" : "#FCA5A5", color: validationResult.valid ? "#374151" : "#B91C1C" }}>
+                        {validationResult.feedback}
                       </div>
-                      <PrimaryButton onClick={() => setStage("reward")}>
-                        Unlock leads & collaboration <ArrowRight size={14} />
-                      </PrimaryButton>
+                      {validationResult.valid ? (
+                        <PrimaryButton onClick={() => setStage("reward")}>
+                          Unlock leads & collaboration <ArrowRight size={14} />
+                        </PrimaryButton>
+                      ) : (
+                        <button onClick={() => setStage("observation")}
+                          className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 flex items-center gap-1" style={{ color: NAVY }}>
+                          <ArrowLeft size={14} /> Revise your observation
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
