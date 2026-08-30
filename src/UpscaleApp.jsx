@@ -21,7 +21,7 @@ const ADMIN_CONTACTS = (import.meta.env.VITE_ADMIN_CONTACTS || "")
 
 const CURATED = {
   "Home loan advisory": {
-    trend: "RBI repo rate held steady this quarter — a useful talking point for rate-sensitive leads.",
+    trend: "Balance-transfer + top-up loans are the fastest-growing product this quarter, as existing borrowers chase lower rates.",
     update: "A local advisor reported 3 new client calls this morning after last week's rate news.",
     successStory: "An advisor in Kothrud closed 4 loans this month after switching to a written fee breakdown.",
     video: { title: "How to explain processing fees so clients don't drop off", duration: "4 min" },
@@ -50,7 +50,7 @@ const CURATED = {
     },
   },
   "Insurance advisory": {
-    trend: "IRDAI's claim settlement timeline circular was updated last week.",
+    trend: "Term insurance with a critical-illness rider is the fastest-growing policy type this quarter.",
     update: "Renewal reminders sent this week are seeing a noticeably higher response rate.",
     successStory: "An agent in Baner grew renewals 20% after adopting a simple pre-call checklist.",
     video: { title: "A 60-second policy recap script that improves renewals", duration: "6 min" },
@@ -79,7 +79,7 @@ const CURATED = {
     },
   },
   "Sports retail": {
-    trend: "Local school sports season starts next month — footfall usually rises 2-3 weeks prior.",
+    trend: "Football boots and turf-training shoes are the fastest-moving category right now, ahead of school sports season.",
     update: "Weekend footfall is already ticking up ahead of the season.",
     successStory: "A store in Aundh doubled weekend sales by running a free kit-fitting session.",
     video: { title: "Running a monthly kids' coaching camp to drive repeat visits", duration: "5 min" },
@@ -108,7 +108,7 @@ const CURATED = {
     },
   },
   "General business": {
-    trend: "Most small businesses lose more to inconsistent follow-up than to competition.",
+    trend: "Same-day-response service add-ons are the fastest-growing offering among local businesses right now.",
     update: "Businesses following up within a day are converting noticeably better this week.",
     successStory: "A local service business cut no-shows in half with a same-day confirmation text.",
     video: { title: "A simple weekly check-in habit that doubles repeat customers", duration: "5 min" },
@@ -137,7 +137,7 @@ const CURATED = {
     },
   },
   "Stock broking": {
-    trend: "SEBI's revised intraday margin norms take effect this month.",
+    trend: "Options trading accounts are seeing the sharpest signup growth of any product this quarter.",
     update: "Client queries about margin changes have picked up this week.",
     successStory: "A broker in Pune retained 90% of anxious clients by proactively explaining the change.",
     video: { title: "Explaining margin changes to retail clients without losing them", duration: "5 min" },
@@ -166,7 +166,7 @@ const CURATED = {
     },
   },
   "Mutual fund advisory": {
-    trend: "SIP inflows hit a fresh high this quarter — a good moment to talk consistency with clients.",
+    trend: "Small-cap and flexi-cap SIPs are the fastest-growing fund category this quarter.",
     update: "Clients who get a mid-month check-in call are staying invested through dips.",
     successStory: "A distributor grew his SIP book 15% this quarter by sending monthly progress updates.",
     video: { title: "Turning a market dip into a client education moment", duration: "5 min" },
@@ -198,7 +198,7 @@ const CURATED = {
     subcategories: {
       "precious-metal": {
         label: "Precious metal jewellery (gold, silver, diamond)",
-        trend: "Gold rates have stabilized this week after last month's volatility — a good moment to talk fixed-rate booking with customers.",
+        trend: "Lightweight daily-wear gold pieces (under 10g) are the fastest-selling category right now, ahead of heavier bridal sets.",
         update: "Footfall for wedding-season bookings is picking up earlier than usual this year.",
         successStory: "A jeweler in Camp grew bridal bookings 30% by offering fixed-rate price locks.",
         video: { title: "Turning gold-rate anxiety into a booked sale", duration: "5 min" },
@@ -209,7 +209,7 @@ const CURATED = {
       },
       "imitation-fashion": {
         label: "Imitation / fashion jewellery",
-        trend: "Festive and wedding-season demand for statement fashion pieces is rising ahead of the calendar — customers shop by look, not metal price.",
+        trend: "Layered chain-and-pendant sets inspired by festive reels are the fastest-selling fashion jewellery category right now.",
         update: "Customers are increasingly walking in already knowing the exact style they saw on social media, and expect stores to have it or match it fast.",
         successStory: "A fashion jewellery store in Camp doubled Instagram-driven walk-ins by posting new arrivals daily instead of weekly.",
         video: { title: "Using Instagram reels to sell fashion jewellery faster", duration: "5 min" },
@@ -288,7 +288,7 @@ function slugify(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").r
 function genericContent(name) {
   const lower = name.toLowerCase();
   return {
-    trend: `Recent shifts worth tracking in ${lower}: changing customer expectations and pricing pressure.`,
+    trend: `Fast-turnaround, same-day offerings are the fastest-growing product type among ${lower} businesses right now.`,
     update: `Businesses in ${lower} that responded fastest to inquiries this week saw better conversion.`,
     successStory: `A ${lower} business nearby grew simply by fixing one overlooked, everyday process.`,
     video: { title: `A quick habit that helps most ${lower} businesses`, duration: "5 min" },
@@ -434,8 +434,8 @@ export default function UpscaleApp() {
   const [stage, setStage] = useState("content");
   const [contentDone, setContentDone] = useState(false);
   const [obsText, setObsText] = useState("");
-  const [validating, setValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState(null);
+  const [guiding, setGuiding] = useState(false);
+  const [guidance, setGuidance] = useState(null);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [ticketsBought, setTicketsBought] = useState([]);
   const [adElapsed, setAdElapsed] = useState(0);
@@ -475,9 +475,9 @@ export default function UpscaleApp() {
   function backOnb() { if (obStep > 0) setObStep(obStep - 1); }
 
   async function submitObservation() {
-    setStage("validation");
-    setValidating(true);
-    setValidationResult(null);
+    setStage("guidance");
+    setGuiding(true);
+    setGuidance(null);
     logToSheet({
       name: form.name,
       subject: subject.name,
@@ -489,28 +489,19 @@ export default function UpscaleApp() {
       streak,
     });
     try {
-      const res = await fetch("/api/validate-observation", {
+      const res = await fetch("/api/guide-observation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          observationText: obsText,
-          subjectName: subject.name,
-          trend: subject.trend,
-          update: subject.update,
-          successStory: subject.successStory,
-        }),
+        body: JSON.stringify({ observationText: obsText, goal, subjectName: subject.name }),
       });
-      if (!res.ok) throw new Error(`validate-observation returned ${res.status}`);
+      if (!res.ok) throw new Error(`guide-observation returned ${res.status}`);
       const data = await res.json();
-      setValidationResult({ valid: !!data.valid, feedback: data.feedback || "" });
+      setGuidance(data.guidance || "Keep going — consistency here is what compounds.");
     } catch (err) {
-      console.error("submitObservation validation failed:", err);
-      setValidationResult({
-        valid: true,
-        feedback: "We couldn't reach the validator just now, so this was auto-approved — feel free to continue.",
-      });
+      console.error("submitObservation guidance failed:", err);
+      setGuidance("We couldn't reach your coach just now — take a moment to think about one concrete step this observation suggests for tomorrow.");
     } finally {
-      setValidating(false);
+      setGuiding(false);
     }
   }
 
@@ -529,7 +520,7 @@ export default function UpscaleApp() {
     setStreak((s) => s + 1);
     setContentDone(false);
     setObsText("");
-    setValidationResult(null);
+    setGuidance(null);
     setRewardClaimed(false);
     setAdElapsed(0);
     setAdDone(false);
@@ -926,7 +917,7 @@ export default function UpscaleApp() {
               {[
                 { icon: Newspaper, label: "Daily content", desc: `An update, trend, short video, and success story on ${subject.name} every day.` },
                 { icon: Eye, label: "Your observation", desc: "One overall observation — what you've noticed in your business." },
-                { icon: ShieldCheck, label: "AI validation", desc: "Your observation is checked before it unlocks the next step." },
+                { icon: ShieldCheck, label: "Guidance", desc: "Free, personalized advice connecting today's observation to your target." },
                 { icon: Gift, label: "Leads & Collaboration", desc: "Leads, collaboration requests, and events unlocked for your business." },
               ].map((s, i) => (
                 <div key={i} className="rounded-xl p-3 border border-gray-200 flex gap-3">
@@ -994,10 +985,10 @@ export default function UpscaleApp() {
   const LOOP_STAGES = [
     { key: "content", label: "Today's content", icon: Newspaper, done: contentDone },
     { key: "observation", label: "Observation", icon: Eye, done: !!obsComplete },
-    { key: "validation", label: "AI Validation", icon: ShieldCheck, done: !!validationResult?.valid },
+    { key: "guidance", label: "Guidance", icon: ShieldCheck, done: !!guidance },
     { key: "reward", label: "Leads & Collaboration", icon: Gift, done: rewardClaimed },
   ];
-  const canReachReward = contentDone && obsComplete && !!validationResult?.valid;
+  const canReachReward = contentDone && obsComplete && !!guidance;
 
   return (
     <div className="w-full min-h-[600px] rounded-xl border border-gray-200 overflow-hidden">
@@ -1209,36 +1200,28 @@ export default function UpscaleApp() {
                     placeholder="What have you noticed in your business this week?"
                     className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[110px] bg-white" />
                   <PrimaryButton onClick={submitObservation} disabled={!obsComplete}>
-                    Submit for validation <ArrowRight size={14} />
+                    Get guidance <ArrowRight size={14} />
                   </PrimaryButton>
                 </div>
               )}
 
-              {stage === "validation" && (
+              {stage === "guidance" && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-1"><ShieldCheck size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>AI validation</h2></div>
+                  <div className="flex items-center gap-2 mb-1"><ShieldCheck size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Your guidance</h2></div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 italic">"{obsText}"</div>
-                  {validating && (
+                  {guiding && (
                     <div className="text-sm text-gray-500 flex items-center gap-2">
-                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Validating your observation...
+                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Thinking through your target...
                     </div>
                   )}
-                  {validationResult && !validating && (
+                  {guidance && !guiding && (
                     <>
-                      <div className="bg-white border rounded-lg p-3 text-sm"
-                        style={{ borderColor: validationResult.valid ? "#E5E7EB" : "#FCA5A5", color: validationResult.valid ? "#374151" : "#B91C1C" }}>
-                        {validationResult.feedback}
+                      <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
+                        {guidance}
                       </div>
-                      {validationResult.valid ? (
-                        <PrimaryButton onClick={() => setStage("reward")}>
-                          Unlock leads & collaboration <ArrowRight size={14} />
-                        </PrimaryButton>
-                      ) : (
-                        <button onClick={() => setStage("observation")}
-                          className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 flex items-center gap-1" style={{ color: NAVY }}>
-                          <ArrowLeft size={14} /> Revise your observation
-                        </button>
-                      )}
+                      <PrimaryButton onClick={() => setStage("reward")}>
+                        Unlock leads & collaboration <ArrowRight size={14} />
+                      </PrimaryButton>
                     </>
                   )}
                 </div>
