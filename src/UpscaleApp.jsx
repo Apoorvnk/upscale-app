@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Search
+  Plus, Newspaper, BookOpen, Search, Upload, Receipt
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -379,6 +379,37 @@ function logToSheet(payload) {
   }).catch((err) => console.error("logToSheet failed:", err));
 }
 
+// Downscales a photo client-side before it ever leaves the browser, so a
+// full-resolution phone camera shot doesn't blow past serverless body-size
+// limits or waste vision-API tokens on pixels we don't need.
+function resizeImageFile(file, maxDim = 1200, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function Logo({ dark }) {
   return (
     <div className="flex items-center gap-2">
@@ -439,12 +470,20 @@ export default function UpscaleApp() {
   const [leadResults, setLeadResults] = useState(null);
   const [leadNote, setLeadNote] = useState(null);
 
+  const [ledgerEntries, setLedgerEntries] = useState([]);
+  const [uploadingCost, setUploadingCost] = useState(false);
+  const [uploadingSales, setUploadingSales] = useState(false);
+  const [ledgerError, setLedgerError] = useState(null);
+
   const [daysDone, setDaysDone] = useState(0);
   const [streak, setStreak] = useState(0);
 
   const subject = resolveSubject(form.interest, form.subcategory);
   const onbSteps = getOnbSteps(form.interest);
   const totalDays = PERIOD_DAYS[period];
+  const totalCosts = ledgerEntries.filter((e) => e.type === "cost").reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalSales = ledgerEntries.filter((e) => e.type === "sales").reduce((s, e) => s + Number(e.amount || 0), 0);
+  const netAmount = totalSales - totalCosts;
   const obsComplete = obsText.trim().length > 0;
 
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
@@ -549,6 +588,31 @@ export default function UpscaleApp() {
       setLeadNote("We couldn't run that search just now — please try again in a moment.");
     } finally {
       setLeadSearching(false);
+    }
+  }
+
+  async function handleReceiptUpload(file, type) {
+    if (!file) return;
+    setLedgerError(null);
+    if (type === "cost") setUploadingCost(true); else setUploadingSales(true);
+    try {
+      const dataUrl = await resizeImageFile(file);
+      const match = dataUrl.match(/^data:(.+);base64,(.*)$/);
+      if (!match) throw new Error("Could not read image data");
+      const [, mediaType, base64] = match;
+      const res = await fetch("/api/extract-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mediaType, type, name: form.name, contact: form.contact }),
+      });
+      if (!res.ok) throw new Error(`extract-receipt returned ${res.status}`);
+      const data = await res.json();
+      setLedgerEntries((entries) => [{ type, ...data }, ...entries]);
+    } catch (err) {
+      console.error("handleReceiptUpload failed:", err);
+      setLedgerError("Couldn't read that photo — please try again with a clearer shot.");
+    } finally {
+      if (type === "cost") setUploadingCost(false); else setUploadingSales(false);
     }
   }
 
@@ -1042,6 +1106,7 @@ export default function UpscaleApp() {
           { key: "progress", label: "Progress", icon: TrendingUp },
           { key: "collaborate", label: "Collaborate", icon: Handshake },
           { key: "recommendations", label: "Recommendations", icon: BookOpen },
+          { key: "analytics", label: "Analytics", icon: Receipt },
         ].map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="flex items-center gap-1.5 text-sm px-3 py-3 border-b-2 -mb-px"
@@ -1151,6 +1216,65 @@ export default function UpscaleApp() {
               </div>
             ))}
           </div>
+        </div>
+      ) : tab === "analytics" ? (
+        <div className="px-6 py-6 bg-white">
+          <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
+          <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+              <input type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
+              <Upload size={18} style={{ color: "#B91C1C" }} />
+              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
+            </label>
+            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+              <input type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
+              <Upload size={18} style={{ color: "#0F6E56" }} />
+              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
+            </label>
+          </div>
+
+          {ledgerError && <div className="text-xs mb-4" style={{ color: "#B91C1C" }}>{ledgerError}</div>}
+
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Total costs</div>
+              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalCosts.toLocaleString("en-IN")}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Total sales</div>
+              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Net</div>
+              <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {netAmount >= 0 ? "+" : ""}₹{netAmount.toLocaleString("en-IN")}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
+          {ledgerEntries.length ? (
+            <div className="space-y-2">
+              {ledgerEntries.map((e, i) => (
+                <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm text-gray-800 truncate">{e.vendor || "Unknown vendor"}</div>
+                    <div className="text-[11px] text-gray-400 truncate">{e.description}{e.date && e.date !== "unknown" ? ` · ${e.date}` : ""}</div>
+                  </div>
+                  <span className="text-sm font-medium shrink-0" style={{ color: e.type === "cost" ? "#B91C1C" : "#0F6E56" }}>
+                    {e.type === "cost" ? "-" : "+"}₹{Number(e.amount || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
+          )}
+          <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
         </div>
       ) : (
         <div className="px-6 py-6 bg-white">
