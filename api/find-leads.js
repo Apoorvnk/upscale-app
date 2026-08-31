@@ -58,6 +58,7 @@ export default async function handler(req, res) {
     res.status(200).json({ results, note: results.length ? undefined : text || "No real matches found for this search." });
   } catch (err) {
     console.error("find-leads error:", err);
-    res.status(500).json({ error: "Lead search failed" });
+    // TEMPORARY: surfacing err detail for debugging — revert before real traffic.
+    res.status(500).json({ error: "Lead search failed", detail: err?.error || err?.message, status: err?.status });
   }
 }

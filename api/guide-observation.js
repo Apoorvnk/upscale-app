@@ -52,6 +52,7 @@ Today's observation: "${observationText}"`,
     res.status(200).json(response.parsed_output);
   } catch (err) {
     console.error("guide-observation error:", err);
-    res.status(500).json({ error: "Guidance failed" });
+    // TEMPORARY: surfacing err detail for debugging — revert before real traffic.
+    res.status(500).json({ error: "Guidance failed", detail: err?.error || err?.message, status: err?.status });
   }
 }
