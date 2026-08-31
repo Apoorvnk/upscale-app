@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Search, Upload, Receipt
+  Plus, Newspaper, BookOpen, Upload, Receipt
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -452,6 +452,16 @@ const STRINGS = {
     startTodaysLoop: "Start today's loop",
     yourGoalLabel: "Your goal",
     overPeriodShort: "over {period}",
+    sponsoredUnlock: "Sponsored — watch to unlock collaboration",
+    marketingStrategyLabel: "Marketing strategy",
+    marketingPreviewHint: "Open the Marketing tab to see today's strategy.",
+    seeMarketingTab: "See in Marketing tab",
+    marketingIntro: "Your marketing strategy for {subject}.",
+    marketingBuilding: "Building your marketing strategy...",
+    marketingAngleLabel: "The angle",
+    marketingTacticsLabel: "How to execute",
+    marketingUnavailable: "Couldn't build your strategy just now.",
+    tryAgain: "Try again",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -527,6 +537,16 @@ const STRINGS = {
     startTodaysLoop: "आज का लूप शुरू करें",
     yourGoalLabel: "आपका लक्ष्य",
     overPeriodShort: "{period} में",
+    sponsoredUnlock: "प्रायोजित — सहयोग अनलॉक करने के लिए देखें",
+    marketingStrategyLabel: "मार्केटिंग रणनीति",
+    marketingPreviewHint: "आज की रणनीति देखने के लिए मार्केटिंग टैब खोलें।",
+    seeMarketingTab: "मार्केटिंग टैब में देखें",
+    marketingIntro: "{subject} के लिए आपकी मार्केटिंग रणनीति।",
+    marketingBuilding: "आपकी मार्केटिंग रणनीति बनाई जा रही है...",
+    marketingAngleLabel: "एंगल",
+    marketingTacticsLabel: "कैसे लागू करें",
+    marketingUnavailable: "अभी आपकी रणनीति नहीं बन सकी।",
+    tryAgain: "फिर कोशिश करें",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -602,6 +622,16 @@ const STRINGS = {
     startTodaysLoop: "आजचा लूप सुरू करा",
     yourGoalLabel: "तुमचे ध्येय",
     overPeriodShort: "{period} मध्ये",
+    sponsoredUnlock: "प्रायोजित — सहयोग अनलॉक करण्यासाठी पहा",
+    marketingStrategyLabel: "मार्केटिंग रणनीती",
+    marketingPreviewHint: "आजची रणनीती पाहण्यासाठी मार्केटिंग टॅब उघडा.",
+    seeMarketingTab: "मार्केटिंग टॅबमध्ये पहा",
+    marketingIntro: "{subject} साठी तुमची मार्केटिंग रणनीती.",
+    marketingBuilding: "तुमची मार्केटिंग रणनीती तयार होत आहे...",
+    marketingAngleLabel: "एंगल",
+    marketingTacticsLabel: "कसे राबवायचे",
+    marketingUnavailable: "आत्ता तुमची रणनीती तयार होऊ शकली नाही.",
+    tryAgain: "पुन्हा प्रयत्न करा",
   },
 };
 
@@ -729,10 +759,9 @@ export default function UpscaleApp() {
   const [ticketsBought, setTicketsBought] = useState([]);
   const [adElapsed, setAdElapsed] = useState(0);
   const [adDone, setAdDone] = useState(false);
-  const [leadPrompt, setLeadPrompt] = useState("");
-  const [leadSearching, setLeadSearching] = useState(false);
-  const [leadResults, setLeadResults] = useState(null);
-  const [leadNote, setLeadNote] = useState(null);
+  const [marketingData, setMarketingData] = useState(null);
+  const [marketingLoading, setMarketingLoading] = useState(false);
+  const [marketingFetchAttempted, setMarketingFetchAttempted] = useState(false);
 
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [uploadingCost, setUploadingCost] = useState(false);
@@ -781,6 +810,31 @@ export default function UpscaleApp() {
   const displayVideoTitle = liveContent?.video?.title || subject.video.title;
   const displayVideoUrl = liveContent?.video?.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(displayVideoTitle + " animated explainer")}`;
   const displaySuccessStory = liveContent?.successStory || subject.successStory;
+
+  // Marketing strategy: fetched at most once per loop cycle, lazily on
+  // first visit to the Marketing tab (guarded by marketingFetchAttempted,
+  // reset in claimReward — same retry-safe pattern as the daily-content
+  // effect above). There's no static fallback for this content, so on
+  // failure the tab shows a retry affordance instead of silently degrading.
+  useEffect(() => {
+    if (screen !== "app" || tab !== "marketing" || marketingFetchAttempted) return;
+    setMarketingFetchAttempted(true);
+    setMarketingLoading(true);
+    let cancelled = false;
+    fetch("/api/marketing-strategy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, language }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`marketing-strategy returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => { if (!cancelled) setMarketingData(data); })
+      .catch((err) => console.error("fetchMarketingStrategy failed:", err))
+      .finally(() => { if (!cancelled) setMarketingLoading(false); });
+    return () => { cancelled = true; };
+  }, [screen, tab, subject.name, subject.label, language, marketingFetchAttempted]);
 
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
   useEffect(() => {
@@ -882,34 +936,9 @@ export default function UpscaleApp() {
     setRewardClaimed(false);
     setAdElapsed(0);
     setAdDone(false);
-    setLeadPrompt("");
-    setLeadResults(null);
-    setLeadNote(null);
+    setMarketingData(null);
+    setMarketingFetchAttempted(false);
     setStage("content");
-  }
-
-  async function findLeads() {
-    if (!leadPrompt.trim()) return;
-    setLeadSearching(true);
-    setLeadResults(null);
-    setLeadNote(null);
-    try {
-      const res = await fetch("/api/find-leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: leadPrompt, city: form.city }),
-      });
-      if (!res.ok) throw new Error(`find-leads returned ${res.status}`);
-      const data = await res.json();
-      setLeadResults(data.results || []);
-      setLeadNote(data.note || null);
-    } catch (err) {
-      console.error("findLeads failed:", err);
-      setLeadResults([]);
-      setLeadNote("We couldn't run that search just now — please try again in a moment.");
-    } finally {
-      setLeadSearching(false);
-    }
   }
 
   async function handleReceiptUpload(file, type) {
@@ -1429,7 +1458,7 @@ export default function UpscaleApp() {
     { key: "content", label: t("stageContent"), icon: Newspaper, done: contentDone },
     { key: "observation", label: t("stageObservation"), icon: Eye, done: !!obsComplete },
     { key: "guidance", label: t("stageGuidance"), icon: ShieldCheck, done: !!guidance },
-    { key: "reward", label: "Leads & Collaboration", icon: Gift, done: rewardClaimed },
+    { key: "reward", label: t("stageCollaboration"), icon: Gift, done: rewardClaimed },
   ];
   const canReachReward = contentDone && obsComplete && !!guidance;
 
@@ -1459,6 +1488,7 @@ export default function UpscaleApp() {
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
+          { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
           { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
         ].map((tabItem) => (
@@ -1576,6 +1606,54 @@ export default function UpscaleApp() {
                 </div>
               )}
             </>
+          )}
+        </div>
+      ) : tab === "marketing" ? (
+        <div className="px-6 py-6 bg-white">
+          <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
+          {marketingLoading && !marketingData && (
+            <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
+              <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
+            </div>
+          )}
+          {marketingData ? (
+            <div className="space-y-4">
+              <div className="rounded-lg p-4 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("marketingAngleLabel")}</div>
+                <div className="text-sm font-medium mb-2" style={{ color: NAVY }}>{marketingData.angle}</div>
+                <div className="text-sm text-gray-700 italic">"{marketingData.pitch}"</div>
+              </div>
+              <div className="text-sm text-gray-600">{marketingData.strategy}</div>
+              <div>
+                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{t("marketingTacticsLabel")}</div>
+                <div className="space-y-2">
+                  {(marketingData.tactics || []).map((tc, i) => (
+                    <div key={i} className="rounded-lg p-3 border border-gray-200">
+                      <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {marketingData.video?.title && (
+                <div>
+                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
+                  <a href={marketingData.video.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(marketingData.video.title)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
+                    <PlayCircle size={24} style={{ color: BLUE }} />
+                    <div className="text-sm text-gray-800">{marketingData.video.title}</div>
+                  </a>
+                </div>
+              )}
+            </div>
+          ) : (
+            !marketingLoading && marketingFetchAttempted && (
+              <div className="text-sm text-gray-400 flex items-center gap-3">
+                {t("marketingUnavailable")}
+                <button onClick={() => setMarketingFetchAttempted(false)} className="text-xs font-medium underline" style={{ color: BLUE }}>{t("tryAgain")}</button>
+              </div>
+            )
           )}
         </div>
       ) : tab === "recommendations" ? (
@@ -1751,7 +1829,7 @@ export default function UpscaleApp() {
                         {guidance}
                       </div>
                       <PrimaryButton onClick={() => setStage("reward")}>
-                        Unlock leads & collaboration <ArrowRight size={14} />
+                        {t("unlockCollaboration")} <ArrowRight size={14} />
                       </PrimaryButton>
                     </>
                   )}
@@ -1760,7 +1838,7 @@ export default function UpscaleApp() {
 
               {stage === "reward" && !adDone && (
                 <div className="space-y-4 text-center py-2">
-                  <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Sponsored — watch to unlock leads & collaboration</div>
+                  <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">{t("sponsoredUnlock")}</div>
                   <div className="bg-white rounded-lg border border-gray-200 p-6 text-left">
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{subject.ad.advertiser}</div>
                     <div className="text-base font-medium mb-2" style={{ color: NAVY }}>{subject.ad.headline}</div>
@@ -1782,35 +1860,20 @@ export default function UpscaleApp() {
 
               {stage === "reward" && adDone && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Leads & Collaboration</h2></div>
+                  <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("stageCollaboration")}</h2></div>
 
-                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Find real leads</div>
-                  <p className="text-xs text-gray-500">Describe who you're looking for — e.g. "jewelry wholesalers near me" or "real estate agents who recently started."</p>
-                  <div className="flex gap-2">
-                    <input value={leadPrompt} onChange={(e) => setLeadPrompt(e.target.value)}
-                      placeholder="I want..."
-                      className="flex-1 border border-gray-200 rounded-lg p-2.5 text-sm bg-white"
-                      onKeyDown={(e) => { if (e.key === "Enter" && leadPrompt.trim() && !leadSearching) findLeads(); }} />
-                    <button onClick={findLeads} disabled={!leadPrompt.trim() || leadSearching}
-                      className="text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40 flex items-center gap-1.5 shrink-0" style={{ background: BLUE }}>
-                      <Search size={14} /> {leadSearching ? "Searching..." : "Search"}
-                    </button>
-                  </div>
-                  {leadResults?.length > 0 && (
-                    <div className="space-y-2">
-                      {leadResults.map((l, i) => (
-                        <div key={i} className="bg-white rounded-lg p-3 border border-gray-200">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="text-sm font-medium text-gray-800">{l.name}</div>
-                            {l.source && <span className="text-[11px] px-2 py-0.5 rounded-full shrink-0" style={{ background: BLUE_BG, color: BLUE }}>{l.source}</span>}
-                          </div>
-                          <div className="text-[11px] text-gray-500 mt-0.5">{l.detail}</div>
-                          {l.contact && <div className="text-[11px] text-gray-700 mt-1 font-medium">{l.contact}</div>}
-                        </div>
-                      ))}
+                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">{t("marketingStrategyLabel")}</div>
+                  {marketingData ? (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                      <div className="text-sm font-medium" style={{ color: NAVY }}>{marketingData.angle}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 italic">"{marketingData.pitch}"</div>
                     </div>
+                  ) : (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-xs text-gray-500">{t("marketingPreviewHint")}</div>
                   )}
-                  {leadNote && <div className="text-xs text-gray-500 italic">{leadNote}</div>}
+                  <button onClick={() => setTab("marketing")} className="text-xs font-medium" style={{ color: BLUE }}>
+                    {t("seeMarketingTab")} →
+                  </button>
 
                   <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Collaboration requests in {subject.name}</div>
                   {daysDone < 7 ? (
