@@ -343,7 +343,7 @@ function resolveSubject(interestKey, subcategoryKey) {
   return { ...shared, ...sub };
 }
 function getOnbSteps(interestKey) {
-  const base = ["interest", "name", "contact", "city", "facebook", "instagram", "linkedin"];
+  const base = ["interest", "name", "contact", "city", "shopName", "shopType", "investment", "facebook", "instagram"];
   if (SUBJECTS[interestKey]?.subcategories) base.splice(1, 0, "subcategory");
   return base;
 }
@@ -439,7 +439,7 @@ export default function UpscaleApp() {
   const [role, setRole] = useState(null);
   const [loginContact, setLoginContact] = useState("");
   const [obStep, setObStep] = useState(0);
-  const [form, setForm] = useState({ interest: "home-loan-advisory", subcategory: "", name: "", contact: "", city: "", facebook: "", instagram: "", linkedin: "" });
+  const [form, setForm] = useState({ interest: "home-loan-advisory", subcategory: "", name: "", contact: "", city: "", shopName: "", shopType: "", investment: "", facebook: "", instagram: "" });
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
@@ -701,11 +701,15 @@ export default function UpscaleApp() {
       name: "What's your name?",
       contact: "Your contact number / WhatsApp",
       city: "Which city are you based in?",
+      shopName: "What's your shop name?",
+      shopType: "Is it a shop, or do you work from home?",
+      investment: "What's your basic investment?",
       facebook: "Your Facebook profile or page link (optional)",
       instagram: "Your Instagram link (optional)",
-      linkedin: "Your LinkedIn link (optional)",
     };
-    const canProceed = step === "interest" || step === "subcategory" || step === "facebook" || step === "instagram" || step === "linkedin" ? true : form[step].trim().length > 0;
+    const canProceed = step === "interest" || step === "subcategory" || step === "facebook" || step === "instagram"
+      ? true
+      : step === "shopType" ? !!form.shopType : form[step].trim().length > 0;
     return (
       <div className="w-full min-h-[600px] rounded-xl flex items-center justify-center px-6" style={{ background: "#F7F8FA" }}>
         {style}
@@ -731,10 +735,19 @@ export default function UpscaleApp() {
                 onChange={(e) => setForm({ ...form, subcategory: e.target.value })}>
                 {Object.entries(SUBJECTS[form.interest]?.subcategories || {}).map(([key, sc]) => <option key={key} value={key}>{sc.label}</option>)}
               </select>
+            ) : step === "shopType" ? (
+              <div className="grid grid-cols-2 gap-2 mb-6">
+                {[{ key: "shop", label: "Shop / storefront" }, { key: "home", label: "From home" }].map((o) => (
+                  <button key={o.key} onClick={() => setForm({ ...form, shopType: o.key })} className="rounded-lg py-3 text-sm border"
+                    style={{ borderColor: form.shopType === o.key ? BLUE : "#E5E7EB", background: form.shopType === o.key ? BLUE_BG : "#fff", color: form.shopType === o.key ? BLUE : "#374151" }}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
             ) : (
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form[step]}
                 onChange={(e) => setForm({ ...form, [step]: e.target.value })}
-                placeholder={step === "facebook" || step === "instagram" || step === "linkedin" ? "Optional" : ""}
+                placeholder={step === "facebook" || step === "instagram" ? "Optional" : step === "investment" ? "e.g. ₹50,000" : ""}
                 onKeyDown={(e) => { if (e.key === "Enter" && canProceed) nextOnb(); }} />
             )}
             <div className="flex justify-between">
@@ -744,7 +757,7 @@ export default function UpscaleApp() {
                 </button>
               ) : <div />}
               <PrimaryButton onClick={nextOnb} disabled={!canProceed}>
-                {obStep === onbSteps.length - 1 ? "Set my target" : "Next"} <ArrowRight size={14} />
+                {obStep === onbSteps.length - 1 ? "Set my goal" : "Next"} <ArrowRight size={14} />
               </PrimaryButton>
             </div>
           </div>
@@ -957,11 +970,11 @@ export default function UpscaleApp() {
             <Logo />
             <div className="flex items-center gap-2 mt-6 mb-1">
               <Target size={16} style={{ color: BLUE }} />
-              <span className="text-xs font-medium" style={{ color: BLUE }}>Set your target</span>
+              <span className="text-xs font-medium" style={{ color: BLUE }}>Set your goal</span>
             </div>
             <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>What are you working toward, {form.name || "there"}?</h1>
             <p className="text-sm text-gray-500 mb-4">A real goal, not just a number — e.g. "start my own {subject.name.toLowerCase()} firm."</p>
-            <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Your target for this period"
+            <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Your goal for this period"
               className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[80px] mb-4" />
             <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Over what period?</div>
             <div className="grid grid-cols-3 gap-2 mb-2">
@@ -972,7 +985,7 @@ export default function UpscaleApp() {
                 </button>
               ))}
             </div>
-            <div className="text-xs text-gray-400 mb-4">Your target is fixed for this period — it can't be edited until it ends.</div>
+            <div className="text-xs text-gray-400 mb-4">Your goal is fixed for this period — it can't be edited until it ends.</div>
 
             <div className="rounded-lg p-3 mb-6 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
               <div className="flex items-start gap-2">
@@ -1010,7 +1023,7 @@ export default function UpscaleApp() {
               {[
                 { icon: Newspaper, label: "Daily content", desc: `An update, trend, short video, and success story on ${subject.name} every day.` },
                 { icon: Eye, label: "Your observation", desc: "One overall observation — what you've noticed in your business." },
-                { icon: ShieldCheck, label: "Guidance", desc: "Free, personalized advice connecting today's observation to your target." },
+                { icon: ShieldCheck, label: "Guidance", desc: "Free, personalized advice connecting today's observation to your goal." },
                 { icon: Gift, label: "Leads & Collaboration", desc: "Leads, collaboration requests, and events unlocked for your business." },
               ].map((s, i) => (
                 <div key={i} className="rounded-xl p-3 border border-gray-200 flex gap-3">
@@ -1122,7 +1135,7 @@ export default function UpscaleApp() {
 
       {tab === "progress" ? (
         <div className="px-6 py-6 bg-white">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Your target</div>
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Your goal</div>
           <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{goal}" — over {period}</div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden mb-2">
             <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (daysDone / totalDays) * 100)}%`, background: BLUE }} />
@@ -1376,7 +1389,7 @@ export default function UpscaleApp() {
                   <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 italic">"{obsText}"</div>
                   {guiding && (
                     <div className="text-sm text-gray-500 flex items-center gap-2">
-                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Thinking through your target...
+                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Thinking through your goal...
                     </div>
                   )}
                   {guidance && !guiding && (
