@@ -351,7 +351,7 @@ function getOnbSteps(interestKey) {
 const MOCK_FIRMS = [
   { name: "R. Deshpande", role: "proprietor", subject: "Home loan advisory", target: "Close 10 loans this quarter", daysDone: 12, streak: 6 },
   { name: "A. Kulkarni", role: "proprietor", subject: "Insurance advisory", target: "Grow renewal rate to 80%", daysDone: 4, streak: 2 },
-  { name: "S. Patwardhan", role: "collaborator", subject: "Sports retail", target: "Launch a coaching camp", daysDone: 9, streak: 4 },
+  { name: "S. Patwardhan", role: "collaborator", subject: "Sports retail", target: "Launch a coaching camp", daysDone: 9, streak: 4, plan: "₹600/year" },
 ];
 
 const COLLAB_STEPS = ["name", "businessName", "expertise", "city", "govId"];
@@ -443,7 +443,7 @@ export default function UpscaleApp() {
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
-  const [feePaid, setFeePaid] = useState(false);
+  const [collabPlan, setCollabPlan] = useState(null);
 
   const [collabStep, setCollabStep] = useState(0);
   const [collabForm, setCollabForm] = useState({ name: "", businessName: "", expertise: "home-loan-advisory", city: "", govId: "" });
@@ -642,7 +642,7 @@ export default function UpscaleApp() {
           <button onClick={() => { setRole("collaborator"); setScreen("collab-onboarding"); }}
             className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
             <div className="text-sm font-medium text-white mb-0.5">Sign up as Collaborator</div>
-            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>I help/work with businesses — free for Year 1</div>
+            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>I help/work with businesses — from ₹100/month</div>
           </button>
         </div>
         <button onClick={() => setScreen("login")} className="text-xs mt-6 underline" style={{ color: "#C7D2FE" }}>
@@ -813,24 +813,29 @@ export default function UpscaleApp() {
               <IndianRupee size={16} style={{ color: BLUE }} />
               <span className="text-xs font-medium" style={{ color: BLUE }}>Collaborator access</span>
             </div>
-            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>Your first year is free, {collabForm.name || "there"}</h1>
+            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>Choose your plan, {collabForm.name || "there"}</h1>
             <p className="text-sm text-gray-500 mb-4">
-              Year 1 is completely free. After that, a one-time ₹500 payment gets you lifetime access — no renewals, no subscription. A 10% commission applies on business you do or get with the help of Upscale.
+              Pick a plan to get started.
             </p>
             <div className="rounded-lg p-3 mb-6 border border-gray-200 text-sm text-gray-700">
               <div className="mb-1"><span className="text-gray-400">Business:</span> {collabForm.businessName}</div>
               <div className="mb-1"><span className="text-gray-400">Expertise:</span> {SUBJECTS[collabForm.expertise]?.name}</div>
               <div><span className="text-gray-400">City:</span> {collabForm.city}</div>
             </div>
-            {feePaid ? (
-              <div className="text-sm font-medium flex items-center gap-1 mb-4" style={{ color: "#0F6E56" }}><Check size={14} /> Lifetime access secured — ₹500 paid</div>
-            ) : (
-              <button onClick={() => setFeePaid(true)} className="text-xs font-medium px-3 py-1.5 rounded-lg border mb-4" style={{ borderColor: BLUE, color: BLUE }}>
-                Lock in lifetime access now for ₹500 (optional)
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <button onClick={() => setCollabPlan("monthly")} className="text-left border rounded-lg p-4"
+                style={{ borderColor: collabPlan === "monthly" ? BLUE : "#E5E7EB", background: collabPlan === "monthly" ? BLUE_BG : "#fff" }}>
+                <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>Monthly</div>
+                <div className="text-lg font-medium" style={{ color: BLUE }}>₹100<span className="text-xs text-gray-400 font-normal">/month</span></div>
               </button>
-            )}
+              <button onClick={() => setCollabPlan("yearly")} className="text-left border rounded-lg p-4"
+                style={{ borderColor: collabPlan === "yearly" ? BLUE : "#E5E7EB", background: collabPlan === "yearly" ? BLUE_BG : "#fff" }}>
+                <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>Yearly</div>
+                <div className="text-lg font-medium" style={{ color: BLUE }}>₹600<span className="text-xs text-gray-400 font-normal">/year</span></div>
+              </button>
+            </div>
             <div>
-              <PrimaryButton onClick={() => setScreen("collab-dashboard")}>Start my free year <ArrowRight size={15} /></PrimaryButton>
+              <PrimaryButton onClick={() => setScreen("collab-dashboard")} disabled={!collabPlan}>Continue <ArrowRight size={15} /></PrimaryButton>
             </div>
           </div>
         </FadeIn>
@@ -850,7 +855,7 @@ export default function UpscaleApp() {
             <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white">Collaborator</span>
           </div>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10" style={{ color: "#9FB0CC" }}>
-            {feePaid ? "Lifetime access · " : "Free (Year 1) · "}10% commission
+            {collabPlan === "yearly" ? "₹600/year" : "₹100/month"}
           </span>
         </div>
         <div className="flex border-b border-gray-200 bg-white px-6">
@@ -910,7 +915,6 @@ export default function UpscaleApp() {
                 </div>
                 <input value={eventForm.price} onChange={(e) => setEventForm({ ...eventForm, price: e.target.value })} placeholder="Ticket price (or 'Free')"
                   className="w-full border border-gray-200 rounded-lg p-2.5 text-sm" />
-                <div className="text-[11px] text-gray-400">Upscale takes a 10% commission on paid ticket sales through the app.</div>
                 <PrimaryButton onClick={() => {
                   if (eventForm.name.trim()) { setMyEvents([...myEvents, eventForm]); setEventForm({ name: "", date: "", venue: "", price: "" }); }
                 }} disabled={!eventForm.name.trim()}>
@@ -1056,7 +1060,7 @@ export default function UpscaleApp() {
               <div key={i} className="flex items-center justify-between rounded-lg px-4 py-3 border border-gray-200">
                 <div>
                   <div className="text-sm text-gray-900">{f.name}</div>
-                  <div className="text-xs text-gray-500 capitalize">{f.role} · {f.role === "collaborator" ? "10% commission, lifetime access paid" : "free plan"} · {f.subject} · "{f.target}"</div>
+                  <div className="text-xs text-gray-500 capitalize">{f.role} · {f.role === "collaborator" ? f.plan : "free plan"} · {f.subject} · "{f.target}"</div>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500">
                   <span className="flex items-center gap-1"><Flame size={12} /> {f.streak}</span>
@@ -1088,7 +1092,7 @@ export default function UpscaleApp() {
           {role && <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white capitalize">{role}</span>}
           {role && (
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10" style={{ color: "#9FB0CC" }}>
-              {role === "collaborator" ? "10% commission" : "Free plan"}
+              Free plan
             </span>
           )}
         </div>
@@ -1153,52 +1157,64 @@ export default function UpscaleApp() {
         </div>
       ) : tab === "collaborate" ? (
         <div className="px-6 py-6 bg-white">
-          <p className="text-sm text-gray-500 mb-1">Connect with same-minded people, or businesses parallel to yours, in {subject.name}.</p>
-          <p className="text-xs text-gray-400 mb-4">Upscale takes a 10% commission on business done with the help of Upscale — collaborations and paid events booked here.</p>
-
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Collaborators offering to help</div>
-          <div className="space-y-2 mb-6">
-            {(subject.collab?.offers || []).map((o, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm text-gray-800">{o.text}</div>
-                  <div className="text-[11px] text-gray-400">{o.from}</div>
-                </div>
-                <button className="text-xs font-medium px-3 py-1.5 rounded-lg border shrink-0" style={{ borderColor: BLUE, color: BLUE }}>Connect</button>
+          {daysDone < 7 ? (
+            <div className="text-center py-10">
+              <Lock size={28} className="mx-auto mb-3" style={{ color: "#9CA3AF" }} />
+              <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>Collaboration unlocks after 7 days</div>
+              <p className="text-xs text-gray-500 mb-4">Keep up the daily loop to unlock collaborator offers, events, and requests.</p>
+              <div className="inline-block text-xs font-medium px-3 py-1 rounded-full" style={{ background: BLUE_BG, color: BLUE }}>
+                Day {daysDone}/7
               </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-1.5 mb-2">
-            <Globe size={12} className="text-gray-400" />
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">Also happening in {subject.name} — from the web</div>
-          </div>
-          <p className="text-[11px] text-gray-400 mb-2">Found across the web, not booked through Upscale — no commission on these.</p>
-          <div className="space-y-2 mb-6">
-            {(subject.collab?.external?.length ? subject.collab.external : null)?.map((e, i) => (
-              <a key={i} href={e.url} target="_blank" rel="noopener noreferrer"
-                className="block border border-gray-200 border-dashed rounded-lg p-3 hover:border-gray-300">
-                <div className="text-sm text-gray-800">{e.name}</div>
-                <div className="text-[11px] text-gray-400">{e.venue} · {e.date}</div>
-              </a>
-            )) || <div className="text-sm text-gray-400">No web results loaded yet for this subject.</div>}
-          </div>
-
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Post what you're looking for</div>
-          <textarea value={propOfferText} onChange={(e) => setPropOfferText(e.target.value)}
-            placeholder="e.g. Looking for a reliable display furniture supplier nearby"
-            className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[70px] mb-2 bg-white" />
-          <PrimaryButton onClick={() => { if (propOfferText.trim()) { setPropRequests([...propRequests, propOfferText]); setPropOfferText(""); } }} disabled={!propOfferText.trim()}>
-            Post request
-          </PrimaryButton>
-
-          {propRequests.length > 0 && (
-            <div className="mt-6">
-              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Your posted requests</div>
-              {propRequests.map((r, i) => (
-                <div key={i} className="border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-2">{r}</div>
-              ))}
             </div>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500 mb-4">Connect with same-minded people, or businesses parallel to yours, in {subject.name}.</p>
+
+              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Collaborators offering to help</div>
+              <div className="space-y-2 mb-6">
+                {(subject.collab?.offers || []).map((o, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm text-gray-800">{o.text}</div>
+                      <div className="text-[11px] text-gray-400">{o.from}</div>
+                    </div>
+                    <button className="text-xs font-medium px-3 py-1.5 rounded-lg border shrink-0" style={{ borderColor: BLUE, color: BLUE }}>Connect</button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-1.5 mb-2">
+                <Globe size={12} className="text-gray-400" />
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">Also happening in {subject.name} — from the web</div>
+              </div>
+              <p className="text-[11px] text-gray-400 mb-2">Found across the web, not booked through Upscale.</p>
+              <div className="space-y-2 mb-6">
+                {(subject.collab?.external?.length ? subject.collab.external : null)?.map((e, i) => (
+                  <a key={i} href={e.url} target="_blank" rel="noopener noreferrer"
+                    className="block border border-gray-200 border-dashed rounded-lg p-3 hover:border-gray-300">
+                    <div className="text-sm text-gray-800">{e.name}</div>
+                    <div className="text-[11px] text-gray-400">{e.venue} · {e.date}</div>
+                  </a>
+                )) || <div className="text-sm text-gray-400">No web results loaded yet for this subject.</div>}
+              </div>
+
+              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Post what you're looking for</div>
+              <textarea value={propOfferText} onChange={(e) => setPropOfferText(e.target.value)}
+                placeholder="e.g. Looking for a reliable display furniture supplier nearby"
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[70px] mb-2 bg-white" />
+              <PrimaryButton onClick={() => { if (propOfferText.trim()) { setPropRequests([...propRequests, propOfferText]); setPropOfferText(""); } }} disabled={!propOfferText.trim()}>
+                Post request
+              </PrimaryButton>
+
+              {propRequests.length > 0 && (
+                <div className="mt-6">
+                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Your posted requests</div>
+                  {propRequests.map((r, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-2">{r}</div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : tab === "recommendations" ? (
@@ -1431,18 +1447,27 @@ export default function UpscaleApp() {
                   {leadNote && <div className="text-xs text-gray-500 italic">{leadNote}</div>}
 
                   <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Collaboration requests in {subject.name}</div>
-                  {(subject.collab?.offers || []).slice(0, 2).map((o, i) => (
-                    <div key={i} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm text-gray-800">{o.text}</div>
-                        <div className="text-[11px] text-gray-400">{o.from}</div>
-                      </div>
-                      <Handshake size={16} style={{ color: BLUE }} className="shrink-0" />
+                  {daysDone < 7 ? (
+                    <div className="bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-2">
+                      <Lock size={13} style={{ color: "#9CA3AF" }} className="shrink-0" />
+                      <span className="text-xs text-gray-500">Unlocks after 7 days — Day {daysDone}/7</span>
                     </div>
-                  ))}
-                  <button onClick={() => { setTab("collaborate"); }} className="text-xs font-medium" style={{ color: BLUE }}>
-                    See all in Collaborate tab →
-                  </button>
+                  ) : (
+                    <>
+                      {(subject.collab?.offers || []).slice(0, 2).map((o, i) => (
+                        <div key={i} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm text-gray-800">{o.text}</div>
+                            <div className="text-[11px] text-gray-400">{o.from}</div>
+                          </div>
+                          <Handshake size={16} style={{ color: BLUE }} className="shrink-0" />
+                        </div>
+                      ))}
+                      <button onClick={() => { setTab("collaborate"); }} className="text-xs font-medium" style={{ color: BLUE }}>
+                        See all in Collaborate tab →
+                      </button>
+                    </>
+                  )}
 
                   <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Events & collaborations in {subject.name}</div>
                   {subject.events.map((ev, i) => {
