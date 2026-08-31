@@ -442,6 +442,16 @@ const STRINGS = {
     yourGuidance: "Your guidance",
     guidanceThinking: "Thinking through your goal...",
     unlockCollaboration: "Unlock collaboration",
+    yourPlan: "Your plan",
+    towardPrefix: "Toward:",
+    overTheNext: "Over the next {period}, here's how we'll get there.",
+    buildingPlan: "Building your plan...",
+    yearlyTier: "Yearly",
+    dailyLoopNote: "Each day: content → observation → guidance → collaboration. Complete it daily to stay on track.",
+    daysCompleted: "{done}/{total} days completed",
+    startTodaysLoop: "Start today's loop",
+    yourGoalLabel: "Your goal",
+    overPeriodShort: "over {period}",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -507,6 +517,16 @@ const STRINGS = {
     yourGuidance: "आपका मार्गदर्शन",
     guidanceThinking: "आपके लक्ष्य पर विचार कर रहे हैं...",
     unlockCollaboration: "सहयोग अनलॉक करें",
+    yourPlan: "आपकी योजना",
+    towardPrefix: "लक्ष्य:",
+    overTheNext: "अगले {period} में, हम इस तरह वहां पहुंचेंगे।",
+    buildingPlan: "आपकी योजना बनाई जा रही है...",
+    yearlyTier: "वार्षिक",
+    dailyLoopNote: "हर दिन: सामग्री → अवलोकन → मार्गदर्शन → सहयोग। ट्रैक पर बने रहने के लिए इसे रोज़ पूरा करें।",
+    daysCompleted: "{done}/{total} दिन पूरे हुए",
+    startTodaysLoop: "आज का लूप शुरू करें",
+    yourGoalLabel: "आपका लक्ष्य",
+    overPeriodShort: "{period} में",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -572,6 +592,16 @@ const STRINGS = {
     yourGuidance: "तुमचे मार्गदर्शन",
     guidanceThinking: "तुमच्या ध्येयाचा विचार करत आहोत...",
     unlockCollaboration: "सहयोग अनलॉक करा",
+    yourPlan: "तुमची योजना",
+    towardPrefix: "ध्येय:",
+    overTheNext: "पुढील {period} मध्ये, आपण असे तिथे पोहोचू.",
+    buildingPlan: "तुमची योजना तयार होत आहे...",
+    yearlyTier: "वार्षिक",
+    dailyLoopNote: "दररोज: सामग्री → निरीक्षण → मार्गदर्शन → सहयोग. ट्रॅकवर राहण्यासाठी हे दररोज पूर्ण करा.",
+    daysCompleted: "{done}/{total} दिवस पूर्ण झाले",
+    startTodaysLoop: "आजचा लूप सुरू करा",
+    yourGoalLabel: "तुमचे ध्येय",
+    overPeriodShort: "{period} मध्ये",
   },
 };
 
@@ -644,6 +674,21 @@ function PrimaryButton({ children, onClick, disabled }) {
   );
 }
 function FadeIn({ children, keyProp }) { return <div key={keyProp} className="upscale-fadein">{children}</div>; }
+function PlanTier({ title, items }) {
+  return (
+    <div>
+      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{title}</div>
+      <div className="space-y-2">
+        {items.map((it, i) => (
+          <div key={i} className="rounded-lg p-3 border border-gray-200">
+            <div className="text-sm font-medium" style={{ color: NAVY }}>{it.step}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{it.how}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function UpscaleApp() {
   const [screen, setScreen] = useState("welcome");
@@ -658,6 +703,8 @@ export default function UpscaleApp() {
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
   const [collabPlan, setCollabPlan] = useState(null);
+  const [planData, setPlanData] = useState(null);
+  const [planLoading, setPlanLoading] = useState(false);
 
   const [collabStep, setCollabStep] = useState(0);
   const [collabForm, setCollabForm] = useState({ name: "", businessName: "", expertise: "home-loan-advisory", city: "", govId: "" });
@@ -720,7 +767,30 @@ export default function UpscaleApp() {
     if (adElapsed >= 20) setAdDone(true);
   }
 
-  function confirmTarget() { setScreen("plan"); }
+  async function confirmTarget() {
+    setScreen("plan");
+    setPlanLoading(true);
+    setPlanData(null);
+    try {
+      const res = await fetch("/api/generate-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal, subjectName: subject.name, period, language }),
+      });
+      if (!res.ok) throw new Error(`generate-plan returned ${res.status}`);
+      const data = await res.json();
+      setPlanData(data);
+    } catch (err) {
+      console.error("confirmTarget plan generation failed:", err);
+      setPlanData({
+        monthly: [{ step: goal, how: "Break this into one small, concrete action you can take this week." }],
+        quarterly: [{ step: `Review progress toward: ${goal}`, how: "Set aside 30 minutes to check what's working and adjust." }],
+        yearly: { step: goal, how: "Revisit this goal each quarter and keep the daily loop going." },
+      });
+    } finally {
+      setPlanLoading(false);
+    }
+  }
 
   function nextOnb() { if (obStep < onbSteps.length - 1) setObStep(obStep + 1); else setScreen("target"); }
   function backOnb() { if (obStep > 0) setObStep(obStep - 1); }
@@ -1238,27 +1308,34 @@ export default function UpscaleApp() {
             <Logo />
             <div className="flex items-center gap-2 mt-6 mb-1">
               <Sparkles size={16} style={{ color: BLUE }} />
-              <span className="text-xs font-medium" style={{ color: BLUE }}>Your plan</span>
+              <span className="text-xs font-medium" style={{ color: BLUE }}>{t("yourPlan")}</span>
             </div>
-            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>Toward: "{goal}"</h1>
-            <p className="text-sm text-gray-500 mb-6">Over the next {period}, here's how we'll get there.</p>
-            <div className="space-y-3 mb-6">
-              {[
-                { icon: Newspaper, label: "Daily content", desc: `An update, trend, short video, and success story on ${subject.name} every day.` },
-                { icon: Eye, label: "Your observation", desc: "One overall observation — what you've noticed in your business." },
-                { icon: ShieldCheck, label: "Guidance", desc: "Free, personalized advice connecting today's observation to your goal." },
-                { icon: Gift, label: "Leads & Collaboration", desc: "Leads, collaboration requests, and events unlocked for your business." },
-              ].map((s, i) => (
-                <div key={i} className="rounded-xl p-3 border border-gray-200 flex gap-3">
-                  <s.icon size={16} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
-                  <div>
-                    <div className="text-sm font-medium" style={{ color: NAVY }}>{s.label}</div>
-                    <div className="text-xs text-gray-500">{s.desc}</div>
-                  </div>
-                </div>
-              ))}
+            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>{t("towardPrefix")} "{goal}"</h1>
+            <p className="text-sm text-gray-500 mb-6">{t("overTheNext", { period: t(PERIOD_KEYS[period]) })}</p>
+
+            {planLoading && (
+              <div className="text-sm text-gray-500 flex items-center gap-2 mb-6">
+                <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("buildingPlan")}
+              </div>
+            )}
+
+            {planData && !planLoading && (
+              <div className="space-y-4 mb-6">
+                <PlanTier title={t("periodMonthly")} items={planData.monthly} />
+                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} />
+                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} />
+              </div>
+            )}
+
+            <div className="rounded-lg p-3 mb-6 border border-gray-200">
+              <p className="text-xs text-gray-500 mb-2">{t("dailyLoopNote")}</p>
+              <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden mb-1">
+                <div className="h-full rounded-full" style={{ width: `${Math.min(100, (daysDone / totalDays) * 100)}%`, background: BLUE }} />
+              </div>
+              <div className="text-xs text-gray-400">{t("daysCompleted", { done: daysDone, total: totalDays })}</div>
             </div>
-            <PrimaryButton onClick={() => setScreen("app")}>Start today's loop <ArrowRight size={15} /></PrimaryButton>
+
+            <PrimaryButton onClick={() => setScreen("app")}>{t("startTodaysLoop")} <ArrowRight size={15} /></PrimaryButton>
           </div>
         </FadeIn>
       </div>
@@ -1358,12 +1435,12 @@ export default function UpscaleApp() {
 
       {tab === "progress" ? (
         <div className="px-6 py-6 bg-white">
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Your goal</div>
-          <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{goal}" — over {period}</div>
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{t("yourGoalLabel")}</div>
+          <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{goal}" — {t("overPeriodShort", { period: t(PERIOD_KEYS[period]) })}</div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden mb-2">
             <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (daysDone / totalDays) * 100)}%`, background: BLUE }} />
           </div>
-          <div className="text-xs text-gray-500 mb-6">{daysDone} of {totalDays} days completed</div>
+          <div className="text-xs text-gray-500 mb-6">{t("daysCompleted", { done: daysDone, total: totalDays })}</div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="text-xs text-gray-400 mb-1">Current streak</div>
@@ -1374,6 +1451,17 @@ export default function UpscaleApp() {
               <div className="text-xl font-medium" style={{ color: NAVY }}>{daysDone * 3}</div>
             </div>
           </div>
+
+          {planData && (
+            <div className="mb-6">
+              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourPlan")}</div>
+              <div className="space-y-4">
+                <PlanTier title={t("periodMonthly")} items={planData.monthly} />
+                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} />
+                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} />
+              </div>
+            </div>
+          )}
 
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Market analytics — {subject.name}</div>
           <div className="border border-gray-200 rounded-lg p-4">
