@@ -719,6 +719,9 @@ export default function UpscaleApp() {
   const [tab, setTab] = useState("loop");
   const [stage, setStage] = useState("content");
   const [contentDone, setContentDone] = useState(false);
+  const [liveContent, setLiveContent] = useState(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentFetchAttempted, setContentFetchAttempted] = useState(false);
   const [obsText, setObsText] = useState("");
   const [guiding, setGuiding] = useState(false);
   const [guidance, setGuidance] = useState(null);
@@ -746,6 +749,38 @@ export default function UpscaleApp() {
   const totalSales = ledgerEntries.filter((e) => e.type === "sales").reduce((s, e) => s + Number(e.amount || 0), 0);
   const netAmount = totalSales - totalCosts;
   const obsComplete = obsText.trim().length > 0;
+
+  // Live daily content: fetched at most once per loop cycle (guarded by
+  // contentFetchAttempted, reset in claimReward — NOT by liveContent/
+  // contentLoading, which would retry forever on every failure). Fails
+  // open by leaving liveContent null so the static subject fallback keeps
+  // rendering — the user is never blocked on this.
+  useEffect(() => {
+    if (screen !== "app" || stage !== "content" || contentFetchAttempted) return;
+    setContentFetchAttempted(true);
+    setContentLoading(true);
+    let cancelled = false;
+    fetch("/api/daily-content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, language }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`daily-content returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => { if (!cancelled) setLiveContent(data); })
+      .catch((err) => console.error("fetchDailyContent failed:", err))
+      .finally(() => { if (!cancelled) setContentLoading(false); });
+    return () => { cancelled = true; };
+  }, [screen, stage, subject.name, subject.label, language, contentFetchAttempted]);
+
+  const displayTrend = liveContent?.trend || subject.trend;
+  const displayUpdate = liveContent?.update || subject.update;
+  const displayUpdateUrl = liveContent?.updateSourceUrl || `https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + displayUpdate)}&tbm=nws`;
+  const displayVideoTitle = liveContent?.video?.title || subject.video.title;
+  const displayVideoUrl = liveContent?.video?.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(displayVideoTitle + " animated explainer")}`;
+  const displaySuccessStory = liveContent?.successStory || subject.successStory;
 
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
   useEffect(() => {
@@ -840,6 +875,8 @@ export default function UpscaleApp() {
     setDaysDone((d) => d + 1);
     setStreak((s) => s + 1);
     setContentDone(false);
+    setLiveContent(null);
+    setContentFetchAttempted(false);
     setObsText("");
     setGuidance(null);
     setRewardClaimed(false);
@@ -1644,34 +1681,39 @@ export default function UpscaleApp() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("stageContent")}</h2></div>
                   {subject.label && <p className="text-xs text-gray-400 -mt-2">{t("forLabel", { label: subject.label.toLowerCase() }).trim()}</p>}
+                  {contentLoading && !liveContent && (
+                    <p className="text-[11px] text-gray-400 -mt-2 flex items-center gap-1">
+                      <Sparkles size={11} className="animate-pulse" /> Refreshing with today's real update...
+                    </p>
+                  )}
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("updateLabel")}</div>
-                    <a href={`https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + subject.update)}&tbm=nws`}
+                    <a href={displayUpdateUrl}
                       target="_blank" rel="noopener noreferrer"
                       className="block bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700 hover:border-gray-300">
-                      {subject.update}
+                      {displayUpdate}
                       <span className="text-[11px] block mt-1" style={{ color: BLUE }}>{t("readMore")}</span>
                     </a>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("trendLabel")}</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{subject.trend}</div>
+                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displayTrend}</div>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
-                    <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(subject.video.title + " animated explainer")}`}
+                    <a href={displayVideoUrl}
                       target="_blank" rel="noopener noreferrer"
                       className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
                       <PlayCircle size={24} style={{ color: BLUE }} />
                       <div>
-                        <div className="text-sm text-gray-800">{subject.video.title}</div>
-                        <div className="text-xs text-gray-400">{subject.video.duration}</div>
+                        <div className="text-sm text-gray-800">{displayVideoTitle}</div>
+                        {!liveContent?.video?.title && <div className="text-xs text-gray-400">{subject.video.duration}</div>}
                       </div>
                     </a>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{subject.successStory}</div>
+                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displaySuccessStory}</div>
                   </div>
                   <PrimaryButton onClick={() => { setContentDone(true); setStage("observation"); }}>
                     {t("continueToObservation")} <ArrowRight size={14} />
