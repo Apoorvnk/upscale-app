@@ -363,10 +363,222 @@ function GENERIC_COLLAB_REQUESTS(name) {
 }
 const PERIODS = ["Monthly", "Quarterly", "Semi-yearly", "Annually"];
 const PERIOD_DAYS = { "Monthly": 30, "Quarterly": 90, "Semi-yearly": 182, "Annually": 365 };
+const PERIOD_KEYS = { "Monthly": "periodMonthly", "Quarterly": "periodQuarterly", "Semi-yearly": "periodSemiYearly", "Annually": "periodAnnually" };
 
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
+
+// Covers the highest-traffic screens (Welcome, Onboarding, Goal, main nav,
+// Loop stage headers). Deeper screens (Admin, Collaborator dashboard,
+// Recommendations/Analytics/Progress tab bodies) stay English for now —
+// AI-generated content (guidance/plan/marketing) is translated separately
+// by instructing the model directly, not through this dictionary.
+const STRINGS = {
+  en: {
+    tagline: "Observe. Execute. Reward. Grow.",
+    welcomeSub: "Two ways in — choose the one that's you.",
+    chooseLanguage: "Choose your language",
+    signUpProprietor: "Sign up as Proprietor",
+    proprietorDesc: "I run my own business — free to join",
+    signUpCollaborator: "Sign up as Collaborator",
+    collaboratorDesc: "I help/work with businesses — from ₹100/month",
+    alreadyHaveAccount: "Already have an account? Log in",
+    qInterestProprietor: "What's your area of interest?",
+    qInterestCollaborator: "What's your area of expertise?",
+    qSubcategory: "More specifically, what kind of {subject} is it?",
+    qName: "What's your name?",
+    qContact: "Your contact number / WhatsApp",
+    qCity: "Which city are you based in?",
+    qShopName: "What's your shop name?",
+    qShopType: "Is it a shop, or do you work from home?",
+    shopTypeShop: "Shop / storefront",
+    shopTypeHome: "From home",
+    qInvestment: "What's your basic investment?",
+    qFacebook: "Your Facebook profile or page link (optional)",
+    qInstagram: "Your Instagram link (optional)",
+    optional: "Optional",
+    back: "Back",
+    next: "Next",
+    setMyGoal: "Set my goal",
+    setYourGoal: "Set your goal",
+    workingToward: "What are you working toward, {name}?",
+    goalHint: "A real goal, not just a number — e.g. \"start my own {subject} firm.\"",
+    goalPlaceholder: "Your goal for this period",
+    overWhatPeriod: "Over what period?",
+    periodMonthly: "Monthly",
+    periodQuarterly: "Quarterly",
+    periodSemiYearly: "Semi-yearly",
+    periodAnnually: "Annually",
+    goalFixedNote: "Your goal is fixed for this period — it can't be edited until it ends.",
+    freeCoreApp: "Upscale's core app is completely free for proprietors.",
+    continueBtn: "Continue",
+    freePlan: "Free plan",
+    dayStreak: "day streak",
+    tabLoop: "Loop",
+    tabProgress: "Progress",
+    tabCollaborate: "Collaborate",
+    tabRecommendations: "Recommendations",
+    tabAnalytics: "Analytics",
+    tabMarketing: "Marketing",
+    stageContent: "Today's content",
+    stageObservation: "Observation",
+    stageGuidance: "Guidance",
+    stageCollaboration: "Collaboration",
+    updateLabel: "Update",
+    trendLabel: "Trend",
+    videoLabel: "Video",
+    successStoryLabel: "Success story",
+    readMore: "Read more →",
+    continueToObservation: "Continue to observation",
+    yourObservation: "Your observation",
+    observationPrompt: "Based on today's update, trend, video, and success story{forLabel} — what's your overall observation?",
+    forLabel: " for {label}",
+    obsPlaceholder: "What have you noticed in your business this week?",
+    getGuidance: "Get guidance",
+    yourGuidance: "Your guidance",
+    guidanceThinking: "Thinking through your goal...",
+    unlockCollaboration: "Unlock collaboration",
+  },
+  hi: {
+    tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
+    welcomeSub: "शुरू करने के दो तरीके — जो आप पर लागू हो उसे चुनें।",
+    chooseLanguage: "अपनी भाषा चुनें",
+    signUpProprietor: "मालिक के रूप में साइन अप करें",
+    proprietorDesc: "मैं अपना खुद का व्यवसाय चलाता/चलाती हूं — जुड़ना मुफ़्त है",
+    signUpCollaborator: "सहयोगी के रूप में साइन अप करें",
+    collaboratorDesc: "मैं व्यवसायों की मदद करता/करती हूं — ₹100/माह से शुरू",
+    alreadyHaveAccount: "पहले से खाता है? लॉग इन करें",
+    qInterestProprietor: "आपकी रुचि का क्षेत्र क्या है?",
+    qInterestCollaborator: "आपकी विशेषज्ञता का क्षेत्र क्या है?",
+    qSubcategory: "अधिक स्पष्ट रूप से, यह किस तरह का {subject} है?",
+    qName: "आपका नाम क्या है?",
+    qContact: "आपका संपर्क नंबर / व्हाट्सएप",
+    qCity: "आप किस शहर में हैं?",
+    qShopName: "आपकी दुकान का नाम क्या है?",
+    qShopType: "क्या यह एक दुकान है, या आप घर से काम करते हैं?",
+    shopTypeShop: "दुकान",
+    shopTypeHome: "घर से",
+    qInvestment: "आपका बुनियादी निवेश कितना है?",
+    qFacebook: "आपकी फेसबुक प्रोफ़ाइल या पेज लिंक (वैकल्पिक)",
+    qInstagram: "आपकी इंस्टाग्राम लिंक (वैकल्पिक)",
+    optional: "वैकल्पिक",
+    back: "पीछे",
+    next: "आगे",
+    setMyGoal: "मेरा लक्ष्य तय करें",
+    setYourGoal: "अपना लक्ष्य तय करें",
+    workingToward: "{name}, आप किस दिशा में काम कर रहे हैं?",
+    goalHint: "एक असली लक्ष्य, सिर्फ एक संख्या नहीं — जैसे \"अपनी खुद की {subject} फर्म शुरू करना।\"",
+    goalPlaceholder: "इस अवधि के लिए आपका लक्ष्य",
+    overWhatPeriod: "किस अवधि में?",
+    periodMonthly: "मासिक",
+    periodQuarterly: "त्रैमासिक",
+    periodSemiYearly: "छमाही",
+    periodAnnually: "वार्षिक",
+    goalFixedNote: "इस अवधि के लिए आपका लक्ष्य तय है — यह खत्म होने तक बदला नहीं जा सकता।",
+    freeCoreApp: "अपस्केल का मुख्य ऐप मालिकों के लिए पूरी तरह मुफ़्त है।",
+    continueBtn: "जारी रखें",
+    freePlan: "मुफ़्त योजना",
+    dayStreak: "दिन की लगातार गिनती",
+    tabLoop: "लूप",
+    tabProgress: "प्रगति",
+    tabCollaborate: "सहयोग",
+    tabRecommendations: "सुझाव",
+    tabAnalytics: "विश्लेषण",
+    tabMarketing: "मार्केटिंग",
+    stageContent: "आज की सामग्री",
+    stageObservation: "अवलोकन",
+    stageGuidance: "मार्गदर्शन",
+    stageCollaboration: "सहयोग",
+    updateLabel: "अपडेट",
+    trendLabel: "ट्रेंड",
+    videoLabel: "वीडियो",
+    successStoryLabel: "सफलता की कहानी",
+    readMore: "और पढ़ें →",
+    continueToObservation: "अवलोकन पर जाएं",
+    yourObservation: "आपका अवलोकन",
+    observationPrompt: "आज के अपडेट, ट्रेंड, वीडियो और सफलता की कहानी{forLabel} के आधार पर — आपका समग्र अवलोकन क्या है?",
+    forLabel: " {label} के लिए",
+    obsPlaceholder: "इस हफ्ते आपने अपने व्यवसाय में क्या देखा?",
+    getGuidance: "मार्गदर्शन पाएं",
+    yourGuidance: "आपका मार्गदर्शन",
+    guidanceThinking: "आपके लक्ष्य पर विचार कर रहे हैं...",
+    unlockCollaboration: "सहयोग अनलॉक करें",
+  },
+  mr: {
+    tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
+    welcomeSub: "सुरुवात करण्याचे दोन मार्ग — जो तुम्हाला लागू होतो तो निवडा.",
+    chooseLanguage: "तुमची भाषा निवडा",
+    signUpProprietor: "मालक म्हणून साइन अप करा",
+    proprietorDesc: "मी माझा स्वतःचा व्यवसाय चालवतो/चालवते — सामील होणे मोफत आहे",
+    signUpCollaborator: "सहयोगी म्हणून साइन अप करा",
+    collaboratorDesc: "मी व्यवसायांना मदत करतो/करते — ₹100/महिना पासून",
+    alreadyHaveAccount: "आधीच खाते आहे? लॉग इन करा",
+    qInterestProprietor: "तुमच्या आवडीचे क्षेत्र कोणते आहे?",
+    qInterestCollaborator: "तुमच्या तज्ज्ञतेचे क्षेत्र कोणते आहे?",
+    qSubcategory: "अधिक स्पष्टपणे, हे कोणत्या प्रकारचे {subject} आहे?",
+    qName: "तुमचे नाव काय आहे?",
+    qContact: "तुमचा संपर्क क्रमांक / व्हॉट्सअॅप",
+    qCity: "तुम्ही कोणत्या शहरात आहात?",
+    qShopName: "तुमच्या दुकानाचे नाव काय आहे?",
+    qShopType: "हे दुकान आहे, की तुम्ही घरून काम करता?",
+    shopTypeShop: "दुकान",
+    shopTypeHome: "घरून",
+    qInvestment: "तुमची मूळ गुंतवणूक किती आहे?",
+    qFacebook: "तुमची फेसबुक प्रोफाइल किंवा पेज लिंक (ऐच्छिक)",
+    qInstagram: "तुमची इन्स्टाग्राम लिंक (ऐच्छिक)",
+    optional: "ऐच्छिक",
+    back: "मागे",
+    next: "पुढे",
+    setMyGoal: "माझे ध्येय निश्चित करा",
+    setYourGoal: "तुमचे ध्येय निश्चित करा",
+    workingToward: "{name}, तुम्ही कशासाठी काम करत आहात?",
+    goalHint: "एक खरे ध्येय, फक्त एक आकडा नाही — उदा. \"स्वतःची {subject} फर्म सुरू करणे.\"",
+    goalPlaceholder: "या कालावधीसाठी तुमचे ध्येय",
+    overWhatPeriod: "कोणत्या कालावधीत?",
+    periodMonthly: "मासिक",
+    periodQuarterly: "त्रैमासिक",
+    periodSemiYearly: "सहामाही",
+    periodAnnually: "वार्षिक",
+    goalFixedNote: "या कालावधीसाठी तुमचे ध्येय निश्चित आहे — ते संपेपर्यंत बदलता येणार नाही.",
+    freeCoreApp: "अपस्केलचे मुख्य अ‍ॅप मालकांसाठी पूर्णपणे मोफत आहे.",
+    continueBtn: "पुढे सुरू ठेवा",
+    freePlan: "मोफत योजना",
+    dayStreak: "दिवसांची सलगता",
+    tabLoop: "लूप",
+    tabProgress: "प्रगती",
+    tabCollaborate: "सहयोग",
+    tabRecommendations: "शिफारसी",
+    tabAnalytics: "विश्लेषण",
+    tabMarketing: "मार्केटिंग",
+    stageContent: "आजची सामग्री",
+    stageObservation: "निरीक्षण",
+    stageGuidance: "मार्गदर्शन",
+    stageCollaboration: "सहयोग",
+    updateLabel: "अपडेट",
+    trendLabel: "ट्रेंड",
+    videoLabel: "व्हिडिओ",
+    successStoryLabel: "यशोगाथा",
+    readMore: "अधिक वाचा →",
+    continueToObservation: "निरीक्षणाकडे जा",
+    yourObservation: "तुमचे निरीक्षण",
+    observationPrompt: "आजचे अपडेट, ट्रेंड, व्हिडिओ आणि यशोगाथा{forLabel} यावर आधारित — तुमचे एकंदर निरीक्षण काय आहे?",
+    forLabel: " {label} साठी",
+    obsPlaceholder: "या आठवड्यात तुम्ही तुमच्या व्यवसायात काय लक्षात घेतले?",
+    getGuidance: "मार्गदर्शन मिळवा",
+    yourGuidance: "तुमचे मार्गदर्शन",
+    guidanceThinking: "तुमच्या ध्येयाचा विचार करत आहोत...",
+    unlockCollaboration: "सहयोग अनलॉक करा",
+  },
+};
+
+function tr(lang, key, vars) {
+  let str = (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || key;
+  if (vars) for (const k in vars) str = str.replace(`{${k}}`, vars[k]);
+  return str;
 }
 
 // Fire-and-forget: pilot tracking must never block the app's own flow, so
@@ -435,6 +647,8 @@ function FadeIn({ children, keyProp }) { return <div key={keyProp} className="up
 
 export default function UpscaleApp() {
   const [screen, setScreen] = useState("welcome");
+  const [language, setLanguage] = useState("en");
+  const t = (key, vars) => tr(language, key, vars);
 
   const [role, setRole] = useState(null);
   const [loginContact, setLoginContact] = useState("");
@@ -629,24 +843,33 @@ export default function UpscaleApp() {
       <div className="w-full min-h-[600px] rounded-xl flex flex-col items-center justify-center px-6 text-center" style={{ background: NAVY }}>
         {style}
         <Logo dark />
-        <h1 className="text-2xl font-medium text-white mt-6 mb-2">Observe. Execute. Reward. Grow.</h1>
+        <div className="flex gap-1.5 mt-5">
+          {Object.entries(LANGUAGES).map(([code, label]) => (
+            <button key={code} onClick={() => setLanguage(code)}
+              className="text-xs font-medium px-2.5 py-1 rounded-full border"
+              style={{ borderColor: language === code ? "#fff" : "rgba(255,255,255,0.25)", background: language === code ? "rgba(255,255,255,0.15)" : "transparent", color: language === code ? "#fff" : "#9FB0CC" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <h1 className="text-2xl font-medium text-white mt-4 mb-2">{t("tagline")}</h1>
         <p className="text-sm mb-8 max-w-xs" style={{ color: "#9FB0CC" }}>
-          Two ways in — choose the one that's you.
+          {t("welcomeSub")}
         </p>
         <div className="w-full max-w-xs space-y-3">
           <button onClick={() => { setRole("proprietor"); setScreen("onboarding"); }}
             className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
-            <div className="text-sm font-medium text-white mb-0.5">Sign up as Proprietor</div>
-            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>I run my own business — free to join</div>
+            <div className="text-sm font-medium text-white mb-0.5">{t("signUpProprietor")}</div>
+            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("proprietorDesc")}</div>
           </button>
           <button onClick={() => { setRole("collaborator"); setScreen("collab-onboarding"); }}
             className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
-            <div className="text-sm font-medium text-white mb-0.5">Sign up as Collaborator</div>
-            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>I help/work with businesses — from ₹100/month</div>
+            <div className="text-sm font-medium text-white mb-0.5">{t("signUpCollaborator")}</div>
+            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("collaboratorDesc")}</div>
           </button>
         </div>
         <button onClick={() => setScreen("login")} className="text-xs mt-6 underline" style={{ color: "#C7D2FE" }}>
-          Already have an account? Log in
+          {t("alreadyHaveAccount")}
         </button>
       </div>
     );
@@ -696,16 +919,16 @@ export default function UpscaleApp() {
   if (screen === "onboarding") {
     const step = onbSteps[obStep];
     const labels = {
-      interest: role === "collaborator" ? "What's your area of expertise?" : "What's your area of interest?",
-      subcategory: `More specifically, what kind of ${SUBJECTS[form.interest]?.name?.toLowerCase() || "business"} is it?`,
-      name: "What's your name?",
-      contact: "Your contact number / WhatsApp",
-      city: "Which city are you based in?",
-      shopName: "What's your shop name?",
-      shopType: "Is it a shop, or do you work from home?",
-      investment: "What's your basic investment?",
-      facebook: "Your Facebook profile or page link (optional)",
-      instagram: "Your Instagram link (optional)",
+      interest: role === "collaborator" ? t("qInterestCollaborator") : t("qInterestProprietor"),
+      subcategory: t("qSubcategory", { subject: SUBJECTS[form.interest]?.name?.toLowerCase() || "business" }),
+      name: t("qName"),
+      contact: t("qContact"),
+      city: t("qCity"),
+      shopName: t("qShopName"),
+      shopType: t("qShopType"),
+      investment: t("qInvestment"),
+      facebook: t("qFacebook"),
+      instagram: t("qInstagram"),
     };
     const canProceed = step === "interest" || step === "subcategory" || step === "facebook" || step === "instagram"
       ? true
@@ -719,7 +942,7 @@ export default function UpscaleApp() {
             <div className="flex gap-1.5 my-6">
               {onbSteps.map((_, i) => <div key={i} className="h-1 flex-1 rounded-full transition-colors duration-300" style={{ background: i <= obStep ? ORANGE : "#E5E7EB" }} />)}
             </div>
-            <div className="text-xs font-medium mb-1.5" style={{ color: BLUE }}>Question {obStep + 1} of {onbSteps.length}</div>
+            <div className="text-xs font-medium mb-1.5" style={{ color: BLUE }}>{language === "en" ? `Question ${obStep + 1} of ${onbSteps.length}` : language === "hi" ? `प्रश्न ${obStep + 1} / ${onbSteps.length}` : `प्रश्न ${obStep + 1} / ${onbSteps.length}`}</div>
             <h2 className="text-lg font-medium mb-5" style={{ color: NAVY }}>{labels[step]}</h2>
             {step === "interest" ? (
               <select className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form.interest}
@@ -737,7 +960,7 @@ export default function UpscaleApp() {
               </select>
             ) : step === "shopType" ? (
               <div className="grid grid-cols-2 gap-2 mb-6">
-                {[{ key: "shop", label: "Shop / storefront" }, { key: "home", label: "From home" }].map((o) => (
+                {[{ key: "shop", label: t("shopTypeShop") }, { key: "home", label: t("shopTypeHome") }].map((o) => (
                   <button key={o.key} onClick={() => setForm({ ...form, shopType: o.key })} className="rounded-lg py-3 text-sm border"
                     style={{ borderColor: form.shopType === o.key ? BLUE : "#E5E7EB", background: form.shopType === o.key ? BLUE_BG : "#fff", color: form.shopType === o.key ? BLUE : "#374151" }}>
                     {o.label}
@@ -747,17 +970,17 @@ export default function UpscaleApp() {
             ) : (
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form[step]}
                 onChange={(e) => setForm({ ...form, [step]: e.target.value })}
-                placeholder={step === "facebook" || step === "instagram" ? "Optional" : step === "investment" ? "e.g. ₹50,000" : ""}
+                placeholder={step === "facebook" || step === "instagram" ? t("optional") : step === "investment" ? "e.g. ₹50,000" : ""}
                 onKeyDown={(e) => { if (e.key === "Enter" && canProceed) nextOnb(); }} />
             )}
             <div className="flex justify-between">
               {obStep > 0 ? (
                 <button onClick={backOnb} className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 flex items-center gap-1" style={{ color: NAVY }}>
-                  <ArrowLeft size={14} /> Back
+                  <ArrowLeft size={14} /> {t("back")}
                 </button>
               ) : <div />}
               <PrimaryButton onClick={nextOnb} disabled={!canProceed}>
-                {obStep === onbSteps.length - 1 ? "Set my goal" : "Next"} <ArrowRight size={14} />
+                {obStep === onbSteps.length - 1 ? t("setMyGoal") : t("next")} <ArrowRight size={14} />
               </PrimaryButton>
             </div>
           </div>
@@ -970,34 +1193,34 @@ export default function UpscaleApp() {
             <Logo />
             <div className="flex items-center gap-2 mt-6 mb-1">
               <Target size={16} style={{ color: BLUE }} />
-              <span className="text-xs font-medium" style={{ color: BLUE }}>Set your goal</span>
+              <span className="text-xs font-medium" style={{ color: BLUE }}>{t("setYourGoal")}</span>
             </div>
-            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>What are you working toward, {form.name || "there"}?</h1>
-            <p className="text-sm text-gray-500 mb-4">A real goal, not just a number — e.g. "start my own {subject.name.toLowerCase()} firm."</p>
-            <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Your goal for this period"
+            <h1 className="text-lg font-medium mb-1" style={{ color: NAVY }}>{t("workingToward", { name: form.name || "there" })}</h1>
+            <p className="text-sm text-gray-500 mb-4">{t("goalHint", { subject: subject.name.toLowerCase() })}</p>
+            <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder={t("goalPlaceholder")}
               className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[80px] mb-4" />
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Over what period?</div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("overWhatPeriod")}</div>
             <div className="grid grid-cols-3 gap-2 mb-2">
               {PERIODS.map((p) => (
                 <button key={p} onClick={() => setPeriod(p)} className="rounded-lg py-2 text-sm border"
                   style={{ borderColor: period === p ? BLUE : "#E5E7EB", background: period === p ? BLUE_BG : "#fff", color: period === p ? BLUE : "#374151" }}>
-                  {p}
+                  {t(PERIOD_KEYS[p])}
                 </button>
               ))}
             </div>
-            <div className="text-xs text-gray-400 mb-4">Your goal is fixed for this period — it can't be edited until it ends.</div>
+            <div className="text-xs text-gray-400 mb-4">{t("goalFixedNote")}</div>
 
             <div className="rounded-lg p-3 mb-6 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
               <div className="flex items-start gap-2">
                 <IndianRupee size={14} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
                 <p className="text-xs" style={{ color: NAVY }}>
-                  Upscale's core app is completely free for proprietors.
+                  {t("freeCoreApp")}
                 </p>
               </div>
             </div>
 
             <PrimaryButton onClick={confirmTarget} disabled={!goal.trim()}>
-              Continue <ArrowRight size={15} />
+              {t("continueBtn")} <ArrowRight size={15} />
             </PrimaryButton>
           </div>
         </FadeIn>
@@ -1089,9 +1312,9 @@ export default function UpscaleApp() {
 
   // --- Main app ---
   const LOOP_STAGES = [
-    { key: "content", label: "Today's content", icon: Newspaper, done: contentDone },
-    { key: "observation", label: "Observation", icon: Eye, done: !!obsComplete },
-    { key: "guidance", label: "Guidance", icon: ShieldCheck, done: !!guidance },
+    { key: "content", label: t("stageContent"), icon: Newspaper, done: contentDone },
+    { key: "observation", label: t("stageObservation"), icon: Eye, done: !!obsComplete },
+    { key: "guidance", label: t("stageGuidance"), icon: ShieldCheck, done: !!guidance },
     { key: "reward", label: "Leads & Collaboration", icon: Gift, done: rewardClaimed },
   ];
   const canReachReward = contentDone && obsComplete && !!guidance;
@@ -1105,13 +1328,13 @@ export default function UpscaleApp() {
           {role && <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white capitalize">{role}</span>}
           {role && (
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/10" style={{ color: "#9FB0CC" }}>
-              Free plan
+              {t("freePlan")}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3 text-white text-sm">
           <span className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium" style={{ background: BLUE }}>
-            <Flame size={12} /> {streak} day streak
+            <Flame size={12} /> {streak} {t("dayStreak")}
           </span>
           <span className="rounded-full px-3 py-1 text-xs font-medium bg-white/10">{daysDone}/{totalDays} days</span>
         </div>
@@ -1119,16 +1342,16 @@ export default function UpscaleApp() {
 
       <div className="flex border-b border-gray-200 bg-white px-6">
         {[
-          { key: "loop", label: "Loop", icon: Target },
-          { key: "progress", label: "Progress", icon: TrendingUp },
-          { key: "collaborate", label: "Collaborate", icon: Handshake },
-          { key: "recommendations", label: "Recommendations", icon: BookOpen },
-          { key: "analytics", label: "Analytics", icon: Receipt },
-        ].map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)}
+          { key: "loop", label: t("tabLoop"), icon: Target },
+          { key: "progress", label: t("tabProgress"), icon: TrendingUp },
+          { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
+          { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
+          { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
+        ].map((tabItem) => (
+          <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
             className="flex items-center gap-1.5 text-sm px-3 py-3 border-b-2 -mb-px"
-            style={{ borderColor: tab === t.key ? ORANGE : "transparent", color: tab === t.key ? ORANGE : "#9CA3AF" }}>
-            <t.icon size={14} /> {t.label}
+            style={{ borderColor: tab === tabItem.key ? ORANGE : "transparent", color: tab === tabItem.key ? ORANGE : "#9CA3AF" }}>
+            <tabItem.icon size={14} /> {tabItem.label}
           </button>
         ))}
       </div>
@@ -1331,23 +1554,23 @@ export default function UpscaleApp() {
             <div className="rounded-xl border border-gray-200 p-6" style={{ background: "#F7F8FA" }}>
               {stage === "content" && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Today's content</h2></div>
-                  {subject.label && <p className="text-xs text-gray-400 -mt-2">For {subject.label.toLowerCase()}</p>}
+                  <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("stageContent")}</h2></div>
+                  {subject.label && <p className="text-xs text-gray-400 -mt-2">{t("forLabel", { label: subject.label.toLowerCase() }).trim()}</p>}
                   <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Update</div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("updateLabel")}</div>
                     <a href={`https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + subject.update)}&tbm=nws`}
                       target="_blank" rel="noopener noreferrer"
                       className="block bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700 hover:border-gray-300">
                       {subject.update}
-                      <span className="text-[11px] block mt-1" style={{ color: BLUE }}>Read more →</span>
+                      <span className="text-[11px] block mt-1" style={{ color: BLUE }}>{t("readMore")}</span>
                     </a>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Trend</div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("trendLabel")}</div>
                     <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{subject.trend}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Video</div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
                     <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(subject.video.title + " animated explainer")}`}
                       target="_blank" rel="noopener noreferrer"
                       className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
@@ -1359,37 +1582,37 @@ export default function UpscaleApp() {
                     </a>
                   </div>
                   <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">Success story</div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
                     <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{subject.successStory}</div>
                   </div>
                   <PrimaryButton onClick={() => { setContentDone(true); setStage("observation"); }}>
-                    Continue to observation <ArrowRight size={14} />
+                    {t("continueToObservation")} <ArrowRight size={14} />
                   </PrimaryButton>
                 </div>
               )}
 
               {stage === "observation" && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-1"><Eye size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Your observation</h2></div>
+                  <div className="flex items-center gap-2 mb-1"><Eye size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("yourObservation")}</h2></div>
                   <p className="text-xs text-gray-500 mb-1">
-                    Based on today's update, trend, video, and success story{subject.label ? ` for ${subject.label.toLowerCase()}` : ""} — what's your overall observation?
+                    {t("observationPrompt", { forLabel: subject.label ? t("forLabel", { label: subject.label.toLowerCase() }) : "" })}
                   </p>
                   <textarea value={obsText} onChange={(e) => setObsText(e.target.value)}
-                    placeholder="What have you noticed in your business this week?"
+                    placeholder={t("obsPlaceholder")}
                     className="w-full border border-gray-200 rounded-lg p-3 text-sm min-h-[110px] bg-white" />
                   <PrimaryButton onClick={submitObservation} disabled={!obsComplete}>
-                    Get guidance <ArrowRight size={14} />
+                    {t("getGuidance")} <ArrowRight size={14} />
                   </PrimaryButton>
                 </div>
               )}
 
               {stage === "guidance" && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-1"><ShieldCheck size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>Your guidance</h2></div>
+                  <div className="flex items-center gap-2 mb-1"><ShieldCheck size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("yourGuidance")}</h2></div>
                   <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700 italic">"{obsText}"</div>
                   {guiding && (
                     <div className="text-sm text-gray-500 flex items-center gap-2">
-                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> Thinking through your goal...
+                      <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("guidanceThinking")}
                     </div>
                   )}
                   {guidance && !guiding && (
