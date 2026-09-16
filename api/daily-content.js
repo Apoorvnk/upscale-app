@@ -68,6 +68,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("daily-content error:", err);
-    res.status(500).json({ error: "Content generation failed" });
+    res.status(500).json({ error: "Content generation failed", detail: err?.message || String(err) });
   }
 }
