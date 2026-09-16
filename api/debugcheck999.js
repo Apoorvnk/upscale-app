@@ -14,7 +14,11 @@ export default async function handler(req, res) {
     const client = new GoogleGenAI({});
     const response = await client.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: "Say hi",
+      contents: "What's a trending jewelry style? Respond with ONLY a JSON object like {\"trend\": \"...\"}",
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+      },
     });
     callOk = !!response?.text;
   } catch (err) {
