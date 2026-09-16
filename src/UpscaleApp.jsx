@@ -465,6 +465,14 @@ const STRINGS = {
     marketingUnavailable: "Couldn't build your strategy just now.",
     tryAgain: "Try again",
     invalidPhone: "Enter a valid 10-digit phone number.",
+    planFallbackMonthlyStep: "Take one small, concrete action this week",
+    planFallbackMonthlyHow: "Break \"{goal}\" into a single task you can finish in the next 7 days.",
+    planFallbackQuarterlyStep: "Check your overall direction",
+    planFallbackQuarterlyHow: "Set aside 30 minutes to see whether this quarter's progress is on track toward your goal.",
+    planFallbackYearlyStep: "Stay the course",
+    planFallbackYearlyHow: "Revisit your goal each quarter and keep the daily loop going to compound progress.",
+    tierProgress: "{pct}% through this tier's timeframe",
+    marketAnalyticsBuilding: "Building your market analytics...",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -551,6 +559,14 @@ const STRINGS = {
     marketingUnavailable: "अभी आपकी रणनीति नहीं बन सकी।",
     tryAgain: "फिर कोशिश करें",
     invalidPhone: "एक मान्य 10 अंकों का फ़ोन नंबर दर्ज करें।",
+    planFallbackMonthlyStep: "इस हफ्ते एक छोटा, ठोस कदम उठाएं",
+    planFallbackMonthlyHow: "\"{goal}\" को अगले 7 दिनों में पूरा किए जा सकने वाले एक काम में बांटें।",
+    planFallbackQuarterlyStep: "अपनी समग्र दिशा जांचें",
+    planFallbackQuarterlyHow: "यह देखने के लिए 30 मिनट निकालें कि क्या इस तिमाही की प्रगति आपके लक्ष्य की दिशा में सही है।",
+    planFallbackYearlyStep: "लगे रहें",
+    planFallbackYearlyHow: "हर तिमाही अपने लक्ष्य को फिर से देखें और रोज़ का लूप जारी रखें।",
+    tierProgress: "इस चरण की समयसीमा का {pct}% पूरा",
+    marketAnalyticsBuilding: "आपका मार्केट एनालिटिक्स तैयार हो रहा है...",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -637,6 +653,14 @@ const STRINGS = {
     marketingUnavailable: "आत्ता तुमची रणनीती तयार होऊ शकली नाही.",
     tryAgain: "पुन्हा प्रयत्न करा",
     invalidPhone: "वैध 10-अंकी फोन नंबर टाका.",
+    planFallbackMonthlyStep: "या आठवड्यात एक छोटी, ठोस कृती करा",
+    planFallbackMonthlyHow: "\"{goal}\" पुढील 7 दिवसांत पूर्ण करता येईल अशा एका कामात विभागा.",
+    planFallbackQuarterlyStep: "तुमची एकूण दिशा तपासा",
+    planFallbackQuarterlyHow: "या तिमाहीची प्रगती तुमच्या ध्येयाच्या दिशेने योग्य आहे का हे पाहण्यासाठी 30 मिनिटे काढा.",
+    planFallbackYearlyStep: "सातत्य ठेवा",
+    planFallbackYearlyHow: "दर तिमाहीला तुमचे ध्येय पुन्हा पाहा आणि रोजचा लूप सुरू ठेवा.",
+    tierProgress: "या टप्प्याच्या कालावधीपैकी {pct}% पूर्ण",
+    marketAnalyticsBuilding: "तुमचे मार्केट अॅनालिटिक्स तयार होत आहे...",
   },
 };
 
@@ -722,10 +746,18 @@ function PrimaryButton({ children, onClick, disabled }) {
   );
 }
 function FadeIn({ children, keyProp }) { return <div key={keyProp} className="upscale-fadein">{children}</div>; }
-function PlanTier({ title, items }) {
+function PlanTier({ title, items, progressPct, progressLabel }) {
   return (
     <div>
-      <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{title}</div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{title}</div>
+        {progressPct != null && <div className="text-[11px] text-gray-400 shrink-0">{progressLabel}</div>}
+      </div>
+      {progressPct != null && (
+        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden mb-2">
+          <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progressPct}%`, background: BLUE }} />
+        </div>
+      )}
       <div className="space-y-2">
         {items.map((it, i) => (
           <div key={i} className="rounded-lg p-3 border border-gray-200">
@@ -782,6 +814,10 @@ export default function UpscaleApp() {
   const [marketingLoading, setMarketingLoading] = useState(false);
   const [marketingFetchAttempted, setMarketingFetchAttempted] = useState(false);
 
+  const [marketAnalyticsData, setMarketAnalyticsData] = useState(null);
+  const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
+  const [marketAnalyticsFetchAttempted, setMarketAnalyticsFetchAttempted] = useState(false);
+
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [uploadingCost, setUploadingCost] = useState(false);
   const [uploadingSales, setUploadingSales] = useState(false);
@@ -798,6 +834,13 @@ export default function UpscaleApp() {
   const investmentAmount = parseCurrency(form.investment);
   const netAmount = totalSales - totalCosts - investmentAmount;
   const obsComplete = obsText.trim().length > 0;
+
+  // Auto per-tier execution progress: derived straight from the existing
+  // daily-loop counter (no separate tracking state) against each tier's
+  // natural cadence, capped at 100%.
+  const monthlyPct = Math.min(100, Math.round((daysDone / 30) * 100));
+  const quarterlyPct = Math.min(100, Math.round((daysDone / 90) * 100));
+  const yearlyPct = Math.min(100, Math.round((daysDone / 365) * 100));
 
   // Centralizes the shape of what gets persisted for a proprietor, so the
   // three save points below can't drift out of sync with each other. Takes
@@ -869,6 +912,31 @@ export default function UpscaleApp() {
       .finally(() => setMarketingLoading(false));
   }, [screen, tab, subject.name, subject.label, language, marketingFetchAttempted]);
 
+  // Market analytics: fetched once per app session on first visit to the
+  // Analytics tab (NOT reset in claimReward like the daily content — a
+  // 6-month demand trend doesn't need to regenerate every day, so this
+  // deliberately fetches less often to keep API usage low). Falls back to
+  // the static per-subject analytics baked into SUBJECTS when unavailable.
+  useEffect(() => {
+    if (screen !== "app" || tab !== "analytics" || marketAnalyticsFetchAttempted) return;
+    setMarketAnalyticsFetchAttempted(true);
+    setMarketAnalyticsLoading(true);
+    fetch("/api/market-analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, city: form.city, language }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`market-analytics returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => setMarketAnalyticsData(data))
+      .catch((err) => console.error("fetchMarketAnalytics failed:", err))
+      .finally(() => setMarketAnalyticsLoading(false));
+  }, [screen, tab, subject.name, subject.label, form.city, language, marketAnalyticsFetchAttempted]);
+
+  const displayAnalytics = marketAnalyticsData || subject.analytics;
+
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
   useEffect(() => {
     if (stage !== "reward" || adDone) return;
@@ -906,9 +974,9 @@ export default function UpscaleApp() {
     } catch (err) {
       console.error("confirmTarget plan generation failed:", err);
       const fallbackPlan = {
-        monthly: [{ step: goal, how: "Break this into one small, concrete action you can take this week." }],
-        quarterly: [{ step: `Review progress toward: ${goal}`, how: "Set aside 30 minutes to check what's working and adjust." }],
-        yearly: { step: goal, how: "Revisit this goal each quarter and keep the daily loop going." },
+        monthly: [{ step: t("planFallbackMonthlyStep"), how: t("planFallbackMonthlyHow", { goal }) }],
+        quarterly: [{ step: t("planFallbackQuarterlyStep"), how: t("planFallbackQuarterlyHow") }],
+        yearly: { step: t("planFallbackYearlyStep"), how: t("planFallbackYearlyHow") },
       };
       setPlanData(fallbackPlan);
       saveUserState(form.contact, buildPersistedState({ planData: fallbackPlan }));
@@ -1481,9 +1549,9 @@ export default function UpscaleApp() {
 
             {planData && !planLoading && (
               <div className="space-y-4 mb-6">
-                <PlanTier title={t("periodMonthly")} items={planData.monthly} />
-                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} />
-                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} />
+                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={monthlyPct} progressLabel={t("tierProgress", { pct: monthlyPct })} />
+                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={quarterlyPct} progressLabel={t("tierProgress", { pct: quarterlyPct })} />
+                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={yearlyPct} progressLabel={t("tierProgress", { pct: yearlyPct })} />
               </div>
             )}
 
@@ -1617,28 +1685,12 @@ export default function UpscaleApp() {
             <div className="mb-6">
               <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourPlan")}</div>
               <div className="space-y-4">
-                <PlanTier title={t("periodMonthly")} items={planData.monthly} />
-                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} />
-                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} />
+                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={monthlyPct} progressLabel={t("tierProgress", { pct: monthlyPct })} />
+                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={quarterlyPct} progressLabel={t("tierProgress", { pct: quarterlyPct })} />
+                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={yearlyPct} progressLabel={t("tierProgress", { pct: yearlyPct })} />
               </div>
             </div>
           )}
-
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Market analytics — {subject.name}</div>
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
-              <span className="text-xs font-medium" style={{ color: subject.analytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                {subject.analytics.demandChangePct >= 0 ? "+" : ""}{subject.analytics.demandChangePct}% vs last month
-              </span>
-            </div>
-            <div className="flex items-end gap-2 h-16 mb-1">
-              {subject.analytics.demand.map((v, i) => (
-                <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-3">{subject.analytics.insight}</p>
-          </div>
         </div>
       ) : tab === "collaborate" ? (
         <div className="px-6 py-6 bg-white">
@@ -1829,6 +1881,29 @@ export default function UpscaleApp() {
             <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
           )}
           <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
+
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">
+            Market analytics — {subject.name}{form.city ? ` · ${form.city}` : ""}
+          </div>
+          {marketAnalyticsLoading && !marketAnalyticsData && (
+            <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
+              <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketAnalyticsBuilding")}
+            </div>
+          )}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
+              <span className="text-xs font-medium" style={{ color: displayAnalytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {displayAnalytics.demandChangePct >= 0 ? "+" : ""}{displayAnalytics.demandChangePct}% vs last month
+              </span>
+            </div>
+            <div className="flex items-end gap-2 h-16 mb-1">
+              {displayAnalytics.demand.map((v, i) => (
+                <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">{displayAnalytics.insight}</p>
+          </div>
         </div>
       ) : (
         <div className="px-6 py-6 bg-white">

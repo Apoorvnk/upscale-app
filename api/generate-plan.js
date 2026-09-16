@@ -10,6 +10,8 @@ const SYSTEM_PROMPT = `You create simple, doable execution plans for small busin
 
 Each item needs both "step" (what to do — short and specific) and "how" (one sentence on how to actually execute it — a concrete method, script, or habit, never vague advice like "work harder" or "market more"). Keep everything realistic for a small, resource-constrained business owner — no big-budget tactics, no requiring a team.
 
+Never restate the user's goal text itself as a step — every step, including the yearly one, must be a distinct, concrete action or milestone that moves toward the goal, not a repetition of the goal.
+
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
 {"monthly": [{"step": "...", "how": "..."}], "quarterly": [{"step": "...", "how": "..."}], "yearly": {"step": "...", "how": "..."}}`;
 
