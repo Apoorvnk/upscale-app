@@ -473,6 +473,8 @@ const STRINGS = {
     planFallbackYearlyHow: "Revisit your goal each quarter and keep the daily loop going to compound progress.",
     tierProgress: "{pct}% through this tier's timeframe",
     marketAnalyticsBuilding: "Building your market analytics...",
+    planProgressBuilding: "Assessing your progress...",
+    whatToDoNext: "What to do next",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -567,6 +569,8 @@ const STRINGS = {
     planFallbackYearlyHow: "हर तिमाही अपने लक्ष्य को फिर से देखें और रोज़ का लूप जारी रखें।",
     tierProgress: "इस चरण की समयसीमा का {pct}% पूरा",
     marketAnalyticsBuilding: "आपका मार्केट एनालिटिक्स तैयार हो रहा है...",
+    planProgressBuilding: "आपकी प्रगति का आकलन किया जा रहा है...",
+    whatToDoNext: "आगे क्या करना है",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -661,6 +665,8 @@ const STRINGS = {
     planFallbackYearlyHow: "दर तिमाहीला तुमचे ध्येय पुन्हा पाहा आणि रोजचा लूप सुरू ठेवा.",
     tierProgress: "या टप्प्याच्या कालावधीपैकी {pct}% पूर्ण",
     marketAnalyticsBuilding: "तुमचे मार्केट अॅनालिटिक्स तयार होत आहे...",
+    planProgressBuilding: "तुमच्या प्रगतीचे मूल्यांकन होत आहे...",
+    whatToDoNext: "पुढे काय करायचे",
   },
 };
 
@@ -818,6 +824,10 @@ export default function UpscaleApp() {
   const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
   const [marketAnalyticsFetchAttempted, setMarketAnalyticsFetchAttempted] = useState(false);
 
+  const [planProgressData, setPlanProgressData] = useState(null);
+  const [planProgressLoading, setPlanProgressLoading] = useState(false);
+  const [planProgressFetchAttempted, setPlanProgressFetchAttempted] = useState(false);
+
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [uploadingCost, setUploadingCost] = useState(false);
   const [uploadingSales, setUploadingSales] = useState(false);
@@ -937,6 +947,41 @@ export default function UpscaleApp() {
 
   const displayAnalytics = marketAnalyticsData || subject.analytics;
 
+  // Plan execution progress: unlike the simple day-count bars (used as an
+  // immediate 0% starting state right after the goal is set), the Progress
+  // tab's version is reasoned from the real ledger numbers and the market
+  // demand trend, not just days logged — two people with the same streak
+  // but very different sales shouldn't show the same progress. Fetched once
+  // per loop cycle (reset in claimReward, same guard pattern as the other
+  // AI fetches) once a plan exists. Falls back to the day-based bars above
+  // if the call hasn't returned yet or fails — never blocks the tab.
+  useEffect(() => {
+    if (screen !== "app" || tab !== "progress" || !planData || planProgressFetchAttempted) return;
+    setPlanProgressFetchAttempted(true);
+    setPlanProgressLoading(true);
+    fetch("/api/plan-progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        goal, subjectName: subject.name, planData, daysDone, totalDays,
+        totalCosts, totalSales, netAmount, investmentAmount,
+        demandChangePct: marketAnalyticsData?.demandChangePct ?? null,
+        language,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`plan-progress returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => setPlanProgressData(data))
+      .catch((err) => console.error("fetchPlanProgress failed:", err))
+      .finally(() => setPlanProgressLoading(false));
+  }, [screen, tab, planData, planProgressFetchAttempted]);
+
+  const progressMonthlyPct = planProgressData?.monthlyProgressPct ?? monthlyPct;
+  const progressQuarterlyPct = planProgressData?.quarterlyProgressPct ?? quarterlyPct;
+  const progressYearlyPct = planProgressData?.yearlyProgressPct ?? yearlyPct;
+
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
   useEffect(() => {
     if (stage !== "reward" || adDone) return;
@@ -1045,6 +1090,8 @@ export default function UpscaleApp() {
     setAdDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
+    setPlanProgressData(null);
+    setPlanProgressFetchAttempted(false);
     setStage("content");
   }
 
@@ -1684,11 +1731,22 @@ export default function UpscaleApp() {
           {planData && (
             <div className="mb-6">
               <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourPlan")}</div>
-              <div className="space-y-4">
-                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={monthlyPct} progressLabel={t("tierProgress", { pct: monthlyPct })} />
-                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={quarterlyPct} progressLabel={t("tierProgress", { pct: quarterlyPct })} />
-                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={yearlyPct} progressLabel={t("tierProgress", { pct: yearlyPct })} />
+              <div className="space-y-4 mb-3">
+                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={progressMonthlyPct} progressLabel={t("tierProgress", { pct: progressMonthlyPct })} />
+                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={progressQuarterlyPct} progressLabel={t("tierProgress", { pct: progressQuarterlyPct })} />
+                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={progressYearlyPct} progressLabel={t("tierProgress", { pct: progressYearlyPct })} />
               </div>
+              {planProgressLoading && !planProgressData && (
+                <div className="text-sm text-gray-500 flex items-center gap-2">
+                  <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("planProgressBuilding")}
+                </div>
+              )}
+              {planProgressData?.progressNote && (
+                <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                  <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("whatToDoNext")}</div>
+                  <p className="text-sm" style={{ color: NAVY }}>{planProgressData.progressNote}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
