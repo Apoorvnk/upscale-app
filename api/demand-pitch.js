@@ -65,6 +65,6 @@ export default async function handler(req, res) {
     res.status(200).json({ pitch: data.pitch });
   } catch (err) {
     console.error("demand-pitch error:", err);
-    res.status(500).json({ error: "Pitch generation failed", detail: err?.message || String(err) });
+    res.status(500).json({ error: "Pitch generation failed" });
   }
 }
