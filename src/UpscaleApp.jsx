@@ -286,6 +286,7 @@ const INTEREST_NAMES = [
 
 function slugify(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
 function isValidPhone(value) { return /^\d{10}$/.test((value || "").replace(/\D/g, "")); }
+function parseCurrency(value) { const digits = (value || "").replace(/\D/g, ""); return digits ? parseInt(digits, 10) : 0; }
 function genericContent(name) {
   const lower = name.toLowerCase();
   return {
@@ -794,7 +795,8 @@ export default function UpscaleApp() {
   const totalDays = PERIOD_DAYS[period];
   const totalCosts = ledgerEntries.filter((e) => e.type === "cost").reduce((s, e) => s + Number(e.amount || 0), 0);
   const totalSales = ledgerEntries.filter((e) => e.type === "sales").reduce((s, e) => s + Number(e.amount || 0), 0);
-  const netAmount = totalSales - totalCosts;
+  const investmentAmount = parseCurrency(form.investment);
+  const netAmount = totalSales - totalCosts - investmentAmount;
   const obsComplete = obsText.trim().length > 0;
 
   // Centralizes the shape of what gets persisted for a proprietor, so the
@@ -1796,12 +1798,17 @@ export default function UpscaleApp() {
               <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
             </div>
             <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Net</div>
+              <div className="text-xs text-gray-400 mb-1">Net (incl. investment)</div>
               <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                {netAmount >= 0 ? "+" : ""}₹{netAmount.toLocaleString("en-IN")}
+                {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
               </div>
             </div>
           </div>
+          {investmentAmount > 0 && (
+            <p className="text-[11px] text-gray-400 -mt-4 mb-6">
+              Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
+            </p>
+          )}
 
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
           {ledgerEntries.length ? (
