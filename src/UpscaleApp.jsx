@@ -285,6 +285,7 @@ const INTEREST_NAMES = [
 ];
 
 function slugify(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
+function isValidPhone(value) { return /^\d{10}$/.test((value || "").replace(/\D/g, "")); }
 function genericContent(name) {
   const lower = name.toLowerCase();
   return {
@@ -462,6 +463,7 @@ const STRINGS = {
     marketingTacticsLabel: "How to execute",
     marketingUnavailable: "Couldn't build your strategy just now.",
     tryAgain: "Try again",
+    invalidPhone: "Enter a valid 10-digit phone number.",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -547,6 +549,7 @@ const STRINGS = {
     marketingTacticsLabel: "कैसे लागू करें",
     marketingUnavailable: "अभी आपकी रणनीति नहीं बन सकी।",
     tryAgain: "फिर कोशिश करें",
+    invalidPhone: "एक मान्य 10 अंकों का फ़ोन नंबर दर्ज करें।",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -632,6 +635,7 @@ const STRINGS = {
     marketingTacticsLabel: "कसे राबवायचे",
     marketingUnavailable: "आत्ता तुमची रणनीती तयार होऊ शकली नाही.",
     tryAgain: "पुन्हा प्रयत्न करा",
+    invalidPhone: "वैध 10-अंकी फोन नंबर टाका.",
   },
 };
 
@@ -1100,7 +1104,10 @@ export default function UpscaleApp() {
             <h1 className="text-lg font-medium mt-6 mb-1" style={{ color: NAVY }}>Log in</h1>
             <p className="text-sm text-gray-500 mb-5">Enter the number you signed up with.</p>
             <input value={loginContact} onChange={(e) => setLoginContact(e.target.value)} placeholder="Contact number / WhatsApp"
-              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm mb-2" />
+              className={`w-full border rounded-lg p-2.5 text-sm ${loginContact.trim() && !isValidPhone(loginContact) ? "border-red-300 mb-1" : "border-gray-200 mb-2"}`} />
+            {loginContact.trim() && !isValidPhone(loginContact) && (
+              <p className="text-xs mb-3" style={{ color: "#B91C1C" }}>{t("invalidPhone")}</p>
+            )}
             {isAdminContact ? (
               <div className="text-xs font-medium mb-5 flex items-center gap-1" style={{ color: "#0F6E56" }}>
                 <ShieldCheck size={13} /> Recognized as admin — you'll go straight to the Admin view.
@@ -1118,7 +1125,7 @@ export default function UpscaleApp() {
             )}
             <PrimaryButton
               onClick={handleLogin}
-              disabled={!loginContact.trim() || (!isAdminContact && !role) || loggingIn}>
+              disabled={!isValidPhone(loginContact) || (!isAdminContact && !role) || loggingIn}>
               {loggingIn ? "Logging in..." : "Log in"} <ArrowRight size={15} />
             </PrimaryButton>
             <div className="text-[11px] text-gray-400 mt-3">Enter the number you used before to pick up where you left off.</div>
@@ -1145,7 +1152,9 @@ export default function UpscaleApp() {
     };
     const canProceed = step === "interest" || step === "subcategory" || step === "facebook" || step === "instagram"
       ? true
-      : step === "shopType" ? !!form.shopType : form[step].trim().length > 0;
+      : step === "shopType" ? !!form.shopType
+      : step === "contact" ? isValidPhone(form.contact)
+      : form[step].trim().length > 0;
     return (
       <div className="w-full min-h-[600px] rounded-xl flex items-center justify-center px-6" style={{ background: "#F7F8FA" }}>
         {style}
@@ -1181,10 +1190,16 @@ export default function UpscaleApp() {
                 ))}
               </div>
             ) : (
-              <input className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mb-6" value={form[step]}
-                onChange={(e) => setForm({ ...form, [step]: e.target.value })}
-                placeholder={step === "facebook" || step === "instagram" ? t("optional") : step === "investment" ? "e.g. ₹50,000" : ""}
-                onKeyDown={(e) => { if (e.key === "Enter" && canProceed) nextOnb(); }} />
+              <>
+                <input className={`w-full border rounded-lg px-3 py-2.5 text-sm ${step === "contact" && form.contact.trim() && !canProceed ? "border-red-300 mb-1" : "border-gray-200 mb-6"}`}
+                  value={form[step]}
+                  onChange={(e) => setForm({ ...form, [step]: e.target.value })}
+                  placeholder={step === "facebook" || step === "instagram" ? t("optional") : step === "investment" ? "e.g. ₹50,000" : ""}
+                  onKeyDown={(e) => { if (e.key === "Enter" && canProceed) nextOnb(); }} />
+                {step === "contact" && form.contact.trim() && !canProceed && (
+                  <p className="text-xs mb-5" style={{ color: "#B91C1C" }}>{t("invalidPhone")}</p>
+                )}
+              </>
             )}
             <div className="flex justify-between">
               {obStep > 0 ? (
