@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await getClient().models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       contents: `Business niche: ${niche}\nCity: ${city || "India"}\nToday's date: ${today}`,
       config: {
         systemInstruction: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,

@@ -46,7 +46,7 @@ ${demandChangePct != null ? `Market demand trend for this niche/city: ${demandCh
 
   try {
     const response = await getClient().models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       contents: context,
       config: {
         systemInstruction: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
