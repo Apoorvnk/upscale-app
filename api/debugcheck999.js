@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
   try {
     const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    await client.from("proprietor_state").delete().eq("phone", "9999000011");
     const { data, error } = await client.from("proprietor_state").select("phone").limit(1);
     if (error) throw error;
     queryOk = true;
