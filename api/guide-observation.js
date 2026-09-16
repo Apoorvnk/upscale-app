@@ -1,18 +1,15 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { GoogleGenAI } from "@google/genai";
 
-const GuidanceSchema = z.object({
-  guidance: z.string(),
-});
+const SYSTEM_PROMPT = `You are a business coach inside a daily habit-building app for small business owners. The user has a stated goal for this period. Each day they read an update, a trend, and a success story about their industry, then write ONE observation about what they've noticed in their own business.
 
-const SYSTEM_PROMPT = `You are a business coach inside a daily habit-building app for small business owners. The user has a stated target for this period. Each day they read an update, a trend, and a success story about their industry, then write ONE observation about what they've noticed in their own business.
+Read their goal and their observation, then give brief (2-3 sentences), specific, actionable guidance connecting today's observation to a concrete next step toward their goal. Be warm but concrete — never generic pep talk, never mention that you are an AI, never mention pricing or subscriptions.
 
-Read their target and their observation, then give brief (2-3 sentences), specific, actionable guidance connecting today's observation to a concrete next step toward their target. Be warm but concrete — never generic pep talk, never mention that you are an AI, never mention pricing or subscriptions.`;
+Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
+{"guidance": "..."}`;
 
 let client;
 function getClient() {
-  if (!client) client = new Anthropic();
+  if (!client) client = new GoogleGenAI({});
   return client;
 }
 
@@ -29,27 +26,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await getClient().messages.parse({
-      model: "claude-opus-5",
-      max_tokens: 500,
-      output_config: { format: zodOutputFormat(GuidanceSchema), effort: "low" },
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: `Their business area: ${subjectName || "small business"}
-Their target for this period: "${goal || "not set"}"
-Today's observation: "${observationText}"`,
-        },
-      ],
+    const response = await getClient().models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Their business area: ${subjectName || "small business"}\nTheir goal for this period: "${goal || "not set"}"\nToday's observation: "${observationText}"`,
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+      },
     });
 
-    if (!response.parsed_output) {
+    const text = (response.text || "").trim();
+
+    let data = null;
+    try {
+      const cleaned = text.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+      data = JSON.parse(cleaned);
+    } catch {
+      data = null;
+    }
+
+    if (!data || !data.guidance) {
       res.status(200).json({ guidance: "Keep this observation in mind as you plan tomorrow — small, specific notice like this is how you'll spot what's actually moving the needle." });
       return;
     }
 
-    res.status(200).json(response.parsed_output);
+    res.status(200).json({ guidance: data.guidance });
   } catch (err) {
     console.error("guide-observation error:", err);
     res.status(500).json({ error: "Guidance failed" });

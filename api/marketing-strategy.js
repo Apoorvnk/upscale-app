@@ -1,8 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 
-const SYSTEM_PROMPT = `You are a marketing strategist for small business owners in a daily habit-building app. You have access to real-time web search.
+const SYSTEM_PROMPT = `You are a marketing strategist for small business owners in a daily habit-building app. You have access to real-time Google Search.
 
 Given their exact business niche, identify the single psychological angle that actually moves buyers in this niche, and build a simple, implementable marketing strategy around it. Small business owners are not moved by generic advice like "post on social media more" — they need one sharp, specific angle they can act on this week.
 
@@ -13,7 +13,7 @@ Provide:
 - pitch: one punchy sentence embodying that angle — the actual marketing hook a small owner could say or write today
 - strategy: 2-3 sentences explaining why this angle works for this niche and how to lean into it
 - tactics: 3 concrete, low-budget, doable-this-week actions a small owner (no team, no big budget) can take to apply this angle. Each needs "tactic" (what to do, short) and "how" (one sentence on exactly how to execute it)
-- videoTitle: the title of a REAL, specific, existing marketing/sales educational video (search the web for one that actually exists) relevant to this exact niche and angle
+- videoTitle: the title of a REAL, specific, existing marketing/sales educational video (search for one that actually exists) relevant to this exact niche and angle
 - videoUrl: the real URL of that video (or "" if you couldn't find a specific real one — never invent a URL)
 
 Never invent a URL. If you can't find a real one via search, leave videoUrl as "".
@@ -23,7 +23,7 @@ Respond with ONLY a JSON object (no markdown fences, no other text) shaped exact
 
 let client;
 function getClient() {
-  if (!client) client = new Anthropic();
+  if (!client) client = new GoogleGenAI({});
   return client;
 }
 
@@ -43,19 +43,17 @@ export default async function handler(req, res) {
   const niche = subcategoryLabel ? `${subjectName} — specifically ${subcategoryLabel}` : subjectName;
 
   try {
-    const response = await getClient().messages.create({
-      model: "claude-opus-5",
-      max_tokens: 2000,
-      system: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
-      messages: [{ role: "user", content: `Business niche: ${niche}` }],
+    const response = await getClient().models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Business niche: ${niche}`,
+      config: {
+        systemInstruction: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+      },
     });
 
-    const text = response.content
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join("\n")
-      .trim();
+    const text = (response.text || "").trim();
 
     let data = null;
     try {

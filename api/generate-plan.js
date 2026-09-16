@@ -1,17 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-
-const StepSchema = z.object({
-  step: z.string(),
-  how: z.string(),
-});
-
-const PlanSchema = z.object({
-  monthly: z.array(StepSchema),
-  quarterly: z.array(StepSchema),
-  yearly: StepSchema,
-});
+import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 
@@ -21,11 +8,14 @@ const SYSTEM_PROMPT = `You create simple, doable execution plans for small busin
 - quarterly: 2-3 quarterly milestones that build on the monthly steps
 - yearly: one overall yearly outcome statement
 
-Each item needs both "step" (what to do — short and specific) and "how" (one sentence on how to actually execute it — a concrete method, script, or habit, never vague advice like "work harder" or "market more"). Keep everything realistic for a small, resource-constrained business owner — no big-budget tactics, no requiring a team.`;
+Each item needs both "step" (what to do — short and specific) and "how" (one sentence on how to actually execute it — a concrete method, script, or habit, never vague advice like "work harder" or "market more"). Keep everything realistic for a small, resource-constrained business owner — no big-budget tactics, no requiring a team.
+
+Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
+{"monthly": [{"step": "...", "how": "..."}], "quarterly": [{"step": "...", "how": "..."}], "yearly": {"step": "...", "how": "..."}}`;
 
 let client;
 function getClient() {
-  if (!client) client = new Anthropic();
+  if (!client) client = new GoogleGenAI({});
   return client;
 }
 
@@ -44,25 +34,31 @@ export default async function handler(req, res) {
   const langName = LANGUAGE_NAMES[language] || "English";
 
   try {
-    const response = await getClient().messages.parse({
-      model: "claude-opus-5",
-      max_tokens: 1500,
-      output_config: { format: zodOutputFormat(PlanSchema), effort: "medium" },
-      system: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
-      messages: [
-        {
-          role: "user",
-          content: `Business area: ${subjectName || "small business"}\nGoal: "${goal}"\nTracking period: ${period || "Monthly"}`,
-        },
-      ],
+    const response = await getClient().models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Business area: ${subjectName || "small business"}\nGoal: "${goal}"\nTracking period: ${period || "Monthly"}`,
+      config: {
+        systemInstruction: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
+        responseMimeType: "application/json",
+      },
     });
 
-    if (!response.parsed_output) {
+    const text = (response.text || "").trim();
+
+    let data = null;
+    try {
+      const cleaned = text.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+      data = JSON.parse(cleaned);
+    } catch {
+      data = null;
+    }
+
+    if (!data || !Array.isArray(data.monthly) || !Array.isArray(data.quarterly) || !data.yearly) {
       res.status(422).json({ error: "Could not generate a plan" });
       return;
     }
 
-    res.status(200).json(response.parsed_output);
+    res.status(200).json(data);
   } catch (err) {
     console.error("generate-plan error:", err);
     res.status(500).json({ error: "Plan generation failed" });

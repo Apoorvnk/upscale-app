@@ -1,23 +1,14 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import { google } from "googleapis";
-import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const LEDGER_SHEET_TITLE = "Ledger";
 const LEDGER_HEADERS = ["Date", "Type", "Amount", "Vendor", "Description", "Submitted By", "Contact"];
 
-const ExtractSchema = z.object({
-  amount: z.number(),
-  vendor: z.string(),
-  date: z.string(),
-  description: z.string(),
-});
-
-let anthropicClient;
-function getAnthropicClient() {
-  if (!anthropicClient) anthropicClient = new Anthropic();
-  return anthropicClient;
+let genaiClient;
+function getGenaiClient() {
+  if (!genaiClient) genaiClient = new GoogleGenAI({});
+  return genaiClient;
 }
 
 // Strips accidental wrapping quotes (common when a .env-style value is
@@ -78,31 +69,43 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await getAnthropicClient().messages.parse({
-      model: "claude-opus-5",
-      max_tokens: 500,
-      output_config: { format: zodOutputFormat(ExtractSchema), effort: "low" },
-      system: `You are extracting structured data from a photo of a business ${type === "cost" ? "bill or receipt" : "sales voucher"}. Read the amount (total, numeric, no currency symbol or commas), the vendor or party name, the date shown on the document (YYYY-MM-DD; if no date is visible, use "unknown"), and a short one-line description of what it's for. If the amount isn't legible, respond with 0 and say so in the description.`,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: imageBase64 } },
-            { type: "text", text: "Extract the details from this document." },
-          ],
-        },
+    const systemPrompt = `You are extracting structured data from a photo of a business ${type === "cost" ? "bill or receipt" : "sales voucher"}. Read the amount (total, numeric, no currency symbol or commas), the vendor or party name, the date shown on the document (YYYY-MM-DD; if no date is visible, use "unknown"), and a short one-line description of what it's for. If the amount isn't legible, respond with 0 and say so in the description.
+
+Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
+{"amount": 0, "vendor": "...", "date": "...", "description": "..."}`;
+
+    const response = await getGenaiClient().models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        { inlineData: { mimeType, data: imageBase64 } },
+        { text: "Extract the details from this document." },
       ],
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+      },
     });
 
-    if (!response.parsed_output) {
+    const text = (response.text || "").trim();
+
+    let extracted = null;
+    try {
+      const cleaned = text.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+      const parsed = JSON.parse(cleaned);
+      if (typeof parsed.amount === "number" && typeof parsed.vendor === "string" && typeof parsed.date === "string" && typeof parsed.description === "string") {
+        extracted = parsed;
+      }
+    } catch {
+      extracted = null;
+    }
+
+    if (!extracted) {
       res.status(422).json({ error: "Could not read the document" });
       return;
     }
 
-    const extracted = response.parsed_output;
-
     // Ledger logging is best-effort — a Sheets hiccup shouldn't stop the
-    // user from seeing the numbers Claude just extracted.
+    // user from seeing the numbers just extracted.
     try {
       const sheets = getSheetsClient();
       await ensureLedgerSheet(sheets);

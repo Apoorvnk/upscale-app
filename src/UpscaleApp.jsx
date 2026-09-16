@@ -651,6 +651,19 @@ function logToSheet(payload) {
   }).catch((err) => console.error("logToSheet failed:", err));
 }
 
+// Fire-and-forget: saving progress must never block the loop the user is
+// mid-way through, so failures are logged and swallowed. A save that's lost
+// just means the next successful save (or the next loop action) catches up.
+function saveUserState(phone, state) {
+  const trimmedPhone = (phone || "").trim();
+  if (!trimmedPhone) return;
+  fetch("/api/user-state", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: trimmedPhone, state }),
+  }).catch((err) => console.error("saveUserState failed:", err));
+}
+
 // Downscales a photo client-side before it ever leaves the browser, so a
 // full-resolution phone camera shot doesn't blow past serverless body-size
 // limits or waste vision-API tokens on pixels we don't need.
@@ -727,6 +740,7 @@ export default function UpscaleApp() {
 
   const [role, setRole] = useState(null);
   const [loginContact, setLoginContact] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
   const [obStep, setObStep] = useState(0);
   const [form, setForm] = useState({ interest: "home-loan-advisory", subcategory: "", name: "", contact: "", city: "", shopName: "", shopType: "", investment: "", facebook: "", instagram: "" });
 
@@ -779,16 +793,28 @@ export default function UpscaleApp() {
   const netAmount = totalSales - totalCosts;
   const obsComplete = obsText.trim().length > 0;
 
+  // Centralizes the shape of what gets persisted for a proprietor, so the
+  // three save points below can't drift out of sync with each other. Takes
+  // overrides for values just computed locally that haven't landed in state
+  // yet (state setters are async, so e.g. daysDone here can be stale by one).
+  function buildPersistedState(overrides = {}) {
+    return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, ...overrides };
+  }
+
   // Live daily content: fetched at most once per loop cycle (guarded by
   // contentFetchAttempted, reset in claimReward — NOT by liveContent/
   // contentLoading, which would retry forever on every failure). Fails
   // open by leaving liveContent null so the static subject fallback keeps
-  // rendering — the user is never blocked on this.
+  // rendering — the user is never blocked on this. Deliberately does NOT
+  // gate the state updates on a "cancelled" flag tied to this effect's
+  // cleanup: contentFetchAttempted already guarantees at most one fetch
+  // per cycle, so if the user navigates away and back while it's still in
+  // flight (re-running this effect), the original request should still be
+  // allowed to land instead of leaving contentLoading stuck true forever.
   useEffect(() => {
     if (screen !== "app" || stage !== "content" || contentFetchAttempted) return;
     setContentFetchAttempted(true);
     setContentLoading(true);
-    let cancelled = false;
     fetch("/api/daily-content", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -798,10 +824,9 @@ export default function UpscaleApp() {
         if (!res.ok) throw new Error(`daily-content returned ${res.status}`);
         return res.json();
       })
-      .then((data) => { if (!cancelled) setLiveContent(data); })
+      .then((data) => setLiveContent(data))
       .catch((err) => console.error("fetchDailyContent failed:", err))
-      .finally(() => { if (!cancelled) setContentLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => setContentLoading(false));
   }, [screen, stage, subject.name, subject.label, language, contentFetchAttempted]);
 
   const displayTrend = liveContent?.trend || subject.trend;
@@ -816,11 +841,14 @@ export default function UpscaleApp() {
   // reset in claimReward — same retry-safe pattern as the daily-content
   // effect above). There's no static fallback for this content, so on
   // failure the tab shows a retry affordance instead of silently degrading.
+  // No "cancelled" gate on the state updates, for the same reason as the
+  // daily-content effect: leaving the Marketing tab and coming back while
+  // the request is still in flight must not leave marketingLoading stuck
+  // true forever with no way to resolve.
   useEffect(() => {
     if (screen !== "app" || tab !== "marketing" || marketingFetchAttempted) return;
     setMarketingFetchAttempted(true);
     setMarketingLoading(true);
-    let cancelled = false;
     fetch("/api/marketing-strategy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -830,10 +858,9 @@ export default function UpscaleApp() {
         if (!res.ok) throw new Error(`marketing-strategy returned ${res.status}`);
         return res.json();
       })
-      .then((data) => { if (!cancelled) setMarketingData(data); })
+      .then((data) => setMarketingData(data))
       .catch((err) => console.error("fetchMarketingStrategy failed:", err))
-      .finally(() => { if (!cancelled) setMarketingLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => setMarketingLoading(false));
   }, [screen, tab, subject.name, subject.label, language, marketingFetchAttempted]);
 
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
@@ -869,13 +896,16 @@ export default function UpscaleApp() {
       if (!res.ok) throw new Error(`generate-plan returned ${res.status}`);
       const data = await res.json();
       setPlanData(data);
+      saveUserState(form.contact, buildPersistedState({ planData: data }));
     } catch (err) {
       console.error("confirmTarget plan generation failed:", err);
-      setPlanData({
+      const fallbackPlan = {
         monthly: [{ step: goal, how: "Break this into one small, concrete action you can take this week." }],
         quarterly: [{ step: `Review progress toward: ${goal}`, how: "Set aside 30 minutes to check what's working and adjust." }],
         yearly: { step: goal, how: "Revisit this goal each quarter and keep the daily loop going." },
-      });
+      };
+      setPlanData(fallbackPlan);
+      saveUserState(form.contact, buildPersistedState({ planData: fallbackPlan }));
     } finally {
       setPlanLoading(false);
     }
@@ -916,6 +946,8 @@ export default function UpscaleApp() {
   }
 
   function claimReward() {
+    const newDaysDone = daysDone + 1;
+    const newStreak = streak + 1;
     logToSheet({
       name: form.name,
       subject: subject.name,
@@ -924,10 +956,11 @@ export default function UpscaleApp() {
       contact: form.contact,
       date: todayStr(),
       observationText: obsText,
-      streak: streak + 1,
+      streak: newStreak,
     });
-    setDaysDone((d) => d + 1);
-    setStreak((s) => s + 1);
+    saveUserState(form.contact, buildPersistedState({ daysDone: newDaysDone, streak: newStreak }));
+    setDaysDone(newDaysDone);
+    setStreak(newStreak);
     setContentDone(false);
     setLiveContent(null);
     setContentFetchAttempted(false);
@@ -957,13 +990,57 @@ export default function UpscaleApp() {
       });
       if (!res.ok) throw new Error(`extract-receipt returned ${res.status}`);
       const data = await res.json();
-      setLedgerEntries((entries) => [{ type, ...data }, ...entries]);
+      const newEntries = [{ type, ...data }, ...ledgerEntries];
+      setLedgerEntries(newEntries);
+      saveUserState(form.contact, buildPersistedState({ ledgerEntries: newEntries }));
     } catch (err) {
       console.error("handleReceiptUpload failed:", err);
       setLedgerError("Couldn't read that photo — please try again with a clearer shot.");
     } finally {
       if (type === "cost") setUploadingCost(false); else setUploadingSales(false);
     }
+  }
+
+  async function handleLogin() {
+    const trimmedContact = loginContact.trim();
+    if (ADMIN_CONTACTS.includes(trimmedContact)) {
+      setScreen("admin");
+      return;
+    }
+    if (role === "collaborator") {
+      setScreen("collab-dashboard");
+      return;
+    }
+    // Proprietor login: try to restore a previously saved loop. If nothing
+    // was ever saved for this number (or the lookup fails), fail open into
+    // a fresh onboarding under that number rather than dumping them into a
+    // blank, half-configured app screen.
+    setLoggingIn(true);
+    try {
+      const res = await fetch(`/api/user-state?phone=${encodeURIComponent(trimmedContact)}`);
+      if (!res.ok) throw new Error(`user-state returned ${res.status}`);
+      const data = await res.json();
+      if (data.found && data.state) {
+        const s = data.state;
+        setLanguage(s.language || "en");
+        setForm(s.form || { ...form, contact: trimmedContact });
+        setGoal(s.goal || "");
+        setPeriod(s.period || "Monthly");
+        setPlanData(s.planData || null);
+        setDaysDone(s.daysDone || 0);
+        setStreak(s.streak || 0);
+        setLedgerEntries(s.ledgerEntries || []);
+        setScreen("app");
+        return;
+      }
+    } catch (err) {
+      console.error("handleLogin failed:", err);
+    } finally {
+      setLoggingIn(false);
+    }
+    setForm((f) => ({ ...f, contact: trimmedContact }));
+    setObStep(0);
+    setScreen("onboarding");
   }
 
   const style = (
@@ -1040,11 +1117,11 @@ export default function UpscaleApp() {
               </div>
             )}
             <PrimaryButton
-              onClick={() => setScreen(isAdminContact ? "admin" : role === "collaborator" ? "collab-dashboard" : "app")}
-              disabled={!loginContact.trim() || (!isAdminContact && !role)}>
-              Log in <ArrowRight size={15} />
+              onClick={handleLogin}
+              disabled={!loginContact.trim() || (!isAdminContact && !role) || loggingIn}>
+              {loggingIn ? "Logging in..." : "Log in"} <ArrowRight size={15} />
             </PrimaryButton>
-            <div className="text-[11px] text-gray-400 mt-3">Prototype only — this doesn't check real credentials yet.</div>
+            <div className="text-[11px] text-gray-400 mt-3">Enter the number you used before to pick up where you left off.</div>
           </div>
         </FadeIn>
       </div>
