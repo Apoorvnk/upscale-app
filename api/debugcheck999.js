@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const client = new GoogleGenAI({});
     const response = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: "What's a trending jewelry style? Respond with ONLY a JSON object like {\"trend\": \"...\"}",
       config: {
         tools: [{ googleSearch: {} }],
