@@ -75,7 +75,7 @@ Respond with ONLY a JSON object (no markdown fences, no other text) shaped exact
 {"amount": 0, "vendor": "...", "date": "...", "description": "..."}`;
 
     const response = await getGenaiClient().models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: [
         { inlineData: { mimeType, data: imageBase64 } },
         { text: "Extract the details from this document." },

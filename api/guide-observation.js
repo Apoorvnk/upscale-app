@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await getClient().models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: `Their business area: ${subjectName || "small business"}\nTheir goal for this period: "${goal || "not set"}"\nToday's observation: "${observationText}"`,
       config: {
         systemInstruction: SYSTEM_PROMPT,
