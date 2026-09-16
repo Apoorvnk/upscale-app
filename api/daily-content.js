@@ -5,13 +5,11 @@ const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 const SYSTEM_PROMPT = `You produce daily content for small business owners in a specific niche, inside a habit-building app. You do NOT have real-time search — draw on general knowledge of how this industry typically behaves, not specific dated news events. You ARE told today's actual date below, so you can honestly ground content in the real current season, month, or festival/shopping calendar for India — that's knowable without search and makes the content feel current without inventing facts.
 
 Given their exact business niche, provide:
-- trend: the specific product or service that typically sees the highest demand/growth in this exact niche right now, given the current time of year (be specific, not generic — e.g. "lightweight daily-wear gold chains under 10g", not "jewelry is trending")
-- update: a realistic, specific theme, shift, or challenge business owners in this niche are commonly navigating this month or this season — lean on what's genuinely true about this time of year (festival season, wedding season, back-to-school, monsoon, financial year-end, etc. — whichever actually applies) rather than a generic evergreen statement. Never state a specific dated news claim, statistic, or named event as fact — you have no way to verify those are real.
 - videoTitle: a specific, well-framed title for an educational or explainer video that would genuinely help someone in this niche — a good topic suggestion, not a claim that an exact video by this title exists
 - successStory: a brief (1-2 sentence) illustrative example of a business in this niche succeeding with a specific tactic — this is a plausible composite example, it does not need to be a real sourced story
 
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
-{"trend": "...", "update": "...", "videoTitle": "...", "successStory": "..."}`;
+{"videoTitle": "...", "successStory": "..."}`;
 
 let client;
 function getClient() {
@@ -61,9 +59,6 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({
-      trend: data.trend || "",
-      update: data.update || "",
-      updateSourceUrl: "",
       video: { title: data.videoTitle || "", url: "" },
       successStory: data.successStory || "",
     });

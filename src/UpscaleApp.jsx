@@ -10,6 +10,7 @@ const NAVY = "#0F2E7A";
 const BLUE = "#2955E0";
 const BLUE_BG = "#EAF0FD";
 const ORANGE = "#E8672B";
+const SHOW_REWARD_AD = false; // Ad removed as of now — flip back to true to restore it.
 
 // Real numbers come from the VITE_ADMIN_CONTACTS build-time env var (comma
 // separated), never committed to the repo — see .env.example. Matching
@@ -423,7 +424,7 @@ const STRINGS = {
     tabLoop: "Loop",
     tabProgress: "Progress",
     tabCollaborate: "Collaborate",
-    tabRecommendations: "Recommendations",
+    tabRecommendations: "Books",
     tabAnalytics: "Analytics",
     tabMarketing: "Marketing",
     stageContent: "Today's content",
@@ -475,6 +476,38 @@ const STRINGS = {
     marketAnalyticsBuilding: "Building your market analytics...",
     planProgressBuilding: "Assessing your progress...",
     whatToDoNext: "What to do next",
+    refreshingContent: "Refreshing today's content...",
+    demandLabel: "Demand",
+    demandIntro: "Test real demand for this idea before committing to it.",
+    demandProduct: "Product (photo)",
+    demandService: "Service (describe it)",
+    demandUploadPhoto: "Upload a photo",
+    demandProductPlaceholder: "Optional: add a short description",
+    demandServicePlaceholder: "Describe the service you're starting",
+    demandPollLanguageLabel: "Poll language:",
+    demandGeneratePitch: "Generate pitch",
+    demandGenerating: "Generating...",
+    demandPitchLabel: "Your pitch",
+    demandCreatePoll: "Create poll",
+    demandCreating: "Creating...",
+    demandShareLabel: "Share this poll",
+    demandCopyForInstagram: "Copy link (Instagram)",
+    demandLinkCopied: "Link copied!",
+    demandResultsLabel: "Results",
+    demandRefresh: "Refresh",
+    demandRefreshing: "Refreshing...",
+    demandYes: "Yes",
+    demandMaybe: "Maybe",
+    demandNo: "No",
+    demandStatusGreen: "Strong demand — go ahead",
+    demandStatusOrange: "Mixed signal — minor changes needed",
+    demandStatusRed: "Weak demand — reconsider the idea",
+    demandNoResponsesYet: "No responses yet — share the poll to start collecting them.",
+    pollLoading: "Loading...",
+    pollNotFound: "This poll couldn't be found.",
+    pollThanks: "Thanks for your response!",
+    pollMessageWhatsApp: "Message on WhatsApp",
+    pollTapToRespond: "Would you buy this / use this?",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -519,7 +552,7 @@ const STRINGS = {
     tabLoop: "लूप",
     tabProgress: "प्रगति",
     tabCollaborate: "सहयोग",
-    tabRecommendations: "सुझाव",
+    tabRecommendations: "पुस्तकें",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
     stageContent: "आज की सामग्री",
@@ -571,6 +604,38 @@ const STRINGS = {
     marketAnalyticsBuilding: "आपका मार्केट एनालिटिक्स तैयार हो रहा है...",
     planProgressBuilding: "आपकी प्रगति का आकलन किया जा रहा है...",
     whatToDoNext: "आगे क्या करना है",
+    refreshingContent: "आज की सामग्री ताज़ा की जा रही है...",
+    demandLabel: "मांग",
+    demandIntro: "प्रतिबद्ध होने से पहले इस विचार की असली मांग जांचें।",
+    demandProduct: "उत्पाद (फोटो)",
+    demandService: "सेवा (वर्णन करें)",
+    demandUploadPhoto: "एक फोटो अपलोड करें",
+    demandProductPlaceholder: "वैकल्पिक: एक छोटा विवरण जोड़ें",
+    demandServicePlaceholder: "आप जो सेवा शुरू कर रहे हैं उसका वर्णन करें",
+    demandPollLanguageLabel: "पोल की भाषा:",
+    demandGeneratePitch: "पिच बनाएं",
+    demandGenerating: "बनाया जा रहा है...",
+    demandPitchLabel: "आपकी पिच",
+    demandCreatePoll: "पोल बनाएं",
+    demandCreating: "बनाया जा रहा है...",
+    demandShareLabel: "यह पोल शेयर करें",
+    demandCopyForInstagram: "लिंक कॉपी करें (Instagram)",
+    demandLinkCopied: "लिंक कॉपी हो गया!",
+    demandResultsLabel: "परिणाम",
+    demandRefresh: "रिफ्रेश करें",
+    demandRefreshing: "रिफ्रेश हो रहा है...",
+    demandYes: "हां",
+    demandMaybe: "शायद",
+    demandNo: "नहीं",
+    demandStatusGreen: "अच्छी मांग — आगे बढ़ें",
+    demandStatusOrange: "मिश्रित संकेत — थोड़ा बदलाव करें",
+    demandStatusRed: "कम मांग — विचार पर फिर से सोचें",
+    demandNoResponsesYet: "अभी तक कोई जवाब नहीं — जवाब पाने के लिए पोल शेयर करें।",
+    pollLoading: "लोड हो रहा है...",
+    pollNotFound: "यह पोल नहीं मिला।",
+    pollThanks: "आपके जवाब के लिए धन्यवाद!",
+    pollMessageWhatsApp: "व्हाट्सएप पर मैसेज करें",
+    pollTapToRespond: "क्या आप इसे खरीदेंगे / इस्तेमाल करेंगे?",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -615,7 +680,7 @@ const STRINGS = {
     tabLoop: "लूप",
     tabProgress: "प्रगती",
     tabCollaborate: "सहयोग",
-    tabRecommendations: "शिफारसी",
+    tabRecommendations: "पुस्तके",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
     stageContent: "आजची सामग्री",
@@ -667,6 +732,38 @@ const STRINGS = {
     marketAnalyticsBuilding: "तुमचे मार्केट अॅनालिटिक्स तयार होत आहे...",
     planProgressBuilding: "तुमच्या प्रगतीचे मूल्यांकन होत आहे...",
     whatToDoNext: "पुढे काय करायचे",
+    refreshingContent: "आजची सामग्री रिफ्रेश होत आहे...",
+    demandLabel: "मागणी",
+    demandIntro: "वचनबद्ध होण्यापूर्वी या कल्पनेची खरी मागणी तपासा.",
+    demandProduct: "उत्पादन (फोटो)",
+    demandService: "सेवा (वर्णन करा)",
+    demandUploadPhoto: "फोटो अपलोड करा",
+    demandProductPlaceholder: "पर्यायी: एक छोटे वर्णन जोडा",
+    demandServicePlaceholder: "तुम्ही सुरू करत असलेल्या सेवेचे वर्णन करा",
+    demandPollLanguageLabel: "पोलची भाषा:",
+    demandGeneratePitch: "पिच तयार करा",
+    demandGenerating: "तयार होत आहे...",
+    demandPitchLabel: "तुमची पिच",
+    demandCreatePoll: "पोल तयार करा",
+    demandCreating: "तयार होत आहे...",
+    demandShareLabel: "हा पोल शेअर करा",
+    demandCopyForInstagram: "लिंक कॉपी करा (Instagram)",
+    demandLinkCopied: "लिंक कॉपी झाली!",
+    demandResultsLabel: "निकाल",
+    demandRefresh: "रिफ्रेश करा",
+    demandRefreshing: "रिफ्रेश होत आहे...",
+    demandYes: "होय",
+    demandMaybe: "कदाचित",
+    demandNo: "नाही",
+    demandStatusGreen: "चांगली मागणी — पुढे जा",
+    demandStatusOrange: "संमिश्र संकेत — थोडे बदल करा",
+    demandStatusRed: "कमी मागणी — कल्पनेचा पुनर्विचार करा",
+    demandNoResponsesYet: "अजून कोणतेही उत्तर नाही — उत्तरे मिळवण्यासाठी पोल शेअर करा.",
+    pollLoading: "लोड होत आहे...",
+    pollNotFound: "हा पोल सापडला नाही.",
+    pollThanks: "तुमच्या उत्तरासाठी धन्यवाद!",
+    pollMessageWhatsApp: "व्हॉट्सअॅपवर मेसेज करा",
+    pollTapToRespond: "तुम्ही हे खरेदी कराल / वापराल का?",
   },
 };
 
@@ -776,7 +873,99 @@ function PlanTier({ title, items, progressPct, progressLabel }) {
   );
 }
 
+// Public demand-poll page: reached via a shared link (?poll=<id>), no
+// account or onboarding needed. Deliberately self-contained — it doesn't
+// touch any of UpscaleApp's state, just the poll id from the URL.
+function PublicPollView({ id }) {
+  const [poll, setPoll] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [voted, setVoted] = useState(null);
+  const [voting, setVoting] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`demand-poll returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => setPoll(data))
+      .catch((err) => { console.error("PublicPollView fetch failed:", err); setFailed(true); })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  function castVote(choice) {
+    if (voting || voted) return;
+    setVoting(true);
+    fetch("/api/demand-poll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "vote", id, vote: choice }),
+    })
+      .catch((err) => console.error("PublicPollView vote failed:", err))
+      .finally(() => { setVoted(choice); setVoting(false); });
+  }
+
+  const lang = poll?.language || "en";
+  const tt = (key, vars) => tr(lang, key, vars);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: NAVY }}>
+      <div className="w-full max-w-sm bg-white rounded-xl p-8 border border-gray-200 text-center">
+        <div className="flex justify-center mb-6"><Logo /></div>
+        {loading ? (
+          <p className="text-sm text-gray-500">{tt("pollLoading")}</p>
+        ) : failed || !poll ? (
+          <p className="text-sm text-gray-500">{tt("pollNotFound")}</p>
+        ) : voted ? (
+          <div className="space-y-4">
+            <div className="text-2xl">✅</div>
+            <p className="text-sm font-medium" style={{ color: NAVY }}>{tt("pollThanks")}</p>
+            {poll.phone && (voted === "yes" || voted === "maybe") && (
+              <a href={`https://wa.me/91${poll.phone}`} target="_blank" rel="noopener noreferrer"
+                className="inline-block text-sm font-medium px-4 py-2.5 rounded-lg text-white" style={{ background: "#0F6E56" }}>
+                {tt("pollMessageWhatsApp")}
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4 text-left">
+            {poll.image_data && <img src={poll.image_data} alt="" className="w-full rounded-lg" />}
+            <p className="text-base font-medium text-center" style={{ color: NAVY }}>{poll.pitch}</p>
+            {poll.description && !poll.image_data && <p className="text-sm text-gray-600">{poll.description}</p>}
+            <p className="text-xs text-gray-400 text-center">{tt("pollTapToRespond")}</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => castVote("yes")} disabled={voting}
+                className="text-sm font-medium py-2.5 rounded-lg text-white disabled:opacity-50" style={{ background: "#0F6E56" }}>
+                {tt("demandYes")}
+              </button>
+              <button onClick={() => castVote("maybe")} disabled={voting}
+                className="text-sm font-medium py-2.5 rounded-lg text-white disabled:opacity-50" style={{ background: "#B45309" }}>
+                {tt("demandMaybe")}
+              </button>
+              <button onClick={() => castVote("no")} disabled={voting}
+                className="text-sm font-medium py-2.5 rounded-lg text-white disabled:opacity-50" style={{ background: "#B91C1C" }}>
+                {tt("demandNo")}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Top-level entry: a shared poll link (?poll=<id>) bypasses the whole app
+// shell entirely — kept as a separate component (rather than an early
+// return inside UpscaleAppInner) so there's no ambiguity about hook order
+// between the two very different render paths.
 export default function UpscaleApp() {
+  const publicPollId = new URLSearchParams(window.location.search).get("poll");
+  if (publicPollId) return <PublicPollView id={publicPollId} />;
+  return <UpscaleAppInner />;
+}
+
+function UpscaleAppInner() {
   const [screen, setScreen] = useState("welcome");
   const [language, setLanguage] = useState("en");
   const t = (key, vars) => tr(language, key, vars);
@@ -809,6 +998,24 @@ export default function UpscaleApp() {
   const [liveContent, setLiveContent] = useState(null);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentFetchAttempted, setContentFetchAttempted] = useState(false);
+
+  // Demand check: a standing poll the proprietor creates once (not reset
+  // daily like the rest of Today's content) to validate a product/service
+  // idea with real people before committing to it.
+  const [demandPollId, setDemandPollId] = useState(null);
+  const [demandInputType, setDemandInputType] = useState("product");
+  const [demandImageDataUrl, setDemandImageDataUrl] = useState(null);
+  const [demandDescription, setDemandDescription] = useState("");
+  const [demandPitch, setDemandPitch] = useState("");
+  const [demandPitchLoading, setDemandPitchLoading] = useState(false);
+  const [demandPollLanguage, setDemandPollLanguage] = useState("en");
+  const [demandCreating, setDemandCreating] = useState(false);
+  const [demandError, setDemandError] = useState(null);
+  const [demandPollData, setDemandPollData] = useState(null);
+  const [demandPollFetchedForId, setDemandPollFetchedForId] = useState(null);
+  const [demandPollLoading, setDemandPollLoading] = useState(false);
+  const [demandLinkCopied, setDemandLinkCopied] = useState(false);
+
   const [obsText, setObsText] = useState("");
   const [guiding, setGuiding] = useState(false);
   const [guidance, setGuidance] = useState(null);
@@ -857,7 +1064,7 @@ export default function UpscaleApp() {
   // overrides for values just computed locally that haven't landed in state
   // yet (state setters are async, so e.g. daysDone here can be stale by one).
   function buildPersistedState(overrides = {}) {
-    return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, ...overrides };
+    return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, demandPollId, ...overrides };
   }
 
   // Live daily content: fetched at most once per loop cycle (guarded by
@@ -888,9 +1095,6 @@ export default function UpscaleApp() {
       .finally(() => setContentLoading(false));
   }, [screen, stage, subject.name, subject.label, language, contentFetchAttempted]);
 
-  const displayTrend = liveContent?.trend || subject.trend;
-  const displayUpdate = liveContent?.update || subject.update;
-  const displayUpdateUrl = liveContent?.updateSourceUrl || `https://www.google.com/search?q=${encodeURIComponent(subject.name + " " + displayUpdate)}&tbm=nws`;
   const displayVideoTitle = liveContent?.video?.title || subject.video.title;
   const displayVideoUrl = liveContent?.video?.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(displayVideoTitle + " animated explainer")}`;
   const displaySuccessStory = liveContent?.successStory || subject.successStory;
@@ -946,6 +1150,36 @@ export default function UpscaleApp() {
   }, [screen, tab, subject.name, subject.label, form.city, language, marketAnalyticsFetchAttempted]);
 
   const displayAnalytics = marketAnalyticsData || subject.analytics;
+
+  // Demand poll results: a plain Supabase read (no AI cost), so it's safe
+  // to refetch whenever the active poll changes or the proprietor asks for
+  // a refresh — unlike the AI fetches above, there's no per-cycle cost
+  // concern gating this one.
+  function fetchDemandPollResults(id) {
+    if (!id) return;
+    setDemandPollLoading(true);
+    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`demand-poll returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => setDemandPollData(data))
+      .catch((err) => console.error("fetchDemandPollResults failed:", err))
+      .finally(() => setDemandPollLoading(false));
+  }
+
+  useEffect(() => {
+    if (screen !== "app" || !demandPollId || demandPollFetchedForId === demandPollId) return;
+    setDemandPollFetchedForId(demandPollId);
+    fetchDemandPollResults(demandPollId);
+  }, [screen, demandPollId, demandPollFetchedForId]);
+
+  const demandShareUrl = demandPollId ? `${window.location.origin}${window.location.pathname}?poll=${demandPollId}` : "";
+  const demandTotalVotes = demandPollData ? demandPollData.yes_count + demandPollData.no_count + demandPollData.maybe_count : 0;
+  const demandStatusColor = demandTotalVotes === 0 ? null
+    : demandPollData.yes_count / demandTotalVotes >= 0.6 ? "green"
+    : demandPollData.yes_count / demandTotalVotes >= 0.35 ? "orange"
+    : "red";
 
   // Plan execution progress: unlike the simple day-count bars (used as an
   // immediate 0% starting state right after the goal is set), the Progress
@@ -1122,6 +1356,80 @@ export default function UpscaleApp() {
     }
   }
 
+  async function handleDemandImageSelect(file) {
+    if (!file) return;
+    setDemandError(null);
+    try {
+      const dataUrl = await resizeImageFile(file);
+      setDemandImageDataUrl(dataUrl);
+      setDemandPitch("");
+    } catch (err) {
+      console.error("handleDemandImageSelect failed:", err);
+      setDemandError("Couldn't read that photo — please try again.");
+    }
+  }
+
+  async function generateDemandPitch() {
+    setDemandError(null);
+    setDemandPitchLoading(true);
+    try {
+      const body = { subjectName: subject.name, inputType: demandInputType, language: demandPollLanguage };
+      if (demandInputType === "product") {
+        if (!demandImageDataUrl) throw new Error("no image");
+        const match = demandImageDataUrl.match(/^data:(.+);base64,(.*)$/);
+        if (!match) throw new Error("Could not read image data");
+        body.mediaType = match[1];
+        body.imageBase64 = match[2];
+        body.description = demandDescription.trim() || null;
+      } else {
+        body.description = demandDescription.trim();
+      }
+      const res = await fetch("/api/demand-pitch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`demand-pitch returned ${res.status}`);
+      const data = await res.json();
+      setDemandPitch(data.pitch || "");
+    } catch (err) {
+      console.error("generateDemandPitch failed:", err);
+      setDemandError("Couldn't generate a pitch just now — please try again in a moment.");
+    } finally {
+      setDemandPitchLoading(false);
+    }
+  }
+
+  async function createDemandPoll() {
+    setDemandError(null);
+    setDemandCreating(true);
+    try {
+      const res = await fetch("/api/demand-poll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          phone: form.contact,
+          subjectName: subject.name,
+          inputType: demandInputType,
+          imageData: demandInputType === "product" ? demandImageDataUrl : null,
+          description: demandDescription.trim() || null,
+          pitch: demandPitch,
+          language: demandPollLanguage,
+        }),
+      });
+      if (!res.ok) throw new Error(`demand-poll create returned ${res.status}`);
+      const data = await res.json();
+      setDemandPollId(data.id);
+      saveUserState(form.contact, buildPersistedState({ demandPollId: data.id }));
+    } catch (err) {
+      console.error("createDemandPoll failed:", err);
+      setDemandError("Couldn't create the poll just now — please try again in a moment.");
+    } finally {
+      setDemandCreating(false);
+    }
+  }
+
   async function handleLogin() {
     const trimmedContact = loginContact.trim();
     if (ADMIN_CONTACTS.includes(trimmedContact)) {
@@ -1151,6 +1459,7 @@ export default function UpscaleApp() {
         setDaysDone(s.daysDone || 0);
         setStreak(s.streak || 0);
         setLedgerEntries(s.ledgerEntries || []);
+        setDemandPollId(s.demandPollId || null);
         setScreen("app");
         return;
       }
@@ -1993,21 +2302,140 @@ export default function UpscaleApp() {
                   {subject.label && <p className="text-xs text-gray-400 -mt-2">{t("forLabel", { label: subject.label.toLowerCase() }).trim()}</p>}
                   {contentLoading && !liveContent && (
                     <p className="text-[11px] text-gray-400 -mt-2 flex items-center gap-1">
-                      <Sparkles size={11} className="animate-pulse" /> Refreshing with today's real update...
+                      <Sparkles size={11} className="animate-pulse" /> {t("refreshingContent")}
                     </p>
                   )}
                   <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("updateLabel")}</div>
-                    <a href={displayUpdateUrl}
-                      target="_blank" rel="noopener noreferrer"
-                      className="block bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700 hover:border-gray-300">
-                      {displayUpdate}
-                      <span className="text-[11px] block mt-1" style={{ color: BLUE }}>{t("readMore")}</span>
-                    </a>
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("trendLabel")}</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displayTrend}</div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("demandLabel")}</div>
+                    {!demandPollId ? (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 space-y-3">
+                        <p className="text-xs text-gray-500">{t("demandIntro")}</p>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setDemandInputType("product"); setDemandPitch(""); }}
+                            className="flex-1 text-xs font-medium py-2 rounded-lg border"
+                            style={{ borderColor: demandInputType === "product" ? BLUE : "#E5E7EB", background: demandInputType === "product" ? BLUE_BG : "#fff", color: demandInputType === "product" ? BLUE : "#374151" }}>
+                            {t("demandProduct")}
+                          </button>
+                          <button onClick={() => { setDemandInputType("service"); setDemandPitch(""); }}
+                            className="flex-1 text-xs font-medium py-2 rounded-lg border"
+                            style={{ borderColor: demandInputType === "service" ? BLUE : "#E5E7EB", background: demandInputType === "service" ? BLUE_BG : "#fff", color: demandInputType === "service" ? BLUE : "#374151" }}>
+                            {t("demandService")}
+                          </button>
+                        </div>
+
+                        {demandInputType === "product" && (
+                          <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+                            <input type="file" accept="image/*" capture="environment" className="hidden"
+                              onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleDemandImageSelect(f); }} />
+                            {demandImageDataUrl ? (
+                              <img src={demandImageDataUrl} alt="" className="max-h-32 rounded-lg" />
+                            ) : (
+                              <>
+                                <Upload size={18} style={{ color: BLUE }} />
+                                <span className="text-xs font-medium" style={{ color: NAVY }}>{t("demandUploadPhoto")}</span>
+                              </>
+                            )}
+                          </label>
+                        )}
+
+                        <textarea value={demandDescription} onChange={(e) => setDemandDescription(e.target.value)}
+                          placeholder={demandInputType === "service" ? t("demandServicePlaceholder") : t("demandProductPlaceholder")}
+                          className="w-full border border-gray-200 rounded-lg p-2.5 text-sm min-h-[60px] bg-white" />
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs text-gray-400">{t("demandPollLanguageLabel")}</span>
+                          {Object.entries(LANGUAGES).map(([key, label]) => (
+                            <button key={key} onClick={() => setDemandPollLanguage(key)}
+                              className="text-xs font-medium px-2 py-1 rounded-full border"
+                              style={{ borderColor: demandPollLanguage === key ? BLUE : "#E5E7EB", background: demandPollLanguage === key ? BLUE_BG : "#fff", color: demandPollLanguage === key ? BLUE : "#374151" }}>
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {demandError && <p className="text-xs" style={{ color: "#B91C1C" }}>{demandError}</p>}
+
+                        {!demandPitch ? (
+                          <button onClick={generateDemandPitch}
+                            disabled={demandPitchLoading || (demandInputType === "product" ? !demandImageDataUrl : !demandDescription.trim())}
+                            className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40 flex items-center justify-center gap-1.5" style={{ background: BLUE }}>
+                            {demandPitchLoading ? t("demandGenerating") : t("demandGeneratePitch")}
+                          </button>
+                        ) : (
+                          <>
+                            <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                              <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("demandPitchLabel")}</div>
+                              <textarea value={demandPitch} onChange={(e) => setDemandPitch(e.target.value)}
+                                className="w-full bg-transparent text-sm border-0 p-0 resize-none focus:outline-none" style={{ color: NAVY }} rows={2} />
+                            </div>
+                            <PrimaryButton onClick={createDemandPoll} disabled={demandCreating || !demandPitch.trim()}>
+                              {demandCreating ? t("demandCreating") : t("demandCreatePoll")}
+                            </PrimaryButton>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-lg p-3 border border-gray-200 space-y-3">
+                        <p className="text-sm text-gray-700 italic">"{demandPollData?.pitch || demandPitch}"</p>
+
+                        <div>
+                          <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("demandShareLabel")}</div>
+                          <div className="flex gap-2">
+                            <a href={`https://wa.me/?text=${encodeURIComponent((demandPollData?.pitch || demandPitch) + " " + demandShareUrl)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                              WhatsApp
+                            </a>
+                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(demandShareUrl)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: BLUE, color: BLUE }}>
+                              Facebook
+                            </a>
+                            <button onClick={() => { navigator.clipboard.writeText(demandShareUrl).then(() => { setDemandLinkCopied(true); setTimeout(() => setDemandLinkCopied(false), 2000); }); }}
+                              className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                              {demandLinkCopied ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandResultsLabel")}</div>
+                            <button onClick={() => fetchDemandPollResults(demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
+                              {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
+                            </button>
+                          </div>
+                          {demandPollData ? (
+                            <>
+                              <div className="grid grid-cols-3 gap-2 mb-2">
+                                <div className="text-center rounded-lg p-2" style={{ background: "#E7F5EF" }}>
+                                  <div className="text-lg font-medium" style={{ color: "#0F6E56" }}>{demandPollData.yes_count}</div>
+                                  <div className="text-[10px] text-gray-500">{t("demandYes")}</div>
+                                </div>
+                                <div className="text-center rounded-lg p-2" style={{ background: "#FEF3E7" }}>
+                                  <div className="text-lg font-medium" style={{ color: "#B45309" }}>{demandPollData.maybe_count}</div>
+                                  <div className="text-[10px] text-gray-500">{t("demandMaybe")}</div>
+                                </div>
+                                <div className="text-center rounded-lg p-2" style={{ background: "#FDECEC" }}>
+                                  <div className="text-lg font-medium" style={{ color: "#B91C1C" }}>{demandPollData.no_count}</div>
+                                  <div className="text-[10px] text-gray-500">{t("demandNo")}</div>
+                                </div>
+                              </div>
+                              {demandStatusColor && (
+                                <div className="rounded-lg p-2.5 flex items-center gap-2" style={{ background: demandStatusColor === "green" ? "#E7F5EF" : demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
+                                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
+                                  <span className="text-xs font-medium" style={{ color: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
+                                    {t(demandStatusColor === "green" ? "demandStatusGreen" : demandStatusColor === "orange" ? "demandStatusOrange" : "demandStatusRed")}
+                                  </span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-400">{t("demandNoResponsesYet")}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
@@ -2068,7 +2496,7 @@ export default function UpscaleApp() {
                 </div>
               )}
 
-              {stage === "reward" && !adDone && (
+              {stage === "reward" && SHOW_REWARD_AD && !adDone && (
                 <div className="space-y-4 text-center py-2">
                   <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">{t("sponsoredUnlock")}</div>
                   <div className="bg-white rounded-lg border border-gray-200 p-6 text-left">
@@ -2090,7 +2518,7 @@ export default function UpscaleApp() {
                 </div>
               )}
 
-              {stage === "reward" && adDone && (
+              {stage === "reward" && (!SHOW_REWARD_AD || adDone) && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-1"><Gift size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("stageCollaboration")}</h2></div>
 
