@@ -1,8 +1,21 @@
+import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 
-const SYSTEM_PROMPT = `You are a marketing strategist for small business owners in a daily habit-building app. You do NOT have real-time search — draw on general marketing knowledge, not specific dated events.
+let supabase;
+function getSupabase() {
+  if (!supabase) supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return supabase;
+}
+
+let genai;
+function getGenai() {
+  if (!genai) genai = new GoogleGenAI({});
+  return genai;
+}
+
+const STRATEGY_SYSTEM_PROMPT = `You are a marketing strategist for small business owners in a daily habit-building app. You do NOT have real-time search — draw on general marketing knowledge, not specific dated events.
 
 Given their exact business niche, identify the single psychological angle that actually moves buyers in this niche, and build a simple, implementable marketing strategy around it. Small business owners are not moved by generic advice like "post on social media more" — they need one sharp, specific angle they can act on this week.
 
@@ -18,52 +31,31 @@ Provide:
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
 {"angle": "...", "pitch": "...", "strategy": "...", "tactics": [{"tactic": "...", "how": "..."}], "videoTitle": "..."}`;
 
-let client;
-function getClient() {
-  if (!client) client = new GoogleGenAI({});
-  return client;
-}
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
-
+async function handleGenerate(req, res) {
   const { subjectName, subcategoryLabel, language } = req.body || {};
   if (!subjectName) {
     res.status(400).json({ error: "subjectName is required" });
     return;
   }
-
   const langName = LANGUAGE_NAMES[language] || "English";
   const niche = subcategoryLabel ? `${subjectName} — specifically ${subcategoryLabel}` : subjectName;
-
   try {
-    const response = await getClient().models.generateContent({
+    const response = await getGenai().models.generateContent({
       model: "gemini-3.6-flash",
       contents: `Business niche: ${niche}`,
-      config: {
-        systemInstruction: `${SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`,
-        responseMimeType: "application/json",
-      },
+      config: { systemInstruction: `${STRATEGY_SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`, responseMimeType: "application/json" },
     });
-
     const text = (response.text || "").trim();
-
     let data = null;
     try {
-      const cleaned = text.replace(/^```(json)?/i, "").replace(/```$/, "").trim();
-      data = JSON.parse(cleaned);
+      data = JSON.parse(text.replace(/^```(json)?/i, "").replace(/```$/, "").trim());
     } catch {
       data = null;
     }
-
     if (!data) {
       res.status(422).json({ error: "Could not generate a marketing strategy" });
       return;
     }
-
     res.status(200).json({
       angle: data.angle || "",
       pitch: data.pitch || "",
@@ -72,7 +64,66 @@ export default async function handler(req, res) {
       video: { title: data.videoTitle || "", url: "" },
     });
   } catch (err) {
-    console.error("marketing-strategy error:", err);
+    console.error("marketing generate error:", err);
     res.status(500).json({ error: "Marketing strategy generation failed" });
   }
+}
+
+async function handleCreatePage(req, res) {
+  const { phone, subjectName, angle, pitch, strategy, tactics, language } = req.body || {};
+  if (!phone || !pitch) {
+    res.status(400).json({ error: "phone and pitch are required" });
+    return;
+  }
+  try {
+    const { data, error } = await getSupabase()
+      .from("marketing_pages")
+      .insert({
+        phone: phone.trim(),
+        subject_name: subjectName || null,
+        angle: angle || null,
+        pitch,
+        strategy: strategy || null,
+        tactics: Array.isArray(tactics) ? tactics : null,
+        language: language || "en",
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    res.status(200).json({ id: data.id });
+  } catch (err) {
+    console.error("marketing create-page error:", err);
+    res.status(500).json({ error: "Could not create page" });
+  }
+}
+
+export default async function handler(req, res) {
+  if (req.method === "GET") {
+    const id = (req.query.id || "").trim();
+    if (!id) {
+      res.status(400).json({ error: "id is required" });
+      return;
+    }
+    try {
+      const { data, error } = await getSupabase().from("marketing_pages").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        res.status(404).json({ error: "Page not found" });
+        return;
+      }
+      res.status(200).json(data);
+    } catch (err) {
+      console.error("marketing GET error:", err);
+      res.status(500).json({ error: "Could not load page" });
+    }
+    return;
+  }
+
+  if (req.method === "POST") {
+    const { action } = req.body || {};
+    if (action === "create-page") return handleCreatePage(req, res);
+    return handleGenerate(req, res);
+  }
+
+  res.status(405).json({ error: "Method not allowed" });
 }

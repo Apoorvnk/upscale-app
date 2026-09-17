@@ -991,7 +991,7 @@ function PublicPollView({ id }) {
   const [review, setReview] = useState("");
 
   useEffect(() => {
-    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}`)
+    fetch(`/api/demand?id=${encodeURIComponent(id)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`demand-poll returned ${res.status}`);
         return res.json();
@@ -1004,7 +1004,7 @@ function PublicPollView({ id }) {
   function castVote(choice) {
     if (voting || voted) return;
     setVoting(true);
-    fetch("/api/demand-poll", {
+    fetch("/api/demand", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "vote", id, vote: choice, answers, review: review.trim() || null }),
@@ -1096,7 +1096,7 @@ function PublicAdView({ id }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/marketing-page?id=${encodeURIComponent(id)}`)
+    fetch(`/api/marketing?id=${encodeURIComponent(id)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`marketing-page returned ${res.status}`);
         return res.json();
@@ -1309,7 +1309,7 @@ function UpscaleAppInner() {
     if (screen !== "app" || tab !== "marketing" || marketingFetchAttempted) return;
     setMarketingFetchAttempted(true);
     setMarketingLoading(true);
-    fetch("/api/marketing-strategy", {
+    fetch("/api/marketing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, language }),
@@ -1332,10 +1332,10 @@ function UpscaleAppInner() {
     if (screen !== "app" || tab !== "analytics" || marketAnalyticsFetchAttempted) return;
     setMarketAnalyticsFetchAttempted(true);
     setMarketAnalyticsLoading(true);
-    fetch("/api/market-analytics", {
+    fetch("/api/insights", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, city: form.city, language }),
+      body: JSON.stringify({ action: "market-analytics", subjectName: subject.name, subcategoryLabel: subject.label || null, city: form.city, language }),
     })
       .then((res) => {
         if (!res.ok) throw new Error(`market-analytics returned ${res.status}`);
@@ -1355,7 +1355,7 @@ function UpscaleAppInner() {
   function fetchDemandPollResults(id) {
     if (!id) return;
     setDemandPollLoading(true);
-    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}&includeResponses=1`)
+    fetch(`/api/demand?id=${encodeURIComponent(id)}&includeResponses=1`)
       .then((res) => {
         if (!res.ok) throw new Error(`demand-poll returned ${res.status}`);
         return res.json();
@@ -1405,10 +1405,11 @@ function UpscaleAppInner() {
     if (screen !== "app" || tab !== "progress" || !planData || planProgressFetchAttempted) return;
     setPlanProgressFetchAttempted(true);
     setPlanProgressLoading(true);
-    fetch("/api/plan-progress", {
+    fetch("/api/insights", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        action: "plan-progress",
         goal, subjectName: subject.name, planData, daysDone, totalDays,
         totalCosts, totalSales, netAmount, investmentAmount,
         demandChangePct: marketAnalyticsData?.demandChangePct ?? null,
@@ -1586,7 +1587,7 @@ function UpscaleAppInner() {
     setDemandError(null);
     setDemandPitchLoading(true);
     try {
-      const body = { subjectName: subject.name, inputType: demandInputType, language: demandPollLanguage };
+      const body = { action: "pitch", subjectName: subject.name, inputType: demandInputType, language: demandPollLanguage };
       if (demandInputType === "product") {
         if (!demandImageDataUrl) throw new Error("no image");
         const match = demandImageDataUrl.match(/^data:(.+);base64,(.*)$/);
@@ -1597,7 +1598,7 @@ function UpscaleAppInner() {
       } else {
         body.description = demandDescription.trim();
       }
-      const res = await fetch("/api/demand-pitch", {
+      const res = await fetch("/api/demand", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -1617,10 +1618,11 @@ function UpscaleAppInner() {
     setDemandError(null);
     setDemandQuestionsLoading(true);
     try {
-      const res = await fetch("/api/demand-questions", {
+      const res = await fetch("/api/demand", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "questions",
           subjectName: subject.name,
           inputType: demandInputType,
           description: demandDescription.trim() || null,
@@ -1648,7 +1650,7 @@ function UpscaleAppInner() {
     setDemandCreating(true);
     try {
       const selectedQuestions = (demandSuggestedQuestions || []).filter((q) => demandSelectedQuestionIds.includes(q.id));
-      const res = await fetch("/api/demand-poll", {
+      const res = await fetch("/api/demand", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1681,10 +1683,11 @@ function UpscaleAppInner() {
     if (!marketingData) return;
     setMarketingPageCreating(true);
     try {
-      const res = await fetch("/api/marketing-page", {
+      const res = await fetch("/api/marketing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "create-page",
           phone: form.contact,
           subjectName: subject.name,
           angle: marketingData.angle,
