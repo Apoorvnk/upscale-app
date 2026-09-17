@@ -374,6 +374,8 @@ function todayStr() {
 }
 
 const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
+const AGE_GROUPS = ["Under 18", "18-25", "25-40", "40-60", "60+"];
+const GENDERS = ["Any", "Women", "Men"];
 
 // Covers the highest-traffic screens (Welcome, Onboarding, Goal, main nav,
 // Loop stage headers). Deeper screens (Admin, Collaborator dashboard,
@@ -427,6 +429,7 @@ const STRINGS = {
     tabRecommendations: "Books",
     tabAnalytics: "Analytics",
     tabMarketing: "Marketing",
+    tabDemand: "Demand",
     stageContent: "Today's content",
     stageObservation: "Observation",
     stageGuidance: "Guidance",
@@ -508,6 +511,21 @@ const STRINGS = {
     pollThanks: "Thanks for your response!",
     pollMessageWhatsApp: "Message on WhatsApp",
     pollTapToRespond: "Would you buy this / use this?",
+    knowledgeBuildingLabel: "Build your knowledge",
+    knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Watch the video, read the success story, and check the Books tab.",
+    seeBooksTab: "See Books tab",
+    marketingDemandCallout: "Your demand check isn't Green yet — check",
+    marketingShareLabel: "Share this ad",
+    demandCopyForFacebook: "Copy text (Facebook)",
+    demandTargetAgeLabel: "Target age group",
+    demandTargetGenderLabel: "Target gender",
+    demandTargetAny: "Any",
+    demandTargetLabel: "Target",
+    demandSuggestQuestions: "Suggest poll questions",
+    demandPickQuestions: "Pick the questions to include",
+    demandReviewsLabel: "Reviews",
+    pollReviewLabel: "Any feedback? (optional)",
+    pollReviewPlaceholder: "What do you think?",
   },
   hi: {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
@@ -555,6 +573,7 @@ const STRINGS = {
     tabRecommendations: "पुस्तकें",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
+    tabDemand: "मांग",
     stageContent: "आज की सामग्री",
     stageObservation: "अवलोकन",
     stageGuidance: "मार्गदर्शन",
@@ -636,6 +655,21 @@ const STRINGS = {
     pollThanks: "आपके जवाब के लिए धन्यवाद!",
     pollMessageWhatsApp: "व्हाट्सएप पर मैसेज करें",
     pollTapToRespond: "क्या आप इसे खरीदेंगे / इस्तेमाल करेंगे?",
+    knowledgeBuildingLabel: "अपना ज्ञान बढ़ाएं",
+    knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। वीडियो देखें, सफलता की कहानी पढ़ें, और पुस्तकें टैब देखें।",
+    seeBooksTab: "पुस्तकें टैब देखें",
+    marketingDemandCallout: "आपकी मांग जांच अभी हरी नहीं है — देखें",
+    marketingShareLabel: "यह विज्ञापन शेयर करें",
+    demandCopyForFacebook: "टेक्स्ट कॉपी करें (Facebook)",
+    demandTargetAgeLabel: "लक्षित आयु वर्ग",
+    demandTargetGenderLabel: "लक्षित लिंग",
+    demandTargetAny: "कोई भी",
+    demandTargetLabel: "लक्ष्य",
+    demandSuggestQuestions: "पोल प्रश्न सुझाएं",
+    demandPickQuestions: "शामिल करने के लिए प्रश्न चुनें",
+    demandReviewsLabel: "समीक्षाएं",
+    pollReviewLabel: "कोई प्रतिक्रिया? (वैकल्पिक)",
+    pollReviewPlaceholder: "आप क्या सोचते हैं?",
   },
   mr: {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
@@ -683,6 +717,7 @@ const STRINGS = {
     tabRecommendations: "पुस्तके",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
+    tabDemand: "मागणी",
     stageContent: "आजची सामग्री",
     stageObservation: "निरीक्षण",
     stageGuidance: "मार्गदर्शन",
@@ -764,6 +799,21 @@ const STRINGS = {
     pollThanks: "तुमच्या उत्तरासाठी धन्यवाद!",
     pollMessageWhatsApp: "व्हॉट्सअॅपवर मेसेज करा",
     pollTapToRespond: "तुम्ही हे खरेदी कराल / वापराल का?",
+    knowledgeBuildingLabel: "तुमचे ज्ञान वाढवा",
+    knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. व्हिडिओ पाहा, यशोगाथा वाचा, आणि पुस्तके टॅब पाहा.",
+    seeBooksTab: "पुस्तके टॅब पाहा",
+    marketingDemandCallout: "तुमची मागणी तपासणी अजून हिरवी नाही — पहा",
+    marketingShareLabel: "ही जाहिरात शेअर करा",
+    demandCopyForFacebook: "मजकूर कॉपी करा (Facebook)",
+    demandTargetAgeLabel: "लक्ष्य वयोगट",
+    demandTargetGenderLabel: "लक्ष्य लिंग",
+    demandTargetAny: "कोणतेही",
+    demandTargetLabel: "लक्ष्य",
+    demandSuggestQuestions: "पोल प्रश्न सुचवा",
+    demandPickQuestions: "समाविष्ट करण्यासाठी प्रश्न निवडा",
+    demandReviewsLabel: "समीक्षा",
+    pollReviewLabel: "काही अभिप्राय? (पर्यायी)",
+    pollReviewPlaceholder: "तुम्हाला काय वाटते?",
   },
 };
 
@@ -882,6 +932,8 @@ function PublicPollView({ id }) {
   const [failed, setFailed] = useState(false);
   const [voted, setVoted] = useState(null);
   const [voting, setVoting] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [review, setReview] = useState("");
 
   useEffect(() => {
     fetch(`/api/demand-poll?id=${encodeURIComponent(id)}`)
@@ -900,7 +952,7 @@ function PublicPollView({ id }) {
     fetch("/api/demand-poll", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "vote", id, vote: choice }),
+      body: JSON.stringify({ action: "vote", id, vote: choice, answers, review: review.trim() || null }),
     })
       .catch((err) => console.error("PublicPollView vote failed:", err))
       .finally(() => { setVoted(choice); setVoting(false); });
@@ -908,9 +960,10 @@ function PublicPollView({ id }) {
 
   const lang = poll?.language || "en";
   const tt = (key, vars) => tr(lang, key, vars);
+  const questions = poll?.questions || [];
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: NAVY }}>
+    <div className="min-h-screen flex items-center justify-center px-6 py-10" style={{ background: NAVY }}>
       <div className="w-full max-w-sm bg-white rounded-xl p-8 border border-gray-200 text-center">
         <div className="flex justify-center mb-6"><Logo /></div>
         {loading ? (
@@ -933,6 +986,30 @@ function PublicPollView({ id }) {
             {poll.image_data && <img src={poll.image_data} alt="" className="w-full rounded-lg" />}
             <p className="text-base font-medium text-center" style={{ color: NAVY }}>{poll.pitch}</p>
             {poll.description && !poll.image_data && <p className="text-sm text-gray-600">{poll.description}</p>}
+
+            {questions.map((q) => (
+              <div key={q.id}>
+                <div className="text-xs font-medium mb-1.5" style={{ color: NAVY }}>{q.label}</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {q.options.map((opt) => (
+                    <button key={opt} type="button"
+                      onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
+                      className="text-xs font-medium px-2.5 py-1.5 rounded-full border"
+                      style={{ borderColor: answers[q.id] === opt ? BLUE : "#E5E7EB", background: answers[q.id] === opt ? BLUE_BG : "#fff", color: answers[q.id] === opt ? BLUE : "#374151" }}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div>
+              <div className="text-xs font-medium mb-1.5" style={{ color: NAVY }}>{tt("pollReviewLabel")}</div>
+              <textarea value={review} onChange={(e) => setReview(e.target.value)}
+                placeholder={tt("pollReviewPlaceholder")}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm min-h-[60px]" />
+            </div>
+
             <p className="text-xs text-gray-400 text-center">{tt("pollTapToRespond")}</p>
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => castVote("yes")} disabled={voting}
@@ -1015,6 +1092,11 @@ function UpscaleAppInner() {
   const [demandPollFetchedForId, setDemandPollFetchedForId] = useState(null);
   const [demandPollLoading, setDemandPollLoading] = useState(false);
   const [demandLinkCopied, setDemandLinkCopied] = useState(false);
+  const [demandTargetAgeGroup, setDemandTargetAgeGroup] = useState("");
+  const [demandTargetGender, setDemandTargetGender] = useState("");
+  const [demandSuggestedQuestions, setDemandSuggestedQuestions] = useState(null);
+  const [demandSelectedQuestionIds, setDemandSelectedQuestionIds] = useState([]);
+  const [demandQuestionsLoading, setDemandQuestionsLoading] = useState(false);
 
   const [obsText, setObsText] = useState("");
   const [guiding, setGuiding] = useState(false);
@@ -1026,6 +1108,7 @@ function UpscaleAppInner() {
   const [marketingData, setMarketingData] = useState(null);
   const [marketingLoading, setMarketingLoading] = useState(false);
   const [marketingFetchAttempted, setMarketingFetchAttempted] = useState(false);
+  const [marketingLinkCopied, setMarketingLinkCopied] = useState(null);
 
   const [marketAnalyticsData, setMarketAnalyticsData] = useState(null);
   const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
@@ -1158,7 +1241,7 @@ function UpscaleAppInner() {
   function fetchDemandPollResults(id) {
     if (!id) return;
     setDemandPollLoading(true);
-    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}`)
+    fetch(`/api/demand-poll?id=${encodeURIComponent(id)}&includeResponses=1`)
       .then((res) => {
         if (!res.ok) throw new Error(`demand-poll returned ${res.status}`);
         return res.json();
@@ -1180,6 +1263,20 @@ function UpscaleAppInner() {
     : demandPollData.yes_count / demandTotalVotes >= 0.6 ? "green"
     : demandPollData.yes_count / demandTotalVotes >= 0.35 ? "orange"
     : "red";
+
+  // Per-question option tallies, computed client-side from the raw response
+  // rows — response volumes here are small (early-stage testing), so this
+  // is simpler and cheaper than aggregating server-side.
+  const demandQuestionTallies = (demandPollData?.questions || []).map((q) => {
+    const counts = {};
+    for (const opt of q.options) counts[opt] = 0;
+    for (const r of demandPollData?.responses || []) {
+      const answer = r.answers?.[q.id];
+      if (answer && counts[answer] != null) counts[answer] += 1;
+    }
+    return { ...q, counts };
+  });
+  const demandReviews = (demandPollData?.responses || []).filter((r) => r.review && r.review.trim());
 
   // Plan execution progress: unlike the simple day-count bars (used as an
   // immediate 0% starting state right after the goal is set), the Progress
@@ -1400,10 +1497,41 @@ function UpscaleAppInner() {
     }
   }
 
+  async function generateDemandQuestions() {
+    setDemandError(null);
+    setDemandQuestionsLoading(true);
+    try {
+      const res = await fetch("/api/demand-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subjectName: subject.name,
+          inputType: demandInputType,
+          description: demandDescription.trim() || null,
+          targetAgeGroup: demandTargetAgeGroup || null,
+          targetGender: demandTargetGender || null,
+          language: demandPollLanguage,
+        }),
+      });
+      if (!res.ok) throw new Error(`demand-questions returned ${res.status}`);
+      const data = await res.json();
+      const questions = data.questions || [];
+      setDemandSuggestedQuestions(questions);
+      setDemandSelectedQuestionIds(questions.map((q) => q.id));
+    } catch (err) {
+      console.error("generateDemandQuestions failed:", err);
+      setDemandError("Couldn't suggest questions just now — you can still create the poll without them.");
+      setDemandSuggestedQuestions([]);
+    } finally {
+      setDemandQuestionsLoading(false);
+    }
+  }
+
   async function createDemandPoll() {
     setDemandError(null);
     setDemandCreating(true);
     try {
+      const selectedQuestions = (demandSuggestedQuestions || []).filter((q) => demandSelectedQuestionIds.includes(q.id));
       const res = await fetch("/api/demand-poll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1415,6 +1543,9 @@ function UpscaleAppInner() {
           imageData: demandInputType === "product" ? demandImageDataUrl : null,
           description: demandDescription.trim() || null,
           pitch: demandPitch,
+          questions: selectedQuestions,
+          targetAgeGroup: demandTargetAgeGroup || null,
+          targetGender: demandTargetGender || null,
           language: demandPollLanguage,
         }),
       });
@@ -2006,6 +2137,7 @@ function UpscaleAppInner() {
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
+          { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
           { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
@@ -2121,9 +2253,222 @@ function UpscaleAppInner() {
             </>
           )}
         </div>
+      ) : tab === "demand" ? (
+        <div className="px-6 py-6 bg-white">
+          {!demandPollId ? (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-500">{t("demandIntro")}</p>
+              <div className="flex gap-2">
+                <button onClick={() => { setDemandInputType("product"); setDemandPitch(""); setDemandSuggestedQuestions(null); }}
+                  className="flex-1 text-xs font-medium py-2 rounded-lg border"
+                  style={{ borderColor: demandInputType === "product" ? BLUE : "#E5E7EB", background: demandInputType === "product" ? BLUE_BG : "#fff", color: demandInputType === "product" ? BLUE : "#374151" }}>
+                  {t("demandProduct")}
+                </button>
+                <button onClick={() => { setDemandInputType("service"); setDemandPitch(""); setDemandSuggestedQuestions(null); }}
+                  className="flex-1 text-xs font-medium py-2 rounded-lg border"
+                  style={{ borderColor: demandInputType === "service" ? BLUE : "#E5E7EB", background: demandInputType === "service" ? BLUE_BG : "#fff", color: demandInputType === "service" ? BLUE : "#374151" }}>
+                  {t("demandService")}
+                </button>
+              </div>
+
+              {demandInputType === "product" && (
+                <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+                  <input type="file" accept="image/*" capture="environment" className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleDemandImageSelect(f); }} />
+                  {demandImageDataUrl ? (
+                    <img src={demandImageDataUrl} alt="" className="max-h-32 rounded-lg" />
+                  ) : (
+                    <>
+                      <Upload size={18} style={{ color: BLUE }} />
+                      <span className="text-xs font-medium" style={{ color: NAVY }}>{t("demandUploadPhoto")}</span>
+                    </>
+                  )}
+                </label>
+              )}
+
+              <textarea value={demandDescription} onChange={(e) => setDemandDescription(e.target.value)}
+                placeholder={demandInputType === "service" ? t("demandServicePlaceholder") : t("demandProductPlaceholder")}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm min-h-[60px] bg-white" />
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-[11px] text-gray-400 mb-1">{t("demandTargetAgeLabel")}</div>
+                  <select value={demandTargetAgeGroup} onChange={(e) => setDemandTargetAgeGroup(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
+                    <option value="">{t("demandTargetAny")}</option>
+                    {AGE_GROUPS.map((a) => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <div className="text-[11px] text-gray-400 mb-1">{t("demandTargetGenderLabel")}</div>
+                  <select value={demandTargetGender} onChange={(e) => setDemandTargetGender(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
+                    {GENDERS.map((g) => <option key={g} value={g === "Any" ? "" : g}>{g}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-gray-400">{t("demandPollLanguageLabel")}</span>
+                {Object.entries(LANGUAGES).map(([key, label]) => (
+                  <button key={key} onClick={() => setDemandPollLanguage(key)}
+                    className="text-xs font-medium px-2 py-1 rounded-full border"
+                    style={{ borderColor: demandPollLanguage === key ? BLUE : "#E5E7EB", background: demandPollLanguage === key ? BLUE_BG : "#fff", color: demandPollLanguage === key ? BLUE : "#374151" }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {demandError && <p className="text-xs" style={{ color: "#B91C1C" }}>{demandError}</p>}
+
+              {!demandPitch ? (
+                <button onClick={generateDemandPitch}
+                  disabled={demandPitchLoading || (demandInputType === "product" ? !demandImageDataUrl : !demandDescription.trim())}
+                  className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40 flex items-center justify-center gap-1.5" style={{ background: BLUE }}>
+                  {demandPitchLoading ? t("demandGenerating") : t("demandGeneratePitch")}
+                </button>
+              ) : (
+                <>
+                  <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                    <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("demandPitchLabel")}</div>
+                    <textarea value={demandPitch} onChange={(e) => setDemandPitch(e.target.value)}
+                      className="w-full bg-transparent text-sm border-0 p-0 resize-none focus:outline-none" style={{ color: NAVY }} rows={2} />
+                  </div>
+
+                  {demandSuggestedQuestions === null ? (
+                    <button onClick={generateDemandQuestions} disabled={demandQuestionsLoading}
+                      className="w-full text-sm font-medium px-4 py-2.5 rounded-lg border disabled:opacity-40" style={{ borderColor: BLUE, color: BLUE }}>
+                      {demandQuestionsLoading ? t("demandGenerating") : t("demandSuggestQuestions")}
+                    </button>
+                  ) : demandSuggestedQuestions.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandPickQuestions")}</div>
+                      {demandSuggestedQuestions.map((q) => (
+                        <label key={q.id} className="flex items-center gap-2 bg-white rounded-lg p-2.5 border border-gray-200 cursor-pointer">
+                          <input type="checkbox" checked={demandSelectedQuestionIds.includes(q.id)}
+                            onChange={(e) => setDemandSelectedQuestionIds((ids) => e.target.checked ? [...ids, q.id] : ids.filter((id) => id !== q.id))} />
+                          <span className="text-sm text-gray-700">{q.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  <PrimaryButton onClick={createDemandPoll} disabled={demandCreating || !demandPitch.trim()}>
+                    {demandCreating ? t("demandCreating") : t("demandCreatePoll")}
+                  </PrimaryButton>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <p className="text-sm text-gray-700 italic">"{demandPollData?.pitch || demandPitch}"</p>
+                {(demandPollData?.target_age_group || demandPollData?.target_gender) && (
+                  <p className="text-[11px] text-gray-400 mt-1.5">
+                    {t("demandTargetLabel")}: {[demandPollData.target_gender, demandPollData.target_age_group].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("demandShareLabel")}</div>
+                <div className="flex gap-2">
+                  <a href={`https://wa.me/?text=${encodeURIComponent((demandPollData?.pitch || demandPitch) + " " + demandShareUrl)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                    WhatsApp
+                  </a>
+                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(demandShareUrl)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: BLUE, color: BLUE }}>
+                    Facebook
+                  </a>
+                  <button onClick={() => { navigator.clipboard.writeText(demandShareUrl).then(() => { setDemandLinkCopied(true); setTimeout(() => setDemandLinkCopied(false), 2000); }); }}
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                    {demandLinkCopied ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandResultsLabel")}</div>
+                  <button onClick={() => fetchDemandPollResults(demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
+                    {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
+                  </button>
+                </div>
+                {demandPollData ? (
+                  <>
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      <div className="text-center rounded-lg p-2" style={{ background: "#E7F5EF" }}>
+                        <div className="text-lg font-medium" style={{ color: "#0F6E56" }}>{demandPollData.yes_count}</div>
+                        <div className="text-[10px] text-gray-500">{t("demandYes")}</div>
+                      </div>
+                      <div className="text-center rounded-lg p-2" style={{ background: "#FEF3E7" }}>
+                        <div className="text-lg font-medium" style={{ color: "#B45309" }}>{demandPollData.maybe_count}</div>
+                        <div className="text-[10px] text-gray-500">{t("demandMaybe")}</div>
+                      </div>
+                      <div className="text-center rounded-lg p-2" style={{ background: "#FDECEC" }}>
+                        <div className="text-lg font-medium" style={{ color: "#B91C1C" }}>{demandPollData.no_count}</div>
+                        <div className="text-[10px] text-gray-500">{t("demandNo")}</div>
+                      </div>
+                    </div>
+                    {demandStatusColor && (
+                      <div className="rounded-lg p-2.5 flex items-center gap-2 mb-3" style={{ background: demandStatusColor === "green" ? "#E7F5EF" : demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
+                        <span className="text-xs font-medium" style={{ color: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
+                          {t(demandStatusColor === "green" ? "demandStatusGreen" : demandStatusColor === "orange" ? "demandStatusOrange" : "demandStatusRed")}
+                        </span>
+                      </div>
+                    )}
+
+                    {demandQuestionTallies.length > 0 && (
+                      <div className="space-y-3 mb-3">
+                        {demandQuestionTallies.map((q) => (
+                          <div key={q.id}>
+                            <div className="text-xs font-medium mb-1" style={{ color: NAVY }}>{q.label}</div>
+                            <div className="space-y-1">
+                              {q.options.map((opt) => (
+                                <div key={opt} className="flex items-center justify-between text-[11px] text-gray-500 bg-white rounded p-1.5 border border-gray-200">
+                                  <span>{opt}</span>
+                                  <span className="font-medium" style={{ color: NAVY }}>{q.counts[opt]}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {demandReviews.length > 0 && (
+                      <div>
+                        <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("demandReviewsLabel")}</div>
+                        <div className="space-y-2">
+                          {demandReviews.map((r, i) => (
+                            <div key={i} className="bg-white rounded-lg p-2.5 border border-gray-200 text-xs text-gray-700">"{r.review}"</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400">{t("demandNoResponsesYet")}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       ) : tab === "marketing" ? (
         <div className="px-6 py-6 bg-white">
           <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
+          {demandPollId && demandStatusColor && demandStatusColor !== "green" && (
+            <div className="rounded-lg p-3 mb-4 flex items-center gap-2" style={{ background: demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
+              <span className="text-xs" style={{ color: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
+                {t("marketingDemandCallout")} <button onClick={() => setTab("demand")} className="font-medium underline">{t("tabDemand")} →</button>
+              </span>
+            </div>
+          )}
           {marketingLoading && !marketingData && (
             <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
               <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
@@ -2159,6 +2504,24 @@ function UpscaleAppInner() {
                   </a>
                 </div>
               )}
+              <div>
+                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
+                <div className="flex gap-2">
+                  <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                    WhatsApp
+                  </a>
+                  <button onClick={() => { navigator.clipboard.writeText(marketingData.pitch).then(() => { setMarketingLinkCopied("facebook"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
+                    {marketingLinkCopied === "facebook" ? t("demandLinkCopied") : t("demandCopyForFacebook")}
+                  </button>
+                  <button onClick={() => { navigator.clipboard.writeText(marketingData.pitch).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
+                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                    {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             !marketingLoading && marketingFetchAttempted && (
@@ -2305,137 +2668,9 @@ function UpscaleAppInner() {
                       <Sparkles size={11} className="animate-pulse" /> {t("refreshingContent")}
                     </p>
                   )}
-                  <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("demandLabel")}</div>
-                    {!demandPollId ? (
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 space-y-3">
-                        <p className="text-xs text-gray-500">{t("demandIntro")}</p>
-                        <div className="flex gap-2">
-                          <button onClick={() => { setDemandInputType("product"); setDemandPitch(""); }}
-                            className="flex-1 text-xs font-medium py-2 rounded-lg border"
-                            style={{ borderColor: demandInputType === "product" ? BLUE : "#E5E7EB", background: demandInputType === "product" ? BLUE_BG : "#fff", color: demandInputType === "product" ? BLUE : "#374151" }}>
-                            {t("demandProduct")}
-                          </button>
-                          <button onClick={() => { setDemandInputType("service"); setDemandPitch(""); }}
-                            className="flex-1 text-xs font-medium py-2 rounded-lg border"
-                            style={{ borderColor: demandInputType === "service" ? BLUE : "#E5E7EB", background: demandInputType === "service" ? BLUE_BG : "#fff", color: demandInputType === "service" ? BLUE : "#374151" }}>
-                            {t("demandService")}
-                          </button>
-                        </div>
-
-                        {demandInputType === "product" && (
-                          <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-                            <input type="file" accept="image/*" capture="environment" className="hidden"
-                              onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleDemandImageSelect(f); }} />
-                            {demandImageDataUrl ? (
-                              <img src={demandImageDataUrl} alt="" className="max-h-32 rounded-lg" />
-                            ) : (
-                              <>
-                                <Upload size={18} style={{ color: BLUE }} />
-                                <span className="text-xs font-medium" style={{ color: NAVY }}>{t("demandUploadPhoto")}</span>
-                              </>
-                            )}
-                          </label>
-                        )}
-
-                        <textarea value={demandDescription} onChange={(e) => setDemandDescription(e.target.value)}
-                          placeholder={demandInputType === "service" ? t("demandServicePlaceholder") : t("demandProductPlaceholder")}
-                          className="w-full border border-gray-200 rounded-lg p-2.5 text-sm min-h-[60px] bg-white" />
-
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-gray-400">{t("demandPollLanguageLabel")}</span>
-                          {Object.entries(LANGUAGES).map(([key, label]) => (
-                            <button key={key} onClick={() => setDemandPollLanguage(key)}
-                              className="text-xs font-medium px-2 py-1 rounded-full border"
-                              style={{ borderColor: demandPollLanguage === key ? BLUE : "#E5E7EB", background: demandPollLanguage === key ? BLUE_BG : "#fff", color: demandPollLanguage === key ? BLUE : "#374151" }}>
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {demandError && <p className="text-xs" style={{ color: "#B91C1C" }}>{demandError}</p>}
-
-                        {!demandPitch ? (
-                          <button onClick={generateDemandPitch}
-                            disabled={demandPitchLoading || (demandInputType === "product" ? !demandImageDataUrl : !demandDescription.trim())}
-                            className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40 flex items-center justify-center gap-1.5" style={{ background: BLUE }}>
-                            {demandPitchLoading ? t("demandGenerating") : t("demandGeneratePitch")}
-                          </button>
-                        ) : (
-                          <>
-                            <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
-                              <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("demandPitchLabel")}</div>
-                              <textarea value={demandPitch} onChange={(e) => setDemandPitch(e.target.value)}
-                                className="w-full bg-transparent text-sm border-0 p-0 resize-none focus:outline-none" style={{ color: NAVY }} rows={2} />
-                            </div>
-                            <PrimaryButton onClick={createDemandPoll} disabled={demandCreating || !demandPitch.trim()}>
-                              {demandCreating ? t("demandCreating") : t("demandCreatePoll")}
-                            </PrimaryButton>
-                          </>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="bg-white rounded-lg p-3 border border-gray-200 space-y-3">
-                        <p className="text-sm text-gray-700 italic">"{demandPollData?.pitch || demandPitch}"</p>
-
-                        <div>
-                          <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("demandShareLabel")}</div>
-                          <div className="flex gap-2">
-                            <a href={`https://wa.me/?text=${encodeURIComponent((demandPollData?.pitch || demandPitch) + " " + demandShareUrl)}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
-                              WhatsApp
-                            </a>
-                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(demandShareUrl)}`}
-                              target="_blank" rel="noopener noreferrer"
-                              className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: BLUE, color: BLUE }}>
-                              Facebook
-                            </a>
-                            <button onClick={() => { navigator.clipboard.writeText(demandShareUrl).then(() => { setDemandLinkCopied(true); setTimeout(() => setDemandLinkCopied(false), 2000); }); }}
-                              className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
-                              {demandLinkCopied ? t("demandLinkCopied") : t("demandCopyForInstagram")}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandResultsLabel")}</div>
-                            <button onClick={() => fetchDemandPollResults(demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
-                              {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
-                            </button>
-                          </div>
-                          {demandPollData ? (
-                            <>
-                              <div className="grid grid-cols-3 gap-2 mb-2">
-                                <div className="text-center rounded-lg p-2" style={{ background: "#E7F5EF" }}>
-                                  <div className="text-lg font-medium" style={{ color: "#0F6E56" }}>{demandPollData.yes_count}</div>
-                                  <div className="text-[10px] text-gray-500">{t("demandYes")}</div>
-                                </div>
-                                <div className="text-center rounded-lg p-2" style={{ background: "#FEF3E7" }}>
-                                  <div className="text-lg font-medium" style={{ color: "#B45309" }}>{demandPollData.maybe_count}</div>
-                                  <div className="text-[10px] text-gray-500">{t("demandMaybe")}</div>
-                                </div>
-                                <div className="text-center rounded-lg p-2" style={{ background: "#FDECEC" }}>
-                                  <div className="text-lg font-medium" style={{ color: "#B91C1C" }}>{demandPollData.no_count}</div>
-                                  <div className="text-[10px] text-gray-500">{t("demandNo")}</div>
-                                </div>
-                              </div>
-                              {demandStatusColor && (
-                                <div className="rounded-lg p-2.5 flex items-center gap-2" style={{ background: demandStatusColor === "green" ? "#E7F5EF" : demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
-                                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
-                                  <span className="text-xs font-medium" style={{ color: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
-                                    {t(demandStatusColor === "green" ? "demandStatusGreen" : demandStatusColor === "orange" ? "demandStatusOrange" : "demandStatusRed")}
-                                  </span>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-xs text-gray-400">{t("demandNoResponsesYet")}</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                  <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                    <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("knowledgeBuildingLabel")}</div>
+                    <p className="text-xs" style={{ color: NAVY }}>{t("knowledgeBuildingNote", { day: Math.min(daysDone + 1, 7) })}</p>
                   </div>
                   <div>
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
@@ -2453,6 +2688,9 @@ function UpscaleAppInner() {
                     <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
                     <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displaySuccessStory}</div>
                   </div>
+                  <button onClick={() => setTab("recommendations")} className="text-xs font-medium" style={{ color: BLUE }}>
+                    {t("seeBooksTab")} →
+                  </button>
                   <PrimaryButton onClick={() => { setContentDone(true); setStage("observation"); }}>
                     {t("continueToObservation")} <ArrowRight size={14} />
                   </PrimaryButton>

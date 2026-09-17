@@ -20,6 +20,16 @@ export default async function handler(req, res) {
         res.status(404).json({ error: "Poll not found" });
         return;
       }
+      if (req.query.includeResponses) {
+        const { data: responses, error: respErr } = await getClient()
+          .from("demand_poll_responses")
+          .select("vote, answers, review, created_at")
+          .eq("poll_id", id)
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if (respErr) throw respErr;
+        data.responses = responses || [];
+      }
       res.status(200).json(data);
     } catch (err) {
       console.error("demand-poll GET error:", err);
@@ -32,7 +42,7 @@ export default async function handler(req, res) {
     const { action } = req.body || {};
 
     if (action === "create") {
-      const { phone, subjectName, inputType, imageData, description, pitch, language } = req.body || {};
+      const { phone, subjectName, inputType, imageData, description, pitch, questions, targetAgeGroup, targetGender, language } = req.body || {};
       if (!phone || !pitch) {
         res.status(400).json({ error: "phone and pitch are required" });
         return;
@@ -47,6 +57,9 @@ export default async function handler(req, res) {
             image_data: imageData || null,
             description: description || null,
             pitch,
+            questions: Array.isArray(questions) ? questions : null,
+            target_age_group: targetAgeGroup || null,
+            target_gender: targetGender || null,
             language: language || "en",
           })
           .select("id")
@@ -61,7 +74,7 @@ export default async function handler(req, res) {
     }
 
     if (action === "vote") {
-      const { id, vote } = req.body || {};
+      const { id, vote, answers, review } = req.body || {};
       if (!id || !["yes", "no", "maybe"].includes(vote)) {
         res.status(400).json({ error: "id and a valid vote (yes/no/maybe) are required" });
         return;
@@ -85,6 +98,21 @@ export default async function handler(req, res) {
           .select("yes_count, no_count, maybe_count")
           .single();
         if (writeErr) throw writeErr;
+
+        // Best-effort — the vote count above is the source of truth for the
+        // Green/Orange/Red signal, so a hiccup saving the detail row
+        // shouldn't fail the respondent's vote.
+        try {
+          await getClient().from("demand_poll_responses").insert({
+            poll_id: id,
+            vote,
+            answers: answers && typeof answers === "object" ? answers : null,
+            review: review || null,
+          });
+        } catch (detailErr) {
+          console.error("demand-poll response detail insert failed:", detailErr);
+        }
+
         res.status(200).json(updated);
       } catch (err) {
         console.error("demand-poll vote error:", err);
