@@ -53,6 +53,6 @@ export default async function handler(req, res) {
     res.status(200).json({ guidance: data.guidance });
   } catch (err) {
     console.error("guide-observation error:", err);
-    res.status(500).json({ error: "Guidance failed" });
+    res.status(500).json({ error: "Guidance failed", detail: err?.message || String(err) });
   }
 }
