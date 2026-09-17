@@ -517,6 +517,8 @@ const STRINGS = {
     seeBooksTab: "See Books tab",
     marketingDemandCallout: "Your demand check isn't Green yet — check",
     marketingShareLabel: "Share this ad",
+    marketingCreatePage: "Create ad page",
+    marketingCreatingPage: "Creating...",
     demandCopyForFacebook: "Copy text (Facebook)",
     demandTargetAgeLabel: "Target age group",
     demandTargetGenderLabel: "Target gender",
@@ -666,6 +668,8 @@ const STRINGS = {
     seeBooksTab: "पुस्तकें टैब देखें",
     marketingDemandCallout: "आपकी मांग जांच अभी हरी नहीं है — देखें",
     marketingShareLabel: "यह विज्ञापन शेयर करें",
+    marketingCreatePage: "विज्ञापन पेज बनाएं",
+    marketingCreatingPage: "बनाया जा रहा है...",
     demandCopyForFacebook: "टेक्स्ट कॉपी करें (Facebook)",
     demandTargetAgeLabel: "लक्षित आयु वर्ग",
     demandTargetGenderLabel: "लक्षित लिंग",
@@ -815,6 +819,8 @@ const STRINGS = {
     seeBooksTab: "पुस्तके टॅब पाहा",
     marketingDemandCallout: "तुमची मागणी तपासणी अजून हिरवी नाही — पहा",
     marketingShareLabel: "ही जाहिरात शेअर करा",
+    marketingCreatePage: "जाहिरात पेज तयार करा",
+    marketingCreatingPage: "तयार होत आहे...",
     demandCopyForFacebook: "मजकूर कॉपी करा (Facebook)",
     demandTargetAgeLabel: "लक्ष्य वयोगट",
     demandTargetGenderLabel: "लक्ष्य लिंग",
@@ -902,6 +908,40 @@ function Logo({ dark }) {
       </svg>
       <span className="text-sm font-medium" style={{ color: dark ? "#fff" : NAVY }}>Upscale</span>
     </div>
+  );
+}
+function WhatsAppIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#25D366" />
+      <path fill="#fff" d="M16 7a9 9 0 0 0-7.8 13.5L7 25l4.6-1.2A9 9 0 1 0 16 7zm0 1.7a7.3 7.3 0 0 1 6.3 11l.9 3.2-3.3-.9A7.3 7.3 0 1 1 16 8.7zm-3.4 3.6c-.2 0-.5.1-.7.4-.2.3-.9.8-.9 2s.9 2.4 1 2.6c.1.1 1.8 2.9 4.5 3.9 2.2.9 2.7.7 3.1.6.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.5-.3l-1.9-.9c-.2-.1-.4-.2-.6.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.2-.4-2.2-1.4-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6l.4-.5c.1-.2.1-.3.2-.5s0-.4 0-.5c0-.2-.6-1.6-.9-2.1-.2-.5-.4-.5-.6-.5h-.5z" />
+    </svg>
+  );
+}
+function FacebookIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#1877F2" />
+      <path fill="#fff" d="M18.9 16.6h-2.2V25h-3.4v-8.4h-1.6v-2.9h1.6v-1.8c0-1.3.6-3.4 3.4-3.4h2.5v2.8h-1.8c-.3 0-.7.1-.7.9v1.5h2.6l-.4 2.9z" />
+    </svg>
+  );
+}
+function InstagramIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <defs>
+        <radialGradient id="igGrad" cx="0.3" cy="1" r="1.1">
+          <stop offset="0" stopColor="#FED576" />
+          <stop offset="0.26" stopColor="#F47133" />
+          <stop offset="0.61" stopColor="#BC3081" />
+          <stop offset="1" stopColor="#4C63D2" />
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="32" height="32" rx="8" fill="url(#igGrad)" />
+      <rect x="9" y="9" width="14" height="14" rx="4" fill="none" stroke="#fff" strokeWidth="1.8" />
+      <circle cx="16" cy="16" r="3.6" fill="none" stroke="#fff" strokeWidth="1.8" />
+      <circle cx="20.2" cy="11.8" r="1" fill="#fff" />
+    </svg>
   );
 }
 function PrimaryButton({ children, onClick, disabled }) {
@@ -1047,13 +1087,70 @@ function PublicPollView({ id }) {
   );
 }
 
+// Public marketing ad page: reached via a shared link (?ad=<id>) — a
+// presentable page for the proprietor's generated ad/pitch that they can
+// post or send out, same no-account pattern as PublicPollView.
+function PublicAdView({ id }) {
+  const [page, setPage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/marketing-page?id=${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`marketing-page returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => setPage(data))
+      .catch((err) => { console.error("PublicAdView fetch failed:", err); setFailed(true); })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const lang = page?.language || "en";
+  const tt = (key, vars) => tr(lang, key, vars);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 py-10" style={{ background: NAVY }}>
+      <div className="w-full max-w-sm bg-white rounded-xl p-8 border border-gray-200">
+        <div className="flex justify-center mb-6"><Logo /></div>
+        {loading ? (
+          <p className="text-sm text-gray-500 text-center">{tt("pollLoading")}</p>
+        ) : failed || !page ? (
+          <p className="text-sm text-gray-500 text-center">{tt("pollNotFound")}</p>
+        ) : (
+          <div className="space-y-4 text-left">
+            {page.angle && (
+              <div className="text-[11px] font-medium uppercase tracking-wide text-center" style={{ color: BLUE }}>{page.angle}</div>
+            )}
+            <p className="text-lg font-medium text-center" style={{ color: NAVY }}>{page.pitch}</p>
+            {page.strategy && <p className="text-sm text-gray-600">{page.strategy}</p>}
+            {Array.isArray(page.tactics) && page.tactics.length > 0 && (
+              <div className="space-y-2">
+                {page.tactics.map((tc, i) => (
+                  <div key={i} className="rounded-lg p-3 border border-gray-200">
+                    <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Top-level entry: a shared poll link (?poll=<id>) bypasses the whole app
 // shell entirely — kept as a separate component (rather than an early
 // return inside UpscaleAppInner) so there's no ambiguity about hook order
 // between the two very different render paths.
 export default function UpscaleApp() {
-  const publicPollId = new URLSearchParams(window.location.search).get("poll");
+  const params = new URLSearchParams(window.location.search);
+  const publicPollId = params.get("poll");
   if (publicPollId) return <PublicPollView id={publicPollId} />;
+  const publicAdId = params.get("ad");
+  if (publicAdId) return <PublicAdView id={publicAdId} />;
   return <UpscaleAppInner />;
 }
 
@@ -1124,6 +1221,8 @@ function UpscaleAppInner() {
   const [marketingLoading, setMarketingLoading] = useState(false);
   const [marketingFetchAttempted, setMarketingFetchAttempted] = useState(false);
   const [marketingLinkCopied, setMarketingLinkCopied] = useState(null);
+  const [marketingPageId, setMarketingPageId] = useState(null);
+  const [marketingPageCreating, setMarketingPageCreating] = useState(false);
 
   const [marketAnalyticsData, setMarketAnalyticsData] = useState(null);
   const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
@@ -1273,6 +1372,7 @@ function UpscaleAppInner() {
   }, [screen, demandPollId, demandPollFetchedForId]);
 
   const demandShareUrl = demandPollId ? `${window.location.origin}${window.location.pathname}?poll=${demandPollId}` : "";
+  const marketingPageShareUrl = marketingPageId ? `${window.location.origin}${window.location.pathname}?ad=${marketingPageId}` : "";
   const demandTotalVotes = demandPollData ? demandPollData.yes_count + demandPollData.no_count + demandPollData.maybe_count : 0;
   const demandStatusColor = demandTotalVotes === 0 ? null
     : demandPollData.yes_count / demandTotalVotes >= 0.6 ? "green"
@@ -1436,6 +1536,7 @@ function UpscaleAppInner() {
     setAdDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
+    setMarketingPageId(null);
     setPlanProgressData(null);
     setPlanProgressFetchAttempted(false);
     setStage("content");
@@ -1573,6 +1674,33 @@ function UpscaleAppInner() {
       setDemandError("Couldn't create the poll just now — please try again in a moment.");
     } finally {
       setDemandCreating(false);
+    }
+  }
+
+  async function createMarketingPage() {
+    if (!marketingData) return;
+    setMarketingPageCreating(true);
+    try {
+      const res = await fetch("/api/marketing-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: form.contact,
+          subjectName: subject.name,
+          angle: marketingData.angle,
+          pitch: marketingData.pitch,
+          strategy: marketingData.strategy,
+          tactics: marketingData.tactics,
+          language,
+        }),
+      });
+      if (!res.ok) throw new Error(`marketing-page create returned ${res.status}`);
+      const data = await res.json();
+      setMarketingPageId(data.id);
+    } catch (err) {
+      console.error("createMarketingPage failed:", err);
+    } finally {
+      setMarketingPageCreating(false);
     }
   }
 
@@ -2391,17 +2519,17 @@ function UpscaleAppInner() {
                 <div className="flex gap-2">
                   <a href={`https://wa.me/?text=${encodeURIComponent((demandPollData?.pitch || demandPitch) + " " + demandShareUrl)}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
-                    WhatsApp
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                    <WhatsAppIcon /> WhatsApp
                   </a>
                   <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(demandShareUrl)}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: BLUE, color: BLUE }}>
-                    Facebook
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
+                    <FacebookIcon /> Facebook
                   </a>
                   <button onClick={() => { navigator.clipboard.writeText(demandShareUrl).then(() => { setDemandLinkCopied(true); setTimeout(() => setDemandLinkCopied(false), 2000); }); }}
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
-                    {demandLinkCopied ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                    <InstagramIcon /> {demandLinkCopied ? t("demandLinkCopied") : t("demandCopyForInstagram")}
                   </button>
                 </div>
               </div>
@@ -2548,21 +2676,29 @@ function UpscaleAppInner() {
               )}
               <div>
                 <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
-                <div className="flex gap-2">
-                  <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch)}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border text-center" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
-                    WhatsApp
-                  </a>
-                  <button onClick={() => { navigator.clipboard.writeText(marketingData.pitch).then(() => { setMarketingLinkCopied("facebook"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
-                    {marketingLinkCopied === "facebook" ? t("demandLinkCopied") : t("demandCopyForFacebook")}
+                {!marketingPageId ? (
+                  <button onClick={createMarketingPage} disabled={marketingPageCreating}
+                    className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
+                    {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
                   </button>
-                  <button onClick={() => { navigator.clipboard.writeText(marketingData.pitch).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
-                    className="flex-1 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
-                    {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
-                  </button>
-                </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch + " " + marketingPageShareUrl)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                      <WhatsAppIcon /> WhatsApp
+                    </a>
+                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(marketingPageShareUrl)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
+                      <FacebookIcon /> Facebook
+                    </a>
+                    <button onClick={() => { navigator.clipboard.writeText(marketingPageShareUrl).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                      <InstagramIcon /> {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
