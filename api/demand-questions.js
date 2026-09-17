@@ -4,7 +4,7 @@ const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 
 const SYSTEM_PROMPT = `You suggest a short list of extra poll questions for a small business owner validating real demand for a product or service idea. The core question ("would you buy/use this?") is already asked separately — you're suggesting ADDITIONAL questions that would help the owner understand their buyers better: things like which area/region the respondent is from, their age bracket, how sensitive they are to price/discount, how often they'd buy, or similar — pick whichever 4-5 are most useful for this specific niche, not a generic fixed set.
 
-Each question must be answerable with a single tap from a short list of options (never free text) — provide 3-5 short, mutually exclusive options per question.
+Each question must be answerable with a single tap from a short list of options (never free text) — provide 3-5 short, mutually exclusive options per question. This app is for small business owners in India — use Indian Rupees (₹) for any price/budget-related options, never $ or other currencies.
 
 If the owner specified a target age group or gender, make sure age/gender-related questions are still included and phrased naturally (don't assume — always ask, since the owner's stated target is just who they intend to reach, not a filter on respondents).
 
