@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
-  Lock, Gift, ChevronRight, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Upload, Receipt, Star
+  Lock, Gift, ChevronRight, ChevronDown, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
+  Plus, Newspaper, BookOpen, Upload, Receipt, Star, Store
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -345,8 +345,13 @@ function resolveSubject(interestKey, subcategoryKey) {
   const { subcategories: _subcategories, ...shared } = base;
   return { ...shared, ...sub };
 }
-function getOnbSteps(interestKey) {
-  const base = ["interest", "name", "contact", "city", "shopName", "shopType", "investment", "facebook", "instagram"];
+// `excludeIdentity` drives the "add another product" flow: name/contact are
+// proprietor-level and already known by then, so only the business fields
+// are asked again.
+function getOnbSteps(interestKey, excludeIdentity) {
+  const base = excludeIdentity
+    ? ["interest", "city", "shopName", "shopType", "investment", "facebook", "instagram"]
+    : ["interest", "name", "contact", "city", "shopName", "shopType", "investment", "facebook", "instagram"];
   if (SUBJECTS[interestKey]?.subcategories) base.splice(1, 0, "subcategory");
   return base;
 }
@@ -371,6 +376,46 @@ const PERIOD_KEYS = { "Monthly": "periodMonthly", "Quarterly": "periodQuarterly"
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Multi-product migration: existing accounts have state saved in the old
+// flat shape (one business's fields at the top level, no `products` array).
+// This synthesizes a single product from that legacy shape so login keeps
+// working unchanged for every account saved before this migration. Once a
+// proprietor has a `products` array, it's passed through as-is.
+function normalizeState(raw, fallbackContact) {
+  if (!raw) return null;
+  if (Array.isArray(raw.products) && raw.products.length) {
+    return { ...raw, lastClaimedDate: raw.lastClaimedDate || null };
+  }
+  const legacyForm = raw.form || {};
+  const product = {
+    id: `p_${Date.now()}_legacy`,
+    interest: legacyForm.interest,
+    subcategory: legacyForm.subcategory,
+    city: legacyForm.city,
+    shopName: legacyForm.shopName,
+    shopType: legacyForm.shopType,
+    investment: legacyForm.investment,
+    facebook: legacyForm.facebook,
+    instagram: legacyForm.instagram,
+    goal: raw.goal || "",
+    period: raw.period || "Monthly",
+    planData: raw.planData || null,
+    demandPollId: raw.demandPollId || null,
+    marketingPageId: null,
+  };
+  return {
+    language: raw.language || "en",
+    name: legacyForm.name || "",
+    contact: legacyForm.contact || fallbackContact,
+    daysDone: raw.daysDone || 0,
+    streak: raw.streak || 0,
+    lastClaimedDate: null,
+    activeProductId: product.id,
+    products: [product],
+    ledgerEntries: (raw.ledgerEntries || []).map((e) => ({ ...e, productId: e.productId ?? product.id })),
+  };
 }
 
 const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
@@ -1164,6 +1209,12 @@ function UpscaleAppInner() {
   const [loggingIn, setLoggingIn] = useState(false);
   const [obStep, setObStep] = useState(0);
   const [form, setForm] = useState({ interest: "home-loan-advisory", subcategory: "", name: "", contact: "", city: "", shopName: "", shopType: "", investment: "", facebook: "", instagram: "" });
+  // True while walking through the reduced onboarding steps to add a NEW
+  // product to an existing proprietor's portfolio (name/contact skipped,
+  // since those are already known) — false for the very first product,
+  // collected as part of initial signup.
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [showProductSwitcher, setShowProductSwitcher] = useState(false);
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
@@ -1190,8 +1241,9 @@ function UpscaleAppInner() {
 
   // Demand check: a standing poll the proprietor creates once (not reset
   // daily like the rest of Today's content) to validate a product/service
-  // idea with real people before committing to it.
-  const [demandPollId, setDemandPollId] = useState(null);
+  // idea with real people before committing to it. The poll id itself now
+  // lives on the product (activeProduct.demandPollId) since each product
+  // has its own standing poll — there's no top-level equivalent anymore.
   const [demandInputType, setDemandInputType] = useState("product");
   const [demandImageDataUrl, setDemandImageDataUrl] = useState(null);
   const [demandDescription, setDemandDescription] = useState("");
@@ -1221,12 +1273,15 @@ function UpscaleAppInner() {
   const [marketingLoading, setMarketingLoading] = useState(false);
   const [marketingFetchAttempted, setMarketingFetchAttempted] = useState(false);
   const [marketingLinkCopied, setMarketingLinkCopied] = useState(null);
-  const [marketingPageId, setMarketingPageId] = useState(null);
   const [marketingPageCreating, setMarketingPageCreating] = useState(false);
 
-  const [marketAnalyticsData, setMarketAnalyticsData] = useState(null);
+  // Keyed by product id: Analytics shows every product's market trend at
+  // once in one shared tab (not gated behind the product switcher), so this
+  // is a cache of "fetched so far" rather than a single value tied to
+  // whichever product happens to be active.
+  const [marketAnalyticsByProduct, setMarketAnalyticsByProduct] = useState({});
   const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
-  const [marketAnalyticsFetchAttempted, setMarketAnalyticsFetchAttempted] = useState(false);
+  const [marketAnalyticsFetchedIds, setMarketAnalyticsFetchedIds] = useState({});
 
   const [planProgressData, setPlanProgressData] = useState(null);
   const [planProgressLoading, setPlanProgressLoading] = useState(false);
@@ -1239,13 +1294,33 @@ function UpscaleAppInner() {
 
   const [daysDone, setDaysDone] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [lastClaimedDate, setLastClaimedDate] = useState(null);
 
-  const subject = resolveSubject(form.interest, form.subcategory);
-  const onbSteps = getOnbSteps(form.interest);
-  const totalDays = PERIOD_DAYS[period];
+  // Multi-product portfolio (migration in progress): `products` and
+  // `activeProductId` are populated on login via normalizeState() but not
+  // yet read by any tab — every tab still reads the legacy top-level
+  // form/goal/period/planData/demandPollId fields below until each tab is
+  // migrated over.
+  const [products, setProducts] = useState([]);
+  const [activeProductId, setActiveProductId] = useState(null);
+
+  // Falls back to the onboarding `form`/top-level fields when null (during
+  // onboarding itself, before the first product exists) — once a product
+  // exists this is always the source of truth for "which business" the
+  // currently-open tabs are about.
+  const activeProduct = products.find((p) => p.id === activeProductId) || null;
+
+  const subject = resolveSubject(activeProduct?.interest ?? form.interest, activeProduct?.subcategory ?? form.subcategory);
+  const onbSteps = getOnbSteps(form.interest, addingProduct);
+  const totalDays = PERIOD_DAYS[activeProduct?.period ?? period];
+  // Analytics stays unified across the whole portfolio, not split per
+  // product: these sum every product's ledger entries and investment,
+  // never just the currently-active one.
   const totalCosts = ledgerEntries.filter((e) => e.type === "cost").reduce((s, e) => s + Number(e.amount || 0), 0);
   const totalSales = ledgerEntries.filter((e) => e.type === "sales").reduce((s, e) => s + Number(e.amount || 0), 0);
-  const investmentAmount = parseCurrency(form.investment);
+  const investmentAmount = products.length
+    ? products.reduce((s, p) => s + parseCurrency(p.investment), 0)
+    : parseCurrency(form.investment);
   const netAmount = totalSales - totalCosts - investmentAmount;
   const obsComplete = obsText.trim().length > 0;
 
@@ -1257,11 +1332,19 @@ function UpscaleAppInner() {
   const yearlyPct = Math.min(100, Math.round((daysDone / 365) * 100));
 
   // Centralizes the shape of what gets persisted for a proprietor, so the
-  // three save points below can't drift out of sync with each other. Takes
+  // save points below can't drift out of sync with each other. Takes
   // overrides for values just computed locally that haven't landed in state
   // yet (state setters are async, so e.g. daysDone here can be stale by one).
+  //
+  // `form`/`goal`/`period`/`planData` are still persisted at the top level
+  // even though every tab now reads `activeProduct` instead — they double
+  // as the transient "product currently being created" fields shared by
+  // initial onboarding and the "add product" flow (see startAddProduct/
+  // appendProductFromForm), not dead legacy state. normalizeState() only
+  // falls back to reading them when `products` is empty, so an account
+  // that's already migrated ignores them entirely on load.
   function buildPersistedState(overrides = {}) {
-    return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, demandPollId, ...overrides };
+    return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, lastClaimedDate, activeProductId, products, ...overrides };
   }
 
   // Live daily content: fetched at most once per loop cycle (guarded by
@@ -1323,30 +1406,52 @@ function UpscaleAppInner() {
       .finally(() => setMarketingLoading(false));
   }, [screen, tab, subject.name, subject.label, language, marketingFetchAttempted]);
 
-  // Market analytics: fetched once per app session on first visit to the
+  // Market analytics: fetched once per product, on first visit to the
   // Analytics tab (NOT reset in claimReward like the daily content — a
   // 6-month demand trend doesn't need to regenerate every day, so this
-  // deliberately fetches less often to keep API usage low). Falls back to
-  // the static per-subject analytics baked into SUBJECTS when unavailable.
+  // deliberately fetches less often to keep API usage low). The tab itself
+  // stays unified/shared, but the underlying trend is inherently per-product
+  // (a niche + city demand trend can't be merged across different
+  // businesses) — so this fetches one result per product and caches it by
+  // product id, rather than one shared value for whichever is active.
   useEffect(() => {
-    if (screen !== "app" || tab !== "analytics" || marketAnalyticsFetchAttempted) return;
-    setMarketAnalyticsFetchAttempted(true);
+    if (screen !== "app" || tab !== "analytics") return;
+    const unfetched = products.filter((p) => !marketAnalyticsFetchedIds[p.id]);
+    if (!unfetched.length) return;
+    setMarketAnalyticsFetchedIds((prev) => {
+      const next = { ...prev };
+      for (const p of unfetched) next[p.id] = true;
+      return next;
+    });
     setMarketAnalyticsLoading(true);
-    fetch("/api/insights", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "market-analytics", subjectName: subject.name, subcategoryLabel: subject.label || null, city: form.city, language }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`market-analytics returned ${res.status}`);
-        return res.json();
+    Promise.all(
+      unfetched.map((p) => {
+        const productSubject = resolveSubject(p.interest, p.subcategory);
+        return fetch("/api/insights", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "market-analytics", subjectName: productSubject.name, subcategoryLabel: productSubject.label || null, city: p.city, language }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error(`market-analytics returned ${res.status}`);
+            return res.json();
+          })
+          .then((data) => ({ id: p.id, data }))
+          .catch((err) => {
+            console.error("fetchMarketAnalytics failed:", err);
+            return null;
+          });
       })
-      .then((data) => setMarketAnalyticsData(data))
-      .catch((err) => console.error("fetchMarketAnalytics failed:", err))
+    )
+      .then((results) => {
+        setMarketAnalyticsByProduct((prev) => {
+          const next = { ...prev };
+          for (const r of results) if (r) next[r.id] = r.data;
+          return next;
+        });
+      })
       .finally(() => setMarketAnalyticsLoading(false));
-  }, [screen, tab, subject.name, subject.label, form.city, language, marketAnalyticsFetchAttempted]);
-
-  const displayAnalytics = marketAnalyticsData || subject.analytics;
+  }, [screen, tab, products, marketAnalyticsFetchedIds, language]);
 
   // Demand poll results: a plain Supabase read (no AI cost), so it's safe
   // to refetch whenever the active poll changes or the proprietor asks for
@@ -1366,13 +1471,14 @@ function UpscaleAppInner() {
   }
 
   useEffect(() => {
-    if (screen !== "app" || !demandPollId || demandPollFetchedForId === demandPollId) return;
-    setDemandPollFetchedForId(demandPollId);
-    fetchDemandPollResults(demandPollId);
-  }, [screen, demandPollId, demandPollFetchedForId]);
+    const currentPollId = activeProduct?.demandPollId;
+    if (screen !== "app" || !currentPollId || demandPollFetchedForId === currentPollId) return;
+    setDemandPollFetchedForId(currentPollId);
+    fetchDemandPollResults(currentPollId);
+  }, [screen, activeProduct?.demandPollId, demandPollFetchedForId]);
 
-  const demandShareUrl = demandPollId ? `${window.location.origin}${window.location.pathname}?poll=${demandPollId}` : "";
-  const marketingPageShareUrl = marketingPageId ? `${window.location.origin}${window.location.pathname}?ad=${marketingPageId}` : "";
+  const demandShareUrl = activeProduct?.demandPollId ? `${window.location.origin}${window.location.pathname}?poll=${activeProduct.demandPollId}` : "";
+  const marketingPageShareUrl = activeProduct?.marketingPageId ? `${window.location.origin}${window.location.pathname}?ad=${activeProduct.marketingPageId}` : "";
   const demandTotalVotes = demandPollData ? demandPollData.yes_count + demandPollData.no_count + demandPollData.maybe_count : 0;
   const demandStatusColor = demandTotalVotes === 0 ? null
     : demandPollData.yes_count / demandTotalVotes >= 0.6 ? "green"
@@ -1402,7 +1508,8 @@ function UpscaleAppInner() {
   // AI fetches) once a plan exists. Falls back to the day-based bars above
   // if the call hasn't returned yet or fails — never blocks the tab.
   useEffect(() => {
-    if (screen !== "app" || tab !== "progress" || !planData || planProgressFetchAttempted) return;
+    const effectivePlanData = activeProduct?.planData ?? planData;
+    if (screen !== "app" || tab !== "progress" || !effectivePlanData || planProgressFetchAttempted) return;
     setPlanProgressFetchAttempted(true);
     setPlanProgressLoading(true);
     fetch("/api/insights", {
@@ -1410,9 +1517,9 @@ function UpscaleAppInner() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "plan-progress",
-        goal, subjectName: subject.name, planData, daysDone, totalDays,
+        goal: activeProduct?.goal ?? goal, subjectName: subject.name, planData: effectivePlanData, daysDone, totalDays,
         totalCosts, totalSales, netAmount, investmentAmount,
-        demandChangePct: marketAnalyticsData?.demandChangePct ?? null,
+        demandChangePct: (activeProductId && marketAnalyticsByProduct[activeProductId]?.demandChangePct) ?? null,
         language,
       }),
     })
@@ -1423,7 +1530,7 @@ function UpscaleAppInner() {
       .then((data) => setPlanProgressData(data))
       .catch((err) => console.error("fetchPlanProgress failed:", err))
       .finally(() => setPlanProgressLoading(false));
-  }, [screen, tab, planData, planProgressFetchAttempted]);
+  }, [screen, tab, activeProduct?.planData, planData, planProgressFetchAttempted]);
 
   const progressMonthlyPct = planProgressData?.monthlyProgressPct ?? monthlyPct;
   const progressQuarterlyPct = planProgressData?.quarterlyProgressPct ?? quarterlyPct;
@@ -1449,6 +1556,38 @@ function UpscaleAppInner() {
     if (adElapsed >= 20) setAdDone(true);
   }
 
+  // Builds a product entry from the onboarding `form` plus the
+  // goal/period/planData just confirmed, and appends it to `products`.
+  // Used both for the very first product (fresh signup, `products` still
+  // empty) and for every subsequent "add product" flow (`addingProduct`
+  // true) — the only difference is whether products.length starts at 0.
+  // An existing account's first product instead comes from normalizeState()
+  // on login, so this never double-seeds a returning proprietor.
+  function appendProductFromForm(resolvedPlanData) {
+    if (!addingProduct && products.length) return products;
+    const product = {
+      id: `p_${Date.now()}`,
+      interest: form.interest,
+      subcategory: form.subcategory,
+      city: form.city,
+      shopName: form.shopName,
+      shopType: form.shopType,
+      investment: form.investment,
+      facebook: form.facebook,
+      instagram: form.instagram,
+      goal,
+      period,
+      planData: resolvedPlanData,
+      demandPollId: null,
+      marketingPageId: null,
+    };
+    const newProducts = [...products, product];
+    setProducts(newProducts);
+    setActiveProductId(product.id);
+    setAddingProduct(false);
+    return newProducts;
+  }
+
   async function confirmTarget() {
     setScreen("plan");
     setPlanLoading(true);
@@ -1462,7 +1601,8 @@ function UpscaleAppInner() {
       if (!res.ok) throw new Error(`generate-plan returned ${res.status}`);
       const data = await res.json();
       setPlanData(data);
-      saveUserState(form.contact, buildPersistedState({ planData: data }));
+      const newProducts = appendProductFromForm(data);
+      saveUserState(form.contact, buildPersistedState({ planData: data, products: newProducts, activeProductId: newProducts[newProducts.length - 1].id }));
     } catch (err) {
       console.error("confirmTarget plan generation failed:", err);
       const fallbackPlan = {
@@ -1471,7 +1611,8 @@ function UpscaleAppInner() {
         yearly: { step: t("planFallbackYearlyStep"), how: t("planFallbackYearlyHow") },
       };
       setPlanData(fallbackPlan);
-      saveUserState(form.contact, buildPersistedState({ planData: fallbackPlan }));
+      const newProducts = appendProductFromForm(fallbackPlan);
+      saveUserState(form.contact, buildPersistedState({ planData: fallbackPlan, products: newProducts, activeProductId: newProducts[newProducts.length - 1].id }));
     } finally {
       setPlanLoading(false);
     }
@@ -1480,6 +1621,42 @@ function UpscaleAppInner() {
   function nextOnb() { if (obStep < onbSteps.length - 1) setObStep(obStep + 1); else setScreen("target"); }
   function backOnb() { if (obStep > 0) setObStep(obStep - 1); }
 
+  // Entry point for "+ Add product" in the header switcher: reuses the same
+  // onboarding step machine as initial signup, just with name/contact
+  // skipped (getOnbSteps(..., addingProduct) drops them) and the business
+  // fields reset to blank so the new product doesn't inherit the
+  // previously-active one's values.
+  function startAddProduct() {
+    setForm((f) => ({ ...f, interest: "home-loan-advisory", subcategory: "", city: "", shopName: "", shopType: "", investment: "", facebook: "", instagram: "" }));
+    setGoal("");
+    setPeriod("Monthly");
+    setAddingProduct(true);
+    setObStep(0);
+    setShowProductSwitcher(false);
+    setScreen("onboarding");
+  }
+
+  // Switching products swaps which business the currently-open tabs are
+  // about — every per-product-in-progress UI/loading flag needs to reset so
+  // stale content from the previous product doesn't linger (mirrors the
+  // same reset idiom claimReward uses for a fresh loop cycle).
+  function switchActiveProduct(productId) {
+    if (productId === activeProductId) { setShowProductSwitcher(false); return; }
+    setActiveProductId(productId);
+    setLiveContent(null);
+    setContentFetchAttempted(false);
+    setContentDone(false);
+    setMarketingData(null);
+    setMarketingFetchAttempted(false);
+    setPlanProgressData(null);
+    setPlanProgressFetchAttempted(false);
+    setDemandPollData(null);
+    setDemandPollFetchedForId(null);
+    setStage("content");
+    setShowProductSwitcher(false);
+    saveUserState(form.contact, buildPersistedState({ activeProductId: productId }));
+  }
+
   async function submitObservation() {
     setStage("guidance");
     setGuiding(true);
@@ -1487,8 +1664,8 @@ function UpscaleAppInner() {
     logToSheet({
       name: form.name,
       subject: subject.name,
-      target: goal,
-      city: form.city,
+      target: activeProduct?.goal ?? goal,
+      city: activeProduct?.city ?? form.city,
       contact: form.contact,
       date: todayStr(),
       observationText: obsText,
@@ -1498,7 +1675,7 @@ function UpscaleAppInner() {
       const res = await fetch("/api/guide-observation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ observationText: obsText, goal, subjectName: subject.name }),
+        body: JSON.stringify({ observationText: obsText, goal: activeProduct?.goal ?? goal, subjectName: subject.name }),
       });
       if (!res.ok) throw new Error(`guide-observation returned ${res.status}`);
       const data = await res.json();
@@ -1511,22 +1688,27 @@ function UpscaleAppInner() {
     }
   }
 
-  function claimReward() {
+  // Shared across every product: doing today's loop for ANY one product
+  // secures the streak for the whole proprietor. Gated to once per calendar
+  // day — previously nothing stopped a repeat claim same-day other than the
+  // stage machine happening to reset each time, which no longer holds once
+  // switching products can re-enter "content" stage. Returns false (streak
+  // not advanced) if today's already been claimed via another product.
+  function claimSharedStreak() {
+    const today = todayStr();
+    if (lastClaimedDate === today) return false;
     const newDaysDone = daysDone + 1;
     const newStreak = streak + 1;
-    logToSheet({
-      name: form.name,
-      subject: subject.name,
-      target: goal,
-      city: form.city,
-      contact: form.contact,
-      date: todayStr(),
-      observationText: obsText,
-      streak: newStreak,
-    });
-    saveUserState(form.contact, buildPersistedState({ daysDone: newDaysDone, streak: newStreak }));
     setDaysDone(newDaysDone);
     setStreak(newStreak);
+    setLastClaimedDate(today);
+    saveUserState(form.contact, buildPersistedState({ daysDone: newDaysDone, streak: newStreak, lastClaimedDate: today }));
+    return true;
+  }
+
+  // Resets only the in-progress loop UI for whichever product was just
+  // claimed — must not touch another product's Marketing/Demand state.
+  function resetLoopStateForActiveProduct() {
     setContentDone(false);
     setLiveContent(null);
     setContentFetchAttempted(false);
@@ -1537,10 +1719,28 @@ function UpscaleAppInner() {
     setAdDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
-    setMarketingPageId(null);
     setPlanProgressData(null);
     setPlanProgressFetchAttempted(false);
+    if (activeProductId) {
+      setProducts((prev) => prev.map((p) => (p.id === activeProductId ? { ...p, marketingPageId: null } : p)));
+    }
     setStage("content");
+  }
+
+  function claimReward() {
+    const streakAlreadySecuredToday = lastClaimedDate === todayStr();
+    logToSheet({
+      name: form.name,
+      subject: subject.name,
+      target: activeProduct?.goal ?? goal,
+      city: activeProduct?.city ?? form.city,
+      contact: form.contact,
+      date: todayStr(),
+      observationText: obsText,
+      streak: streakAlreadySecuredToday ? streak : streak + 1,
+    });
+    claimSharedStreak();
+    resetLoopStateForActiveProduct();
   }
 
   async function handleReceiptUpload(file, type) {
@@ -1559,7 +1759,7 @@ function UpscaleAppInner() {
       });
       if (!res.ok) throw new Error(`extract-receipt returned ${res.status}`);
       const data = await res.json();
-      const newEntries = [{ type, ...data }, ...ledgerEntries];
+      const newEntries = [{ type, productId: activeProductId, ...data }, ...ledgerEntries];
       setLedgerEntries(newEntries);
       saveUserState(form.contact, buildPersistedState({ ledgerEntries: newEntries }));
     } catch (err) {
@@ -1669,8 +1869,9 @@ function UpscaleAppInner() {
       });
       if (!res.ok) throw new Error(`demand-poll create returned ${res.status}`);
       const data = await res.json();
-      setDemandPollId(data.id);
-      saveUserState(form.contact, buildPersistedState({ demandPollId: data.id }));
+      const newProducts = products.map((p) => (p.id === activeProductId ? { ...p, demandPollId: data.id } : p));
+      setProducts(newProducts);
+      saveUserState(form.contact, buildPersistedState({ products: newProducts }));
     } catch (err) {
       console.error("createDemandPoll failed:", err);
       setDemandError("Couldn't create the poll just now — please try again in a moment.");
@@ -1699,7 +1900,7 @@ function UpscaleAppInner() {
       });
       if (!res.ok) throw new Error(`marketing-page create returned ${res.status}`);
       const data = await res.json();
-      setMarketingPageId(data.id);
+      setProducts((prev) => prev.map((p) => (p.id === activeProductId ? { ...p, marketingPageId: data.id } : p)));
     } catch (err) {
       console.error("createMarketingPage failed:", err);
     } finally {
@@ -1728,6 +1929,7 @@ function UpscaleAppInner() {
       const data = await res.json();
       if (data.found && data.state) {
         const s = data.state;
+        const normalized = normalizeState(s, trimmedContact);
         setLanguage(s.language || "en");
         setForm(s.form || { ...form, contact: trimmedContact });
         setGoal(s.goal || "");
@@ -1736,7 +1938,9 @@ function UpscaleAppInner() {
         setDaysDone(s.daysDone || 0);
         setStreak(s.streak || 0);
         setLedgerEntries(s.ledgerEntries || []);
-        setDemandPollId(s.demandPollId || null);
+        setLastClaimedDate(normalized.lastClaimedDate);
+        setProducts(normalized.products);
+        setActiveProductId(normalized.activeProductId);
         setScreen("app");
         return;
       }
@@ -2269,6 +2473,35 @@ function UpscaleAppInner() {
               {t("freePlan")}
             </span>
           )}
+          {activeProduct && (
+            <div className="relative">
+              <button onClick={() => setShowProductSwitcher((v) => !v)}
+                className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/10 text-white max-w-[140px]">
+                <Store size={11} className="shrink-0" />
+                <span className="truncate">{activeProduct.shopName || subject.name}</span>
+                <ChevronDown size={11} className="shrink-0" />
+              </button>
+              {showProductSwitcher && (
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-lg border border-gray-200 shadow-lg z-10 py-1 text-left">
+                  {products.map((p) => {
+                    const ps = resolveSubject(p.interest, p.subcategory);
+                    return (
+                      <button key={p.id} onClick={() => switchActiveProduct(p.id)}
+                        className="w-full text-left px-3 py-2 text-xs flex items-center justify-between gap-2 hover:bg-gray-50"
+                        style={{ color: p.id === activeProductId ? BLUE : "#374151" }}>
+                        <span className="truncate">{p.shopName || ps.name}</span>
+                        {p.id === activeProductId && <Check size={12} className="shrink-0" />}
+                      </button>
+                    );
+                  })}
+                  <div className="border-t border-gray-100 my-1" />
+                  <button onClick={startAddProduct} className="w-full text-left px-3 py-2 text-xs font-medium flex items-center gap-1.5" style={{ color: BLUE }}>
+                    <Plus size={12} /> Add product
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3 text-white text-sm">
           <span className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium" style={{ background: BLUE }}>
@@ -2300,7 +2533,7 @@ function UpscaleAppInner() {
       {tab === "progress" ? (
         <div className="px-6 py-6 bg-white">
           <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{t("yourGoalLabel")}</div>
-          <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{goal}" — {t("overPeriodShort", { period: t(PERIOD_KEYS[period]) })}</div>
+          <div className="text-sm font-medium mb-4" style={{ color: NAVY }}>"{activeProduct?.goal ?? goal}" — {t("overPeriodShort", { period: t(PERIOD_KEYS[activeProduct?.period ?? period]) })}</div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden mb-2">
             <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (daysDone / totalDays) * 100)}%`, background: BLUE }} />
           </div>
@@ -2316,13 +2549,13 @@ function UpscaleAppInner() {
             </div>
           </div>
 
-          {planData && (
+          {(activeProduct?.planData ?? planData) && (
             <div className="mb-6">
               <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourPlan")}</div>
               <div className="space-y-4 mb-3">
-                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={progressMonthlyPct} progressLabel={t("tierProgress", { pct: progressMonthlyPct })} />
-                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={progressQuarterlyPct} progressLabel={t("tierProgress", { pct: progressQuarterlyPct })} />
-                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={progressYearlyPct} progressLabel={t("tierProgress", { pct: progressYearlyPct })} />
+                <PlanTier title={t("periodMonthly")} items={(activeProduct?.planData ?? planData).monthly} progressPct={progressMonthlyPct} progressLabel={t("tierProgress", { pct: progressMonthlyPct })} />
+                <PlanTier title={t("periodQuarterly")} items={(activeProduct?.planData ?? planData).quarterly} progressPct={progressQuarterlyPct} progressLabel={t("tierProgress", { pct: progressQuarterlyPct })} />
+                <PlanTier title={t("yearlyTier")} items={[(activeProduct?.planData ?? planData).yearly]} progressPct={progressYearlyPct} progressLabel={t("tierProgress", { pct: progressYearlyPct })} />
               </div>
               {planProgressLoading && !planProgressData && (
                 <div className="text-sm text-gray-500 flex items-center gap-2">
@@ -2402,7 +2635,7 @@ function UpscaleAppInner() {
         </div>
       ) : tab === "demand" ? (
         <div className="px-6 py-6 bg-white">
-          {!demandPollId ? (
+          {!activeProduct?.demandPollId ? (
             <div className="space-y-3">
               <p className="text-sm text-gray-500">{t("demandIntro")}</p>
               <div className="flex gap-2">
@@ -2540,7 +2773,7 @@ function UpscaleAppInner() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandResultsLabel")}</div>
-                  <button onClick={() => fetchDemandPollResults(demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
+                  <button onClick={() => fetchDemandPollResults(activeProduct?.demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
                     {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
                   </button>
                 </div>
@@ -2600,14 +2833,14 @@ function UpscaleAppInner() {
         </div>
       ) : tab === "review" ? (
         <div className="px-6 py-6 bg-white">
-          {!demandPollId ? (
+          {!activeProduct?.demandPollId ? (
             <p className="text-sm text-gray-400">{t("reviewNoPollYet")}</p>
           ) : (
             <>
               <p className="text-sm text-gray-500 mb-4">{t("reviewIntro")}</p>
               <div className="flex items-center justify-between mb-3">
                 <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t("demandReviewsLabel")}</div>
-                <button onClick={() => fetchDemandPollResults(demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
+                <button onClick={() => fetchDemandPollResults(activeProduct?.demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
                   {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
                 </button>
               </div>
@@ -2634,7 +2867,7 @@ function UpscaleAppInner() {
       ) : tab === "marketing" ? (
         <div className="px-6 py-6 bg-white">
           <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
-          {demandPollId && demandStatusColor && demandStatusColor !== "green" && (
+          {activeProduct?.demandPollId && demandStatusColor && demandStatusColor !== "green" && (
             <div className="rounded-lg p-3 mb-4 flex items-center gap-2" style={{ background: demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
               <span className="text-xs" style={{ color: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
@@ -2679,7 +2912,7 @@ function UpscaleAppInner() {
               )}
               <div>
                 <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
-                {!marketingPageId ? (
+                {!activeProduct?.marketingPageId ? (
                   <button onClick={createMarketingPage} disabled={marketingPageCreating}
                     className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
                     {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
@@ -2793,27 +3026,36 @@ function UpscaleAppInner() {
           )}
           <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
 
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">
-            Market analytics — {subject.name}{form.city ? ` · ${form.city}` : ""}
-          </div>
-          {marketAnalyticsLoading && !marketAnalyticsData && (
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">Market analytics</div>
+          {marketAnalyticsLoading && !Object.keys(marketAnalyticsByProduct).length && (
             <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
               <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketAnalyticsBuilding")}
             </div>
           )}
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
-              <span className="text-xs font-medium" style={{ color: displayAnalytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                {displayAnalytics.demandChangePct >= 0 ? "+" : ""}{displayAnalytics.demandChangePct}% vs last month
-              </span>
-            </div>
-            <div className="flex items-end gap-2 h-16 mb-1">
-              {displayAnalytics.demand.map((v, i) => (
-                <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-3">{displayAnalytics.insight}</p>
+          <div className="space-y-3">
+            {products.map((p) => {
+              const productSubject = resolveSubject(p.interest, p.subcategory);
+              const analytics = marketAnalyticsByProduct[p.id] || productSubject.analytics;
+              return (
+                <div key={p.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="text-xs font-medium mb-2" style={{ color: NAVY }}>
+                    {p.shopName || productSubject.name}{p.city ? ` · ${p.city}` : ""}
+                  </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
+                    <span className="text-xs font-medium" style={{ color: analytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                      {analytics.demandChangePct >= 0 ? "+" : ""}{analytics.demandChangePct}% vs last month
+                    </span>
+                  </div>
+                  <div className="flex items-end gap-2 h-16 mb-1">
+                    {analytics.demand.map((v, i) => (
+                      <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">{analytics.insight}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -3013,6 +3255,11 @@ function UpscaleAppInner() {
                       </div>
                     );
                   })}
+                  {lastClaimedDate === todayStr() && (
+                    <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                      <Check size={12} style={{ color: "#0F6E56" }} /> Today's streak is already secured — claiming here just refreshes this product's loop for tomorrow.
+                    </div>
+                  )}
                   <PrimaryButton onClick={claimReward}>Claim & start tomorrow <ChevronRight size={14} /></PrimaryButton>
                 </div>
               )}
