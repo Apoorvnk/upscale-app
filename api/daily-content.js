@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
@@ -15,6 +16,23 @@ let client;
 function getClient() {
   if (!client) client = new GoogleGenAI({});
   return client;
+}
+
+let supabase;
+function getSupabase() {
+  if (!supabase) supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return supabase;
+}
+
+// This content depends only on niche/subcategory/language, never on which
+// proprietor asked for it — so it's cached per (niche, subcategory,
+// language, day) and shared across every user hitting the same niche that
+// day, instead of burning a fresh Gemini call per user. Free-tier quota is
+// a hard per-project daily cap shared across the whole app, so cutting
+// duplicate calls for the same niche matters far more than per-call cost.
+function cacheKey(parts) {
+  const today = new Date().toISOString().slice(0, 10);
+  return ["daily-content", ...parts, today].join("::").toLowerCase();
 }
 
 // Distinguishes real quota exhaustion (429 RESOURCE_EXHAUSTED) from
@@ -40,6 +58,17 @@ export default async function handler(req, res) {
 
   const langName = LANGUAGE_NAMES[language] || "English";
   const niche = subcategoryLabel ? `${subjectName} — specifically ${subcategoryLabel}` : subjectName;
+  const key = cacheKey([subjectName, subcategoryLabel || "", language || "en"]);
+
+  try {
+    const { data: cached } = await getSupabase().from("ai_content_cache").select("content").eq("cache_key", key).maybeSingle();
+    if (cached) {
+      res.status(200).json(cached.content);
+      return;
+    }
+  } catch (err) {
+    console.error("daily-content cache lookup failed (continuing without cache):", err);
+  }
 
   try {
     const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
@@ -67,10 +96,16 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(200).json({
+    const result = {
       video: { title: data.videoTitle || "", url: "" },
       successStory: data.successStory || "",
-    });
+    };
+    try {
+      await getSupabase().from("ai_content_cache").upsert({ cache_key: key, content: result }, { onConflict: "cache_key" });
+    } catch (err) {
+      console.error("daily-content cache write failed (non-fatal):", err);
+    }
+    res.status(200).json(result);
   } catch (err) {
     logGeminiError("daily-content error", err);
     res.status(500).json({ error: "Content generation failed" });

@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
@@ -8,6 +9,12 @@ function getClient() {
   return client;
 }
 
+let supabase;
+function getSupabase() {
+  if (!supabase) supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return supabase;
+}
+
 // Distinguishes real quota exhaustion (429 RESOURCE_EXHAUSTED) from
 // transient overload (503 UNAVAILABLE) or other failures in Vercel's
 // function logs, so quota exhaustion is easy to grep for instead of
@@ -15,6 +22,19 @@ function getClient() {
 function logGeminiError(label, err) {
   const isQuota = err?.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(err?.message || "");
   console.error(isQuota ? `GEMINI QUOTA EXCEEDED — ${label}:` : `${label}:`, err);
+}
+
+// Market analytics depends only on niche/subcategory/city/language, never
+// on which proprietor asked for it — cached per (niche, subcategory, city,
+// language, day) and shared across every user hitting the same niche+city
+// that day. plan-progress is deliberately NOT cached this way: it's
+// genuinely per-user (their own goal/plan/financials). Free-tier quota is
+// a hard per-project daily cap shared across the whole app, so cutting
+// duplicate calls for the same niche+city matters far more than per-call
+// cost.
+function cacheKey(parts) {
+  const today = new Date().toISOString().slice(0, 10);
+  return ["market-analytics", ...parts, today].join("::").toLowerCase();
 }
 
 const MARKET_ANALYTICS_SYSTEM_PROMPT = `You produce a market-demand snapshot for a small business owner in a specific niche and city, inside a habit-building app. You do NOT have real-time search — draw on general knowledge of how this industry and this kind of city typically behave, not specific dated statistics you cannot verify. You ARE told today's actual date, so you can honestly ground the snapshot in the real current season or shopping calendar for India.
@@ -46,6 +66,18 @@ async function handleMarketAnalytics(req, res) {
   }
   const langName = LANGUAGE_NAMES[language] || "English";
   const niche = subcategoryLabel ? `${subjectName} — specifically ${subcategoryLabel}` : subjectName;
+  const key = cacheKey([subjectName, subcategoryLabel || "", city || "", language || "en"]);
+
+  try {
+    const { data: cached } = await getSupabase().from("ai_content_cache").select("content").eq("cache_key", key).maybeSingle();
+    if (cached) {
+      res.status(200).json(cached.content);
+      return;
+    }
+  } catch (err) {
+    console.error("market-analytics cache lookup failed (continuing without cache):", err);
+  }
+
   const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
   try {
     const response = await getClient().models.generateContent({
@@ -64,11 +96,17 @@ async function handleMarketAnalytics(req, res) {
       res.status(422).json({ error: "Could not generate market analytics" });
       return;
     }
-    res.status(200).json({
+    const result = {
       demandChangePct: Number(data.demandChangePct) || 0,
       demand: data.demand.map((v) => Math.max(5, Math.min(100, Number(v) || 50))),
       insight: data.insight || "",
-    });
+    };
+    try {
+      await getSupabase().from("ai_content_cache").upsert({ cache_key: key, content: result }, { onConflict: "cache_key" });
+    } catch (err) {
+      console.error("market-analytics cache write failed (non-fatal):", err);
+    }
+    res.status(200).json(result);
   } catch (err) {
     logGeminiError("insights market-analytics error", err);
     res.status(500).json({ error: "Market analytics generation failed" });
