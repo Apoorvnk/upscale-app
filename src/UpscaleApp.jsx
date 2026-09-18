@@ -2515,12 +2515,12 @@ function UpscaleAppInner() {
         {[
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
-          { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "review", label: t("tabReview"), icon: Star },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
           { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
+          { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
         ].map((tabItem) => (
           <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
             className="flex items-center gap-1.5 text-sm px-3 py-3 border-b-2 -mb-px"
