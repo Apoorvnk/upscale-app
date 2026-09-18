@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, ChevronDown, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Upload, Receipt, Star, Store
+  Plus, Newspaper, BookOpen, Upload, Receipt, Star, Store, LogOut
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -468,6 +468,7 @@ const STRINGS = {
     continueBtn: "Continue",
     freePlan: "Free plan",
     dayStreak: "day streak",
+    logOut: "Log out",
     tabLoop: "Loop",
     tabProgress: "Progress",
     tabCollaborate: "Collaborate",
@@ -619,6 +620,7 @@ const STRINGS = {
     continueBtn: "जारी रखें",
     freePlan: "मुफ़्त योजना",
     dayStreak: "दिन की लगातार गिनती",
+    logOut: "लॉग आउट",
     tabLoop: "लूप",
     tabProgress: "प्रगति",
     tabCollaborate: "सहयोग",
@@ -770,6 +772,7 @@ const STRINGS = {
     continueBtn: "पुढे सुरू ठेवा",
     freePlan: "मोफत योजना",
     dayStreak: "दिवसांची सलगता",
+    logOut: "लॉग आउट",
     tabLoop: "लूप",
     tabProgress: "प्रगती",
     tabCollaborate: "सहयोग",
@@ -2508,6 +2511,10 @@ function UpscaleAppInner() {
             <Flame size={12} /> {streak} {t("dayStreak")}
           </span>
           <span className="rounded-full px-3 py-1 text-xs font-medium bg-white/10">{daysDone}/{totalDays} days</span>
+          <button onClick={() => { setScreen("welcome"); setLoginContact(""); }} title={t("logOut")}
+            className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 shrink-0">
+            <LogOut size={13} />
+          </button>
         </div>
       </div>
 
