@@ -2867,6 +2867,22 @@ function UpscaleAppInner() {
       ) : tab === "marketing" ? (
         <div className="px-6 py-6 bg-white">
           <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
+          <div className="mb-4">
+            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
+            <a href={displayVideoUrl}
+              target="_blank" rel="noopener noreferrer"
+              className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
+              <PlayCircle size={24} style={{ color: BLUE }} />
+              <div>
+                <div className="text-sm text-gray-800">{displayVideoTitle}</div>
+                {!liveContent?.video?.title && <div className="text-xs text-gray-400">{subject.video.duration}</div>}
+              </div>
+            </a>
+          </div>
+          <div className="mb-4">
+            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
+            <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displaySuccessStory}</div>
+          </div>
           {activeProduct?.demandPollId && demandStatusColor && demandStatusColor !== "green" && (
             <div className="rounded-lg p-3 mb-4 flex items-center gap-2" style={{ background: demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
@@ -3095,22 +3111,9 @@ function UpscaleAppInner() {
                     <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("knowledgeBuildingLabel")}</div>
                     <p className="text-xs" style={{ color: NAVY }}>{t("knowledgeBuildingNote", { day: Math.min(daysDone + 1, 7) })}</p>
                   </div>
-                  <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
-                    <a href={displayVideoUrl}
-                      target="_blank" rel="noopener noreferrer"
-                      className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
-                      <PlayCircle size={24} style={{ color: BLUE }} />
-                      <div>
-                        <div className="text-sm text-gray-800">{displayVideoTitle}</div>
-                        {!liveContent?.video?.title && <div className="text-xs text-gray-400">{subject.video.duration}</div>}
-                      </div>
-                    </a>
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displaySuccessStory}</div>
-                  </div>
+                  <button onClick={() => setTab("marketing")} className="text-xs font-medium block" style={{ color: BLUE }}>
+                    {t("seeMarketingTab")} →
+                  </button>
                   <button onClick={() => setTab("recommendations")} className="text-xs font-medium" style={{ color: BLUE }}>
                     {t("seeBooksTab")} →
                   </button>
