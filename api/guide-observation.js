@@ -13,6 +13,15 @@ function getClient() {
   return client;
 }
 
+// Distinguishes real quota exhaustion (429 RESOURCE_EXHAUSTED) from
+// transient overload (503 UNAVAILABLE) or other failures in Vercel's
+// function logs, so quota exhaustion is easy to grep for instead of
+// having to read every raw error.
+function logGeminiError(label, err) {
+  const isQuota = err?.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(err?.message || "");
+  console.error(isQuota ? `GEMINI QUOTA EXCEEDED — ${label}:` : `${label}:`, err);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
@@ -52,7 +61,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ guidance: data.guidance });
   } catch (err) {
-    console.error("guide-observation error:", err);
+    logGeminiError("guide-observation error", err);
     res.status(500).json({ error: "Guidance failed" });
   }
 }

@@ -8,6 +8,15 @@ function getClient() {
   return client;
 }
 
+// Distinguishes real quota exhaustion (429 RESOURCE_EXHAUSTED) from
+// transient overload (503 UNAVAILABLE) or other failures in Vercel's
+// function logs, so quota exhaustion is easy to grep for instead of
+// having to read every raw error.
+function logGeminiError(label, err) {
+  const isQuota = err?.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(err?.message || "");
+  console.error(isQuota ? `GEMINI QUOTA EXCEEDED — ${label}:` : `${label}:`, err);
+}
+
 const MARKET_ANALYTICS_SYSTEM_PROMPT = `You produce a market-demand snapshot for a small business owner in a specific niche and city, inside a habit-building app. You do NOT have real-time search — draw on general knowledge of how this industry and this kind of city typically behave, not specific dated statistics you cannot verify. You ARE told today's actual date, so you can honestly ground the snapshot in the real current season or shopping calendar for India.
 
 Given their exact business niche and city, provide:
@@ -61,7 +70,7 @@ async function handleMarketAnalytics(req, res) {
       insight: data.insight || "",
     });
   } catch (err) {
-    console.error("insights market-analytics error:", err);
+    logGeminiError("insights market-analytics error", err);
     res.status(500).json({ error: "Market analytics generation failed" });
   }
 }
@@ -108,7 +117,7 @@ ${demandChangePct != null ? `Market demand trend for this niche/city: ${demandCh
       progressNote: data.progressNote || "",
     });
   } catch (err) {
-    console.error("insights plan-progress error:", err);
+    logGeminiError("insights plan-progress error", err);
     res.status(500).json({ error: "Progress assessment failed" });
   }
 }

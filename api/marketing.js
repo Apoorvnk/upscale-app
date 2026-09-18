@@ -15,6 +15,15 @@ function getGenai() {
   return genai;
 }
 
+// Distinguishes real quota exhaustion (429 RESOURCE_EXHAUSTED) from
+// transient overload (503 UNAVAILABLE) or other failures in Vercel's
+// function logs, so quota exhaustion is easy to grep for instead of
+// having to read every raw error.
+function logGeminiError(label, err) {
+  const isQuota = err?.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(err?.message || "");
+  console.error(isQuota ? `GEMINI QUOTA EXCEEDED — ${label}:` : `${label}:`, err);
+}
+
 const STRATEGY_SYSTEM_PROMPT = `You are a marketing strategist for small business owners in a daily habit-building app. You do NOT have real-time search — draw on general marketing knowledge, not specific dated events.
 
 Given their exact business niche, identify the single psychological angle that actually moves buyers in this niche, and build a simple, implementable marketing strategy around it. Small business owners are not moved by generic advice like "post on social media more" — they need one sharp, specific angle they can act on this week.
@@ -64,7 +73,7 @@ async function handleGenerate(req, res) {
       video: { title: data.videoTitle || "", url: "" },
     });
   } catch (err) {
-    console.error("marketing generate error:", err);
+    logGeminiError("marketing generate error", err);
     res.status(500).json({ error: "Marketing strategy generation failed" });
   }
 }
