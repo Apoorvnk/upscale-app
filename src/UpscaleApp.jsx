@@ -432,6 +432,8 @@ const STRINGS = {
     tagline: "Observe. Execute. Reward. Grow.",
     welcomeSub: "Two ways in — choose the one that's you.",
     chooseLanguage: "Choose your language",
+    signUp: "Sign up",
+    signUpChooseRole: "Which one are you?",
     signUpProprietor: "Sign up as Proprietor",
     proprietorDesc: "I run my own business — free to join",
     signUpCollaborator: "Sign up as Collaborator",
@@ -584,6 +586,8 @@ const STRINGS = {
     tagline: "देखें। करें। इनाम पाएं। बढ़ें।",
     welcomeSub: "शुरू करने के दो तरीके — जो आप पर लागू हो उसे चुनें।",
     chooseLanguage: "अपनी भाषा चुनें",
+    signUp: "साइन अप करें",
+    signUpChooseRole: "आप कौन हैं?",
     signUpProprietor: "मालिक के रूप में साइन अप करें",
     proprietorDesc: "मैं अपना खुद का व्यवसाय चलाता/चलाती हूं — जुड़ना मुफ़्त है",
     signUpCollaborator: "सहयोगी के रूप में साइन अप करें",
@@ -736,6 +740,8 @@ const STRINGS = {
     tagline: "निरीक्षण करा. कृती करा. बक्षीस मिळवा. वाढ करा.",
     welcomeSub: "सुरुवात करण्याचे दोन मार्ग — जो तुम्हाला लागू होतो तो निवडा.",
     chooseLanguage: "तुमची भाषा निवडा",
+    signUp: "साइन अप करा",
+    signUpChooseRole: "तुम्ही कोण आहात?",
     signUpProprietor: "मालक म्हणून साइन अप करा",
     proprietorDesc: "मी माझा स्वतःचा व्यवसाय चालवतो/चालवते — सामील होणे मोफत आहे",
     signUpCollaborator: "सहयोगी म्हणून साइन अप करा",
@@ -1208,6 +1214,7 @@ function UpscaleAppInner() {
   const t = (key, vars) => tr(language, key, vars);
 
   const [role, setRole] = useState(null);
+  const [showSignupOptions, setShowSignupOptions] = useState(false);
   const [loginContact, setLoginContact] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
   const [obStep, setObStep] = useState(0);
@@ -1983,18 +1990,31 @@ function UpscaleAppInner() {
         <p className="text-sm mb-8 max-w-xs" style={{ color: "#9FB0CC" }}>
           {t("welcomeSub")}
         </p>
-        <div className="w-full max-w-xs space-y-3">
-          <button onClick={() => { setRole("proprietor"); setScreen("onboarding"); }}
-            className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
-            <div className="text-sm font-medium text-white mb-0.5">{t("signUpProprietor")}</div>
-            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("proprietorDesc")}</div>
-          </button>
-          <button onClick={() => { setRole("collaborator"); setScreen("collab-onboarding"); }}
-            className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
-            <div className="text-sm font-medium text-white mb-0.5">{t("signUpCollaborator")}</div>
-            <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("collaboratorDesc")}</div>
-          </button>
-        </div>
+        {!showSignupOptions ? (
+          <FadeIn keyProp="signup-cta">
+            <div className="w-full max-w-xs">
+              <PrimaryButton onClick={() => setShowSignupOptions(true)}>
+                {t("signUp")} <ArrowRight size={15} />
+              </PrimaryButton>
+            </div>
+          </FadeIn>
+        ) : (
+          <FadeIn keyProp="signup-options">
+            <div className="w-full max-w-xs space-y-3">
+              <p className="text-xs font-medium mb-1" style={{ color: "#C7D2FE" }}>{t("signUpChooseRole")}</p>
+              <button onClick={() => { setRole("proprietor"); setScreen("onboarding"); }}
+                className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
+                <div className="text-sm font-medium text-white mb-0.5">{t("signUpProprietor")}</div>
+                <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("proprietorDesc")}</div>
+              </button>
+              <button onClick={() => { setRole("collaborator"); setScreen("collab-onboarding"); }}
+                className="w-full text-left rounded-xl p-4 border transition-colors" style={{ borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)" }}>
+                <div className="text-sm font-medium text-white mb-0.5">{t("signUpCollaborator")}</div>
+                <div className="text-[11px]" style={{ color: "#C7D2FE" }}>{t("collaboratorDesc")}</div>
+              </button>
+            </div>
+          </FadeIn>
+        )}
         <button onClick={() => setScreen("login")} className="text-xs mt-6 underline" style={{ color: "#C7D2FE" }}>
           {t("alreadyHaveAccount")}
         </button>
