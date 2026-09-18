@@ -109,7 +109,7 @@ async function handleMarketAnalytics(req, res) {
     res.status(200).json(result);
   } catch (err) {
     logGeminiError("insights market-analytics error", err);
-    res.status(500).json({ error: "Market analytics generation failed", detail: err?.message });
+    res.status(500).json({ error: "Market analytics generation failed" });
   }
 }
 
