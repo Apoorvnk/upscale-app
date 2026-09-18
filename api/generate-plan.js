@@ -63,6 +63,6 @@ export default async function handler(req, res) {
     res.status(200).json(data);
   } catch (err) {
     console.error("generate-plan error:", err);
-    res.status(500).json({ error: "Plan generation failed" });
+    res.status(500).json({ error: "Plan generation failed", detail: err?.message });
   }
 }
