@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, ChevronDown, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Upload, Receipt, Store, LogOut
+  Plus, Newspaper, BookOpen, Upload, Store, LogOut
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -2501,7 +2501,6 @@ function UpscaleAppInner() {
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
-          { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
         ].map((tabItem) => (
           <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
@@ -2914,6 +2913,103 @@ function UpscaleAppInner() {
               </div>
             )
           )}
+
+          <div className="border-t border-gray-200 mt-8 pt-6">
+            <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabAnalytics")}</div>
+            <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
+            <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+                <input type="file" accept="image/*" capture="environment" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
+                <Upload size={18} style={{ color: "#B91C1C" }} />
+                <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
+              </label>
+              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+                <input type="file" accept="image/*" capture="environment" className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
+                <Upload size={18} style={{ color: "#0F6E56" }} />
+                <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
+              </label>
+            </div>
+
+            {ledgerError && <div className="text-xs mb-4" style={{ color: "#B91C1C" }}>{ledgerError}</div>}
+
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Total costs</div>
+                <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalCosts.toLocaleString("en-IN")}</div>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Total sales</div>
+                <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Net (incl. investment)</div>
+                <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                  {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
+                </div>
+              </div>
+            </div>
+            {investmentAmount > 0 && (
+              <p className="text-[11px] text-gray-400 -mt-4 mb-6">
+                Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
+              </p>
+            )}
+
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
+            {ledgerEntries.length ? (
+              <div className="space-y-2">
+                {ledgerEntries.map((e, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm text-gray-800 truncate">{e.vendor || "Unknown vendor"}</div>
+                      <div className="text-[11px] text-gray-400 truncate">{e.description}{e.date && e.date !== "unknown" ? ` · ${e.date}` : ""}</div>
+                    </div>
+                    <span className="text-sm font-medium shrink-0" style={{ color: e.type === "cost" ? "#B91C1C" : "#0F6E56" }}>
+                      {e.type === "cost" ? "-" : "+"}₹{Number(e.amount || 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
+            )}
+            <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
+
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">Market analytics</div>
+            {marketAnalyticsLoading && !Object.keys(marketAnalyticsByProduct).length && (
+              <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
+                <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketAnalyticsBuilding")}
+              </div>
+            )}
+            <div className="space-y-3">
+              {products.map((p) => {
+                const productSubject = resolveSubject(p.interest, p.subcategory);
+                const analytics = marketAnalyticsByProduct[p.id] || productSubject.analytics;
+                return (
+                  <div key={p.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="text-xs font-medium mb-2" style={{ color: NAVY }}>
+                      {p.shopName || productSubject.name}{p.city ? ` · ${p.city}` : ""}
+                    </div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
+                      <span className="text-xs font-medium" style={{ color: analytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                        {analytics.demandChangePct >= 0 ? "+" : ""}{analytics.demandChangePct}% vs last month
+                      </span>
+                    </div>
+                    <div className="flex items-end gap-2 h-16 mb-1">
+                      {analytics.demand.map((v, i) => (
+                        <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-3">{analytics.insight}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       ) : tab === "recommendations" ? (
         <div className="px-6 py-6 bg-white">
@@ -2929,102 +3025,6 @@ function UpscaleAppInner() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      ) : tab === "analytics" ? (
-        <div className="px-6 py-6 bg-white">
-          <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
-          <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
-
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-              <input type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
-              <Upload size={18} style={{ color: "#B91C1C" }} />
-              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
-            </label>
-            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-              <input type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
-              <Upload size={18} style={{ color: "#0F6E56" }} />
-              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
-            </label>
-          </div>
-
-          {ledgerError && <div className="text-xs mb-4" style={{ color: "#B91C1C" }}>{ledgerError}</div>}
-
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Total costs</div>
-              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalCosts.toLocaleString("en-IN")}</div>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Total sales</div>
-              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Net (incl. investment)</div>
-              <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
-              </div>
-            </div>
-          </div>
-          {investmentAmount > 0 && (
-            <p className="text-[11px] text-gray-400 -mt-4 mb-6">
-              Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
-            </p>
-          )}
-
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
-          {ledgerEntries.length ? (
-            <div className="space-y-2">
-              {ledgerEntries.map((e, i) => (
-                <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm text-gray-800 truncate">{e.vendor || "Unknown vendor"}</div>
-                    <div className="text-[11px] text-gray-400 truncate">{e.description}{e.date && e.date !== "unknown" ? ` · ${e.date}` : ""}</div>
-                  </div>
-                  <span className="text-sm font-medium shrink-0" style={{ color: e.type === "cost" ? "#B91C1C" : "#0F6E56" }}>
-                    {e.type === "cost" ? "-" : "+"}₹{Number(e.amount || 0).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
-          )}
-          <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
-
-          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">Market analytics</div>
-          {marketAnalyticsLoading && !Object.keys(marketAnalyticsByProduct).length && (
-            <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketAnalyticsBuilding")}
-            </div>
-          )}
-          <div className="space-y-3">
-            {products.map((p) => {
-              const productSubject = resolveSubject(p.interest, p.subcategory);
-              const analytics = marketAnalyticsByProduct[p.id] || productSubject.analytics;
-              return (
-                <div key={p.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="text-xs font-medium mb-2" style={{ color: NAVY }}>
-                    {p.shopName || productSubject.name}{p.city ? ` · ${p.city}` : ""}
-                  </div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-gray-500">Demand trend, last 6 months</span>
-                    <span className="text-xs font-medium" style={{ color: analytics.demandChangePct >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                      {analytics.demandChangePct >= 0 ? "+" : ""}{analytics.demandChangePct}% vs last month
-                    </span>
-                  </div>
-                  <div className="flex items-end gap-2 h-16 mb-1">
-                    {analytics.demand.map((v, i) => (
-                      <div key={i} className="flex-1 rounded-t" style={{ height: `${v}%`, background: BLUE_BG, borderTop: `3px solid ${BLUE}` }} />
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">{analytics.insight}</p>
-                </div>
-              );
-            })}
           </div>
         </div>
       ) : (
