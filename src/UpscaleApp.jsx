@@ -495,7 +495,7 @@ const STRINGS = {
     logOut: "Log out",
     tabLoop: "Loop",
     tabProgress: "Progress",
-    tabCollaborate: "Collaborate",
+    tabCollaborate: "Learn & Collaboration",
     tabRecommendations: "Books",
     tabAnalytics: "Analytics",
     tabMarketing: "Marketing & Analytics",
@@ -644,7 +644,7 @@ const STRINGS = {
     logOut: "लॉग आउट",
     tabLoop: "लूप",
     tabProgress: "प्रगति",
-    tabCollaborate: "सहयोग",
+    tabCollaborate: "सीखें और सहयोग",
     tabRecommendations: "पुस्तकें",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग और विश्लेषण",
@@ -793,7 +793,7 @@ const STRINGS = {
     logOut: "लॉग आउट",
     tabLoop: "लूप",
     tabProgress: "प्रगती",
-    tabCollaborate: "सहयोग",
+    tabCollaborate: "शिका आणि सहयोग",
     tabRecommendations: "पुस्तके",
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग आणि विश्लेषण",
@@ -2500,7 +2500,6 @@ function UpscaleAppInner() {
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
-          { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
         ].map((tabItem) => (
           <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
@@ -2554,6 +2553,22 @@ function UpscaleAppInner() {
         </div>
       ) : tab === "collaborate" ? (
         <div className="px-6 py-6 bg-white">
+          <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabRecommendations")}</div>
+          <p className="text-sm text-gray-500 mb-4">Book suggestions and recommendations for {subject.name}.</p>
+          <div className="space-y-3 mb-8">
+            {(subject.bookSuggestions || []).map((b, i) => (
+              <div key={i} className="border border-gray-200 rounded-xl p-4 flex gap-3">
+                <BookOpen size={18} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-medium" style={{ color: NAVY }}>{b.title}</div>
+                  <div className="text-xs text-gray-500 mb-1">{b.author}</div>
+                  <div className="text-xs text-gray-600">{b.why}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
           {daysDone < 7 ? (
             <div className="text-center py-10">
               <Lock size={28} className="mx-auto mb-3" style={{ color: "#9CA3AF" }} />
@@ -2613,6 +2628,7 @@ function UpscaleAppInner() {
               )}
             </>
           )}
+          </div>
         </div>
       ) : tab === "demand" ? (
         <div className="px-6 py-6 bg-white">
@@ -3011,22 +3027,6 @@ function UpscaleAppInner() {
             </div>
           </div>
         </div>
-      ) : tab === "recommendations" ? (
-        <div className="px-6 py-6 bg-white">
-          <p className="text-sm text-gray-500 mb-4">Book suggestions and recommendations for {subject.name}.</p>
-          <div className="space-y-3">
-            {(subject.bookSuggestions || []).map((b, i) => (
-              <div key={i} className="border border-gray-200 rounded-xl p-4 flex gap-3">
-                <BookOpen size={18} style={{ color: BLUE }} className="mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-sm font-medium" style={{ color: NAVY }}>{b.title}</div>
-                  <div className="text-xs text-gray-500 mb-1">{b.author}</div>
-                  <div className="text-xs text-gray-600">{b.why}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       ) : (
         <div className="px-6 py-6 bg-white">
           <div className="flex items-center mb-8">
@@ -3062,7 +3062,7 @@ function UpscaleAppInner() {
                   <button onClick={() => setTab("marketing")} className="text-xs font-medium block" style={{ color: BLUE }}>
                     {t("seeMarketingTab")} →
                   </button>
-                  <button onClick={() => setTab("recommendations")} className="text-xs font-medium" style={{ color: BLUE }}>
+                  <button onClick={() => setTab("collaborate")} className="text-xs font-medium" style={{ color: BLUE }}>
                     {t("seeBooksTab")} →
                   </button>
                   <PrimaryButton onClick={() => { setContentDone(true); setStage("observation"); }}>
