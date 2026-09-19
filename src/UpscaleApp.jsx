@@ -3,7 +3,7 @@ import {
   ArrowRight, ArrowLeft, Check, Flame, Target, Sparkles, TrendingUp,
   PlayCircle, HelpCircle, Eye, Megaphone, Users, LayoutGrid, X,
   Lock, Gift, ChevronRight, ChevronDown, Calendar, Ticket, ShieldCheck, IndianRupee, Handshake, Globe,
-  Plus, Newspaper, BookOpen, Upload, Receipt, Star, Store, LogOut
+  Plus, Newspaper, BookOpen, Upload, Receipt, Store, LogOut
 } from "lucide-react";
 
 const NAVY = "#0F2E7A";
@@ -478,7 +478,6 @@ const STRINGS = {
     tabAnalytics: "Analytics",
     tabMarketing: "Marketing",
     tabDemand: "Demand",
-    tabReview: "Review",
     stageContent: "Today's content",
     stageObservation: "Observation",
     stageGuidance: "Guidance",
@@ -575,9 +574,6 @@ const STRINGS = {
     demandSuggestQuestions: "Suggest poll questions",
     demandPickQuestions: "Pick the questions to include",
     demandReviewsLabel: "Reviews",
-    seeReviewsTab: "See Review tab",
-    reviewNoPollYet: "Create a Demand poll first — reviews from respondents will show up here.",
-    reviewIntro: "Written feedback from people who responded to your Demand poll.",
     reviewNoneYet: "No written reviews yet — they'll appear here as people respond.",
     pollReviewLabel: "Any feedback? (optional)",
     pollReviewPlaceholder: "What do you think?",
@@ -632,7 +628,6 @@ const STRINGS = {
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
     tabDemand: "मांग",
-    tabReview: "समीक्षा",
     stageContent: "आज की सामग्री",
     stageObservation: "अवलोकन",
     stageGuidance: "मार्गदर्शन",
@@ -729,9 +724,6 @@ const STRINGS = {
     demandSuggestQuestions: "पोल प्रश्न सुझाएं",
     demandPickQuestions: "शामिल करने के लिए प्रश्न चुनें",
     demandReviewsLabel: "समीक्षाएं",
-    seeReviewsTab: "समीक्षा टैब देखें",
-    reviewNoPollYet: "पहले एक मांग पोल बनाएं — उत्तरदाताओं की समीक्षाएं यहां दिखेंगी।",
-    reviewIntro: "आपके मांग पोल का जवाब देने वालों की लिखित प्रतिक्रिया।",
     reviewNoneYet: "अभी तक कोई लिखित समीक्षा नहीं — जैसे-जैसे लोग जवाब देंगे, वे यहां दिखेंगी।",
     pollReviewLabel: "कोई प्रतिक्रिया? (वैकल्पिक)",
     pollReviewPlaceholder: "आप क्या सोचते हैं?",
@@ -786,7 +778,6 @@ const STRINGS = {
     tabAnalytics: "विश्लेषण",
     tabMarketing: "मार्केटिंग",
     tabDemand: "मागणी",
-    tabReview: "पुनरावलोकन",
     stageContent: "आजची सामग्री",
     stageObservation: "निरीक्षण",
     stageGuidance: "मार्गदर्शन",
@@ -883,9 +874,6 @@ const STRINGS = {
     demandSuggestQuestions: "पोल प्रश्न सुचवा",
     demandPickQuestions: "समाविष्ट करण्यासाठी प्रश्न निवडा",
     demandReviewsLabel: "समीक्षा",
-    seeReviewsTab: "पुनरावलोकन टॅब पहा",
-    reviewNoPollYet: "आधी मागणी पोल तयार करा — प्रतिसादकर्त्यांच्या समीक्षा इथे दिसतील.",
-    reviewIntro: "तुमच्या मागणी पोलला उत्तर देणाऱ्यांचा लेखी अभिप्राय.",
     reviewNoneYet: "अजून कोणतीही लेखी समीक्षा नाही — लोक उत्तर देतील तसे इथे दिसतील.",
     pollReviewLabel: "काही अभिप्राय? (पर्यायी)",
     pollReviewPlaceholder: "तुम्हाला काय वाटते?",
@@ -2543,7 +2531,6 @@ function UpscaleAppInner() {
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
-          { key: "review", label: t("tabReview"), icon: Star },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "recommendations", label: t("tabRecommendations"), icon: BookOpen },
           { key: "analytics", label: t("tabAnalytics"), icon: Receipt },
@@ -2847,48 +2834,32 @@ function UpscaleAppInner() {
                       </div>
                     )}
 
-                    <button onClick={() => setTab("review")} className="text-xs font-medium" style={{ color: BLUE }}>
-                      {t("seeReviewsTab")} →
-                    </button>
+                    <div className="mt-3">
+                      <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("demandReviewsLabel")}</div>
+                      {demandReviews.length > 0 ? (
+                        <div className="space-y-2">
+                          {demandReviews.map((r, i) => (
+                            <div key={i} className="bg-white rounded-lg p-3 border border-gray-200">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                  style={{ background: r.vote === "yes" ? "#E7F5EF" : r.vote === "maybe" ? "#FEF3E7" : "#FDECEC", color: r.vote === "yes" ? "#0F6E56" : r.vote === "maybe" ? "#B45309" : "#B91C1C" }}>
+                                  {t(r.vote === "yes" ? "demandYes" : r.vote === "maybe" ? "demandMaybe" : "demandNo")}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700">"{r.review}"</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400">{t("reviewNoneYet")}</p>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <p className="text-xs text-gray-400">{t("demandNoResponsesYet")}</p>
                 )}
               </div>
             </div>
-          )}
-        </div>
-      ) : tab === "review" ? (
-        <div className="px-6 py-6 bg-white">
-          {!activeProduct?.demandPollId ? (
-            <p className="text-sm text-gray-400">{t("reviewNoPollYet")}</p>
-          ) : (
-            <>
-              <p className="text-sm text-gray-500 mb-4">{t("reviewIntro")}</p>
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t("demandReviewsLabel")}</div>
-                <button onClick={() => fetchDemandPollResults(activeProduct?.demandPollId)} className="text-[11px] font-medium" style={{ color: BLUE }}>
-                  {demandPollLoading ? t("demandRefreshing") : t("demandRefresh")}
-                </button>
-              </div>
-              {demandReviews.length > 0 ? (
-                <div className="space-y-2">
-                  {demandReviews.map((r, i) => (
-                    <div key={i} className="bg-white rounded-lg p-3 border border-gray-200">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                          style={{ background: r.vote === "yes" ? "#E7F5EF" : r.vote === "maybe" ? "#FEF3E7" : "#FDECEC", color: r.vote === "yes" ? "#0F6E56" : r.vote === "maybe" ? "#B45309" : "#B91C1C" }}>
-                          {t(r.vote === "yes" ? "demandYes" : r.vote === "maybe" ? "demandMaybe" : "demandNo")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700">"{r.review}"</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400">{t("reviewNoneYet")}</p>
-              )}
-            </>
           )}
         </div>
       ) : tab === "marketing" ? (
