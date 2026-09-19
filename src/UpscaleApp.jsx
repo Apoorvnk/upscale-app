@@ -485,7 +485,6 @@ const STRINGS = {
     updateLabel: "Update",
     trendLabel: "Trend",
     videoLabel: "Video",
-    successStoryLabel: "Success story",
     readMore: "Read more →",
     continueToObservation: "Continue to observation",
     yourObservation: "Your observation",
@@ -527,7 +526,6 @@ const STRINGS = {
     marketAnalyticsBuilding: "Building your market analytics...",
     planProgressBuilding: "Assessing your progress...",
     whatToDoNext: "What to do next",
-    refreshingContent: "Refreshing today's content...",
     demandLabel: "Demand",
     demandIntro: "Test real demand for this idea before committing to it.",
     demandProduct: "Product (photo)",
@@ -635,7 +633,6 @@ const STRINGS = {
     updateLabel: "अपडेट",
     trendLabel: "ट्रेंड",
     videoLabel: "वीडियो",
-    successStoryLabel: "सफलता की कहानी",
     readMore: "और पढ़ें →",
     continueToObservation: "अवलोकन पर जाएं",
     yourObservation: "आपका अवलोकन",
@@ -677,7 +674,6 @@ const STRINGS = {
     marketAnalyticsBuilding: "आपका मार्केट एनालिटिक्स तैयार हो रहा है...",
     planProgressBuilding: "आपकी प्रगति का आकलन किया जा रहा है...",
     whatToDoNext: "आगे क्या करना है",
-    refreshingContent: "आज की सामग्री ताज़ा की जा रही है...",
     demandLabel: "मांग",
     demandIntro: "प्रतिबद्ध होने से पहले इस विचार की असली मांग जांचें।",
     demandProduct: "उत्पाद (फोटो)",
@@ -785,7 +781,6 @@ const STRINGS = {
     updateLabel: "अपडेट",
     trendLabel: "ट्रेंड",
     videoLabel: "व्हिडिओ",
-    successStoryLabel: "यशोगाथा",
     readMore: "अधिक वाचा →",
     continueToObservation: "निरीक्षणाकडे जा",
     yourObservation: "तुमचे निरीक्षण",
@@ -827,7 +822,6 @@ const STRINGS = {
     marketAnalyticsBuilding: "तुमचे मार्केट अॅनालिटिक्स तयार होत आहे...",
     planProgressBuilding: "तुमच्या प्रगतीचे मूल्यांकन होत आहे...",
     whatToDoNext: "पुढे काय करायचे",
-    refreshingContent: "आजची सामग्री रिफ्रेश होत आहे...",
     demandLabel: "मागणी",
     demandIntro: "वचनबद्ध होण्यापूर्वी या कल्पनेची खरी मागणी तपासा.",
     demandProduct: "उत्पादन (फोटो)",
@@ -1233,9 +1227,6 @@ function UpscaleAppInner() {
   const [tab, setTab] = useState("loop");
   const [stage, setStage] = useState("content");
   const [contentDone, setContentDone] = useState(false);
-  const [liveContent, setLiveContent] = useState(null);
-  const [contentLoading, setContentLoading] = useState(false);
-  const [contentFetchAttempted, setContentFetchAttempted] = useState(false);
 
   // Demand check: a standing poll the proprietor creates once (not reset
   // daily like the rest of Today's content) to validate a product/service
@@ -1345,47 +1336,14 @@ function UpscaleAppInner() {
     return { language, form, goal, period, planData, daysDone, streak, ledgerEntries, lastClaimedDate, activeProductId, products, ...overrides };
   }
 
-  // Live daily content: fetched at most once per loop cycle (guarded by
-  // contentFetchAttempted, reset in claimReward — NOT by liveContent/
-  // contentLoading, which would retry forever on every failure). Fails
-  // open by leaving liveContent null so the static subject fallback keeps
-  // rendering — the user is never blocked on this. Deliberately does NOT
-  // gate the state updates on a "cancelled" flag tied to this effect's
-  // cleanup: contentFetchAttempted already guarantees at most one fetch
-  // per cycle, so if the user navigates away and back while it's still in
-  // flight (re-running this effect), the original request should still be
-  // allowed to land instead of leaving contentLoading stuck true forever.
-  useEffect(() => {
-    if (screen !== "app" || stage !== "content" || contentFetchAttempted) return;
-    setContentFetchAttempted(true);
-    setContentLoading(true);
-    fetch("/api/daily-content", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subjectName: subject.name, subcategoryLabel: subject.label || null, language }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`daily-content returned ${res.status}`);
-        return res.json();
-      })
-      .then((data) => setLiveContent(data))
-      .catch((err) => console.error("fetchDailyContent failed:", err))
-      .finally(() => setContentLoading(false));
-  }, [screen, stage, subject.name, subject.label, language, contentFetchAttempted]);
-
-  const displayVideoTitle = liveContent?.video?.title || subject.video.title;
-  const displayVideoUrl = liveContent?.video?.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(displayVideoTitle + " animated explainer")}`;
-  const displaySuccessStory = liveContent?.successStory || subject.successStory;
-
   // Marketing strategy: fetched at most once per loop cycle, lazily on
   // first visit to the Marketing tab (guarded by marketingFetchAttempted,
-  // reset in claimReward — same retry-safe pattern as the daily-content
-  // effect above). There's no static fallback for this content, so on
-  // failure the tab shows a retry affordance instead of silently degrading.
-  // No "cancelled" gate on the state updates, for the same reason as the
-  // daily-content effect: leaving the Marketing tab and coming back while
-  // the request is still in flight must not leave marketingLoading stuck
-  // true forever with no way to resolve.
+  // reset in claimReward). There's no static fallback for this content, so
+  // on failure the tab shows a retry affordance instead of silently
+  // degrading. No "cancelled" gate on the state updates: leaving the
+  // Marketing tab and coming back while the request is still in flight
+  // must not leave marketingLoading stuck true forever with no way to
+  // resolve.
   useEffect(() => {
     if (screen !== "app" || tab !== "marketing" || marketingFetchAttempted) return;
     setMarketingFetchAttempted(true);
@@ -1641,8 +1599,6 @@ function UpscaleAppInner() {
   function switchActiveProduct(productId) {
     if (productId === activeProductId) { setShowProductSwitcher(false); return; }
     setActiveProductId(productId);
-    setLiveContent(null);
-    setContentFetchAttempted(false);
     setContentDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
@@ -1708,8 +1664,6 @@ function UpscaleAppInner() {
   // claimed — must not touch another product's Marketing/Demand state.
   function resetLoopStateForActiveProduct() {
     setContentDone(false);
-    setLiveContent(null);
-    setContentFetchAttempted(false);
     setObsText("");
     setGuidance(null);
     setRewardClaimed(false);
@@ -2943,22 +2897,6 @@ function UpscaleAppInner() {
               </div>
             )
           )}
-          <div className="mt-4">
-            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
-            <a href={displayVideoUrl}
-              target="_blank" rel="noopener noreferrer"
-              className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
-              <PlayCircle size={24} style={{ color: BLUE }} />
-              <div>
-                <div className="text-sm text-gray-800">{displayVideoTitle}</div>
-                {!liveContent?.video?.title && <div className="text-xs text-gray-400">{subject.video.duration}</div>}
-              </div>
-            </a>
-          </div>
-          <div className="mt-4">
-            <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("successStoryLabel")}</div>
-            <div className="bg-white rounded-lg p-3 border border-gray-200 text-sm text-gray-700">{displaySuccessStory}</div>
-          </div>
         </div>
       ) : tab === "recommendations" ? (
         <div className="px-6 py-6 bg-white">
@@ -3100,11 +3038,6 @@ function UpscaleAppInner() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-1"><Newspaper size={16} style={{ color: BLUE }} /><h2 className="text-sm font-medium" style={{ color: NAVY }}>{t("stageContent")}</h2></div>
                   {subject.label && <p className="text-xs text-gray-400 -mt-2">{t("forLabel", { label: subject.label.toLowerCase() }).trim()}</p>}
-                  {contentLoading && !liveContent && (
-                    <p className="text-[11px] text-gray-400 -mt-2 flex items-center gap-1">
-                      <Sparkles size={11} className="animate-pulse" /> {t("refreshingContent")}
-                    </p>
-                  )}
                   <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
                     <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("knowledgeBuildingLabel")}</div>
                     <p className="text-xs" style={{ color: NAVY }}>{t("knowledgeBuildingNote", { day: Math.min(daysDone + 1, 7) })}</p>
