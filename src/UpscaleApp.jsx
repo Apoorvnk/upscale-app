@@ -288,6 +288,30 @@ const INTEREST_NAMES = [
 function slugify(name) { return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
 function isValidPhone(value) { return /^\d{10}$/.test((value || "").replace(/\D/g, "")); }
 function parseCurrency(value) { const digits = (value || "").replace(/\D/g, ""); return digits ? parseInt(digits, 10) : 0; }
+
+// The "3 Whys" demand poll (why buy / what price / when buy) is fixed and
+// built client-side from the seller's own stated price — no AI call needed,
+// which also keeps this off the shared Gemini quota entirely.
+function buildDemandPriceBands(priceStr) {
+  const price = parseCurrency(priceStr);
+  if (!price) return ["Under ₹500", "₹500–₹1,500", "₹1,500–₹3,000", "Above ₹3,000"];
+  // Rounding granularity scales with price so low-priced items (a ₹50
+  // accessory) don't collapse into duplicate "₹50–₹50" bands the way a
+  // flat round-to-50 would.
+  const step = price < 200 ? 10 : price < 2000 ? 50 : price < 20000 ? 500 : 5000;
+  const round = (n) => Math.max(step, Math.round(n / step) * step);
+  const low = round(price * 0.7);
+  const high = round(price * 1.3);
+  const fmt = (n) => `₹${n.toLocaleString("en-IN")}`;
+  return [`Under ${fmt(low)}`, `${fmt(low)}–${fmt(price)}`, `${fmt(price)}–${fmt(high)}`, `Above ${fmt(high)}`];
+}
+function buildDemandQuestions(priceStr) {
+  return [
+    { id: "why", label: "Why would you buy this?", options: ["It solves a problem I have", "I love the design/quality", "Better value than alternatives", "It's for a gift or special occasion", "Just exploring, not sure yet"] },
+    { id: "price", label: "What price would you pay for this?", options: buildDemandPriceBands(priceStr) },
+    { id: "when", label: "When would you buy this?", options: ["Right away", "Within a week", "Within a month", "Not anytime soon"] },
+  ];
+}
 function genericContent(name) {
   const lower = name.toLowerCase();
   return {
@@ -419,8 +443,6 @@ function normalizeState(raw, fallbackContact) {
 }
 
 const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
-const AGE_GROUPS = ["Under 18", "18-25", "25-40", "40-60", "60+"];
-const GENDERS = ["Any", "Women", "Men"];
 
 // Covers the highest-traffic screens (Welcome, Onboarding, Goal, main nav,
 // Loop stage headers). Deeper screens (Admin, Collaborator dashboard,
@@ -558,19 +580,20 @@ const STRINGS = {
     pollMessageWhatsApp: "Message on WhatsApp",
     pollTapToRespond: "Would you buy this / use this?",
     knowledgeBuildingLabel: "Build your knowledge",
-    knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Watch the video, read the success story, and check the Books tab.",
+    knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Check the Marketing and Books tabs.",
     seeBooksTab: "See Books tab",
     marketingDemandCallout: "Your demand check isn't Green yet — check",
     marketingShareLabel: "Share this ad",
     marketingCreatePage: "Create ad page",
     marketingCreatingPage: "Creating...",
     demandCopyForFacebook: "Copy text (Facebook)",
-    demandTargetAgeLabel: "Target age group",
-    demandTargetGenderLabel: "Target gender",
-    demandTargetAny: "Any",
-    demandTargetLabel: "Target",
-    demandSuggestQuestions: "Suggest poll questions",
-    demandPickQuestions: "Pick the questions to include",
+    demandPhotoHint: "Add at least 3 photos for the best results",
+    demandRoleLabel: "Are you a manufacturer or a seller?",
+    demandRoleManufacturer: "Manufacturer",
+    demandRoleSeller: "Seller",
+    demandAreaLabel: "Area",
+    demandAreaPlaceholder: "e.g. Pune",
+    demandPriceLabel: "Price",
     demandReviewsLabel: "Reviews",
     reviewNoneYet: "No written reviews yet — they'll appear here as people respond.",
     pollReviewLabel: "Any feedback? (optional)",
@@ -706,19 +729,20 @@ const STRINGS = {
     pollMessageWhatsApp: "व्हाट्सएप पर मैसेज करें",
     pollTapToRespond: "क्या आप इसे खरीदेंगे / इस्तेमाल करेंगे?",
     knowledgeBuildingLabel: "अपना ज्ञान बढ़ाएं",
-    knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। वीडियो देखें, सफलता की कहानी पढ़ें, और पुस्तकें टैब देखें।",
+    knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। मार्केटिंग और पुस्तकें टैब देखें।",
     seeBooksTab: "पुस्तकें टैब देखें",
     marketingDemandCallout: "आपकी मांग जांच अभी हरी नहीं है — देखें",
     marketingShareLabel: "यह विज्ञापन शेयर करें",
     marketingCreatePage: "विज्ञापन पेज बनाएं",
     marketingCreatingPage: "बनाया जा रहा है...",
     demandCopyForFacebook: "टेक्स्ट कॉपी करें (Facebook)",
-    demandTargetAgeLabel: "लक्षित आयु वर्ग",
-    demandTargetGenderLabel: "लक्षित लिंग",
-    demandTargetAny: "कोई भी",
-    demandTargetLabel: "लक्ष्य",
-    demandSuggestQuestions: "पोल प्रश्न सुझाएं",
-    demandPickQuestions: "शामिल करने के लिए प्रश्न चुनें",
+    demandPhotoHint: "बेहतर परिणामों के लिए कम से कम 3 फ़ोटो जोड़ें",
+    demandRoleLabel: "क्या आप निर्माता हैं या विक्रेता?",
+    demandRoleManufacturer: "निर्माता",
+    demandRoleSeller: "विक्रेता",
+    demandAreaLabel: "क्षेत्र",
+    demandAreaPlaceholder: "जैसे पुणे",
+    demandPriceLabel: "कीमत",
     demandReviewsLabel: "समीक्षाएं",
     reviewNoneYet: "अभी तक कोई लिखित समीक्षा नहीं — जैसे-जैसे लोग जवाब देंगे, वे यहां दिखेंगी।",
     pollReviewLabel: "कोई प्रतिक्रिया? (वैकल्पिक)",
@@ -854,19 +878,20 @@ const STRINGS = {
     pollMessageWhatsApp: "व्हॉट्सअॅपवर मेसेज करा",
     pollTapToRespond: "तुम्ही हे खरेदी कराल / वापराल का?",
     knowledgeBuildingLabel: "तुमचे ज्ञान वाढवा",
-    knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. व्हिडिओ पाहा, यशोगाथा वाचा, आणि पुस्तके टॅब पाहा.",
+    knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. मार्केटिंग आणि पुस्तके टॅब पाहा.",
     seeBooksTab: "पुस्तके टॅब पाहा",
     marketingDemandCallout: "तुमची मागणी तपासणी अजून हिरवी नाही — पहा",
     marketingShareLabel: "ही जाहिरात शेअर करा",
     marketingCreatePage: "जाहिरात पेज तयार करा",
     marketingCreatingPage: "तयार होत आहे...",
     demandCopyForFacebook: "मजकूर कॉपी करा (Facebook)",
-    demandTargetAgeLabel: "लक्ष्य वयोगट",
-    demandTargetGenderLabel: "लक्ष्य लिंग",
-    demandTargetAny: "कोणतेही",
-    demandTargetLabel: "लक्ष्य",
-    demandSuggestQuestions: "पोल प्रश्न सुचवा",
-    demandPickQuestions: "समाविष्ट करण्यासाठी प्रश्न निवडा",
+    demandPhotoHint: "उत्तम निकालांसाठी किमान 3 फोटो जोडा",
+    demandRoleLabel: "तुम्ही उत्पादक आहात की विक्रेता?",
+    demandRoleManufacturer: "उत्पादक",
+    demandRoleSeller: "विक्रेता",
+    demandAreaLabel: "क्षेत्र",
+    demandAreaPlaceholder: "उदा. पुणे",
+    demandPriceLabel: "किंमत",
     demandReviewsLabel: "समीक्षा",
     reviewNoneYet: "अजून कोणतीही लेखी समीक्षा नाही — लोक उत्तर देतील तसे इथे दिसतील.",
     pollReviewLabel: "काही अभिप्राय? (पर्यायी)",
@@ -1074,9 +1099,15 @@ function PublicPollView({ id }) {
           </div>
         ) : (
           <div className="space-y-4 text-left">
-            {poll.image_data && <img src={poll.image_data} alt="" className="w-full rounded-lg" />}
+            {Array.isArray(poll.images) && poll.images.length > 0 ? (
+              <div className={`grid gap-1.5 ${poll.images.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                {poll.images.map((img, i) => <img key={i} src={img} alt="" className="w-full rounded-lg object-cover aspect-square" />)}
+              </div>
+            ) : (
+              poll.image_data && <img src={poll.image_data} alt="" className="w-full rounded-lg" />
+            )}
             <p className="text-base font-medium text-center" style={{ color: NAVY }}>{poll.pitch}</p>
-            {poll.description && !poll.image_data && <p className="text-sm text-gray-600">{poll.description}</p>}
+            {poll.description && !poll.image_data && !(poll.images || []).length && <p className="text-sm text-gray-600">{poll.description}</p>}
 
             {questions.map((q) => (
               <div key={q.id}>
@@ -1234,7 +1265,7 @@ function UpscaleAppInner() {
   // lives on the product (activeProduct.demandPollId) since each product
   // has its own standing poll — there's no top-level equivalent anymore.
   const [demandInputType, setDemandInputType] = useState("product");
-  const [demandImageDataUrl, setDemandImageDataUrl] = useState(null);
+  const [demandImages, setDemandImages] = useState([]);
   const [demandDescription, setDemandDescription] = useState("");
   const [demandPitch, setDemandPitch] = useState("");
   const [demandPitchLoading, setDemandPitchLoading] = useState(false);
@@ -1245,11 +1276,12 @@ function UpscaleAppInner() {
   const [demandPollFetchedForId, setDemandPollFetchedForId] = useState(null);
   const [demandPollLoading, setDemandPollLoading] = useState(false);
   const [demandLinkCopied, setDemandLinkCopied] = useState(false);
-  const [demandTargetAgeGroup, setDemandTargetAgeGroup] = useState("");
-  const [demandTargetGender, setDemandTargetGender] = useState("");
-  const [demandSuggestedQuestions, setDemandSuggestedQuestions] = useState(null);
-  const [demandSelectedQuestionIds, setDemandSelectedQuestionIds] = useState([]);
-  const [demandQuestionsLoading, setDemandQuestionsLoading] = useState(false);
+  // "3 Whys" setup context: who's selling, where, and at what price — used
+  // to build the fixed why/price/when poll questions without an AI call
+  // (see buildDemandQuestions), and to enrich the pitch prompt.
+  const [demandRole, setDemandRole] = useState("seller");
+  const [demandArea, setDemandArea] = useState("");
+  const [demandPrice, setDemandPrice] = useState("");
 
   const [obsText, setObsText] = useState("");
   const [guiding, setGuiding] = useState(false);
@@ -1722,12 +1754,16 @@ function UpscaleAppInner() {
     }
   }
 
-  async function handleDemandImageSelect(file) {
-    if (!file) return;
+  const DEMAND_MAX_IMAGES = 5;
+
+  async function handleDemandImageSelect(files) {
+    if (!files || !files.length) return;
     setDemandError(null);
     try {
-      const dataUrl = await resizeImageFile(file);
-      setDemandImageDataUrl(dataUrl);
+      const room = DEMAND_MAX_IMAGES - demandImages.length;
+      if (room <= 0) return;
+      const resized = await Promise.all(Array.from(files).slice(0, room).map((f) => resizeImageFile(f)));
+      setDemandImages((imgs) => [...imgs, ...resized]);
       setDemandPitch("");
     } catch (err) {
       console.error("handleDemandImageSelect failed:", err);
@@ -1735,17 +1771,26 @@ function UpscaleAppInner() {
     }
   }
 
+  function removeDemandImage(index) {
+    setDemandImages((imgs) => imgs.filter((_, i) => i !== index));
+    setDemandPitch("");
+  }
+
   async function generateDemandPitch() {
     setDemandError(null);
     setDemandPitchLoading(true);
     try {
-      const body = { action: "pitch", subjectName: subject.name, inputType: demandInputType, language: demandPollLanguage };
+      const body = {
+        action: "pitch", subjectName: subject.name, inputType: demandInputType, language: demandPollLanguage,
+        role: demandRole, area: demandArea.trim() || null, priceRange: demandPrice.trim() || null,
+      };
       if (demandInputType === "product") {
-        if (!demandImageDataUrl) throw new Error("no image");
-        const match = demandImageDataUrl.match(/^data:(.+);base64,(.*)$/);
-        if (!match) throw new Error("Could not read image data");
-        body.mediaType = match[1];
-        body.imageBase64 = match[2];
+        if (!demandImages.length) throw new Error("no image");
+        body.images = demandImages.map((dataUrl) => {
+          const match = dataUrl.match(/^data:(.+);base64,(.*)$/);
+          if (!match) throw new Error("Could not read image data");
+          return { mediaType: match[1], base64: match[2] };
+        });
         body.description = demandDescription.trim() || null;
       } else {
         body.description = demandDescription.trim();
@@ -1766,42 +1811,10 @@ function UpscaleAppInner() {
     }
   }
 
-  async function generateDemandQuestions() {
-    setDemandError(null);
-    setDemandQuestionsLoading(true);
-    try {
-      const res = await fetch("/api/demand", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "questions",
-          subjectName: subject.name,
-          inputType: demandInputType,
-          description: demandDescription.trim() || null,
-          targetAgeGroup: demandTargetAgeGroup || null,
-          targetGender: demandTargetGender || null,
-          language: demandPollLanguage,
-        }),
-      });
-      if (!res.ok) throw new Error(`demand-questions returned ${res.status}`);
-      const data = await res.json();
-      const questions = data.questions || [];
-      setDemandSuggestedQuestions(questions);
-      setDemandSelectedQuestionIds(questions.map((q) => q.id));
-    } catch (err) {
-      console.error("generateDemandQuestions failed:", err);
-      setDemandError("Couldn't suggest questions just now — you can still create the poll without them.");
-      setDemandSuggestedQuestions([]);
-    } finally {
-      setDemandQuestionsLoading(false);
-    }
-  }
-
   async function createDemandPoll() {
     setDemandError(null);
     setDemandCreating(true);
     try {
-      const selectedQuestions = (demandSuggestedQuestions || []).filter((q) => demandSelectedQuestionIds.includes(q.id));
       const res = await fetch("/api/demand", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1810,12 +1823,13 @@ function UpscaleAppInner() {
           phone: form.contact,
           subjectName: subject.name,
           inputType: demandInputType,
-          imageData: demandInputType === "product" ? demandImageDataUrl : null,
+          images: demandInputType === "product" ? demandImages : null,
           description: demandDescription.trim() || null,
           pitch: demandPitch,
-          questions: selectedQuestions,
-          targetAgeGroup: demandTargetAgeGroup || null,
-          targetGender: demandTargetGender || null,
+          questions: buildDemandQuestions(demandPrice),
+          role: demandRole,
+          area: demandArea.trim() || null,
+          priceRange: demandPrice.trim() || null,
           language: demandPollLanguage,
         }),
       });
@@ -2607,12 +2621,12 @@ function UpscaleAppInner() {
             <div className="space-y-3">
               <p className="text-sm text-gray-500">{t("demandIntro")}</p>
               <div className="flex gap-2">
-                <button onClick={() => { setDemandInputType("product"); setDemandPitch(""); setDemandSuggestedQuestions(null); }}
+                <button onClick={() => { setDemandInputType("product"); setDemandPitch(""); }}
                   className="flex-1 text-xs font-medium py-2 rounded-lg border"
                   style={{ borderColor: demandInputType === "product" ? BLUE : "#E5E7EB", background: demandInputType === "product" ? BLUE_BG : "#fff", color: demandInputType === "product" ? BLUE : "#374151" }}>
                   {t("demandProduct")}
                 </button>
-                <button onClick={() => { setDemandInputType("service"); setDemandPitch(""); setDemandSuggestedQuestions(null); }}
+                <button onClick={() => { setDemandInputType("service"); setDemandPitch(""); }}
                   className="flex-1 text-xs font-medium py-2 rounded-lg border"
                   style={{ borderColor: demandInputType === "service" ? BLUE : "#E5E7EB", background: demandInputType === "service" ? BLUE_BG : "#fff", color: demandInputType === "service" ? BLUE : "#374151" }}>
                   {t("demandService")}
@@ -2620,39 +2634,60 @@ function UpscaleAppInner() {
               </div>
 
               {demandInputType === "product" && (
-                <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-                  <input type="file" accept="image/*" capture="environment" className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleDemandImageSelect(f); }} />
-                  {demandImageDataUrl ? (
-                    <img src={demandImageDataUrl} alt="" className="max-h-32 rounded-lg" />
-                  ) : (
-                    <>
-                      <Upload size={18} style={{ color: BLUE }} />
-                      <span className="text-xs font-medium" style={{ color: NAVY }}>{t("demandUploadPhoto")}</span>
-                    </>
-                  )}
-                </label>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-3 gap-2">
+                    {demandImages.map((img, i) => (
+                      <div key={i} className="relative">
+                        <img src={img} alt="" className="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                        <button type="button" onClick={() => removeDemandImage(i)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-gray-300 flex items-center justify-center">
+                          <X size={11} style={{ color: "#374151" }} />
+                        </button>
+                      </div>
+                    ))}
+                    {demandImages.length < DEMAND_MAX_IMAGES && (
+                      <label className="border-2 border-dashed border-gray-300 rounded-lg h-20 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 gap-0.5">
+                        <input type="file" accept="image/*" capture="environment" multiple className="hidden"
+                          onChange={(e) => { const files = e.target.files; e.target.value = ""; handleDemandImageSelect(files); }} />
+                        <Upload size={16} style={{ color: BLUE }} />
+                        <span className="text-[10px] font-medium" style={{ color: NAVY }}>{t("demandUploadPhoto")}</span>
+                      </label>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-400">{t("demandPhotoHint")}</p>
+                </div>
               )}
 
               <textarea value={demandDescription} onChange={(e) => setDemandDescription(e.target.value)}
                 placeholder={demandInputType === "service" ? t("demandServicePlaceholder") : t("demandProductPlaceholder")}
                 className="w-full border border-gray-200 rounded-lg p-2.5 text-sm min-h-[60px] bg-white" />
 
+              <div>
+                <div className="text-[11px] text-gray-400 mb-1">{t("demandRoleLabel")}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => setDemandRole("manufacturer")}
+                    className="text-xs font-medium py-2 rounded-lg border"
+                    style={{ borderColor: demandRole === "manufacturer" ? BLUE : "#E5E7EB", background: demandRole === "manufacturer" ? BLUE_BG : "#fff", color: demandRole === "manufacturer" ? BLUE : "#374151" }}>
+                    {t("demandRoleManufacturer")}
+                  </button>
+                  <button onClick={() => setDemandRole("seller")}
+                    className="text-xs font-medium py-2 rounded-lg border"
+                    style={{ borderColor: demandRole === "seller" ? BLUE : "#E5E7EB", background: demandRole === "seller" ? BLUE_BG : "#fff", color: demandRole === "seller" ? BLUE : "#374151" }}>
+                    {t("demandRoleSeller")}
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <div className="text-[11px] text-gray-400 mb-1">{t("demandTargetAgeLabel")}</div>
-                  <select value={demandTargetAgeGroup} onChange={(e) => setDemandTargetAgeGroup(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
-                    <option value="">{t("demandTargetAny")}</option>
-                    {AGE_GROUPS.map((a) => <option key={a} value={a}>{a}</option>)}
-                  </select>
+                  <div className="text-[11px] text-gray-400 mb-1">{t("demandAreaLabel")}</div>
+                  <input value={demandArea} onChange={(e) => setDemandArea(e.target.value)} placeholder={t("demandAreaPlaceholder")}
+                    className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-gray-400 mb-1">{t("demandTargetGenderLabel")}</div>
-                  <select value={demandTargetGender} onChange={(e) => setDemandTargetGender(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-2 py-2 text-xs bg-white">
-                    {GENDERS.map((g) => <option key={g} value={g === "Any" ? "" : g}>{g}</option>)}
-                  </select>
+                  <div className="text-[11px] text-gray-400 mb-1">{t("demandPriceLabel")}</div>
+                  <input value={demandPrice} onChange={(e) => setDemandPrice(e.target.value)} placeholder="e.g. ₹800"
+                    className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-sm bg-white" />
                 </div>
               </div>
 
@@ -2671,7 +2706,7 @@ function UpscaleAppInner() {
 
               {!demandPitch ? (
                 <button onClick={generateDemandPitch}
-                  disabled={demandPitchLoading || (demandInputType === "product" ? !demandImageDataUrl : !demandDescription.trim())}
+                  disabled={demandPitchLoading || (demandInputType === "product" ? !demandImages.length : !demandDescription.trim())}
                   className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40 flex items-center justify-center gap-1.5" style={{ background: BLUE }}>
                   {demandPitchLoading ? t("demandGenerating") : t("demandGeneratePitch")}
                 </button>
@@ -2683,24 +2718,6 @@ function UpscaleAppInner() {
                       className="w-full bg-transparent text-sm border-0 p-0 resize-none focus:outline-none" style={{ color: NAVY }} rows={2} />
                   </div>
 
-                  {demandSuggestedQuestions === null ? (
-                    <button onClick={generateDemandQuestions} disabled={demandQuestionsLoading}
-                      className="w-full text-sm font-medium px-4 py-2.5 rounded-lg border disabled:opacity-40" style={{ borderColor: BLUE, color: BLUE }}>
-                      {demandQuestionsLoading ? t("demandGenerating") : t("demandSuggestQuestions")}
-                    </button>
-                  ) : demandSuggestedQuestions.length > 0 && (
-                    <div className="space-y-1.5">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{t("demandPickQuestions")}</div>
-                      {demandSuggestedQuestions.map((q) => (
-                        <label key={q.id} className="flex items-center gap-2 bg-white rounded-lg p-2.5 border border-gray-200 cursor-pointer">
-                          <input type="checkbox" checked={demandSelectedQuestionIds.includes(q.id)}
-                            onChange={(e) => setDemandSelectedQuestionIds((ids) => e.target.checked ? [...ids, q.id] : ids.filter((id) => id !== q.id))} />
-                          <span className="text-sm text-gray-700">{q.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
                   <PrimaryButton onClick={createDemandPoll} disabled={demandCreating || !demandPitch.trim()}>
                     {demandCreating ? t("demandCreating") : t("demandCreatePoll")}
                   </PrimaryButton>
@@ -2711,9 +2728,9 @@ function UpscaleAppInner() {
             <div className="space-y-4">
               <div className="bg-white rounded-lg p-3 border border-gray-200">
                 <p className="text-sm text-gray-700 italic">"{demandPollData?.pitch || demandPitch}"</p>
-                {(demandPollData?.target_age_group || demandPollData?.target_gender) && (
+                {(demandPollData?.area || demandPollData?.price_range) && (
                   <p className="text-[11px] text-gray-400 mt-1.5">
-                    {t("demandTargetLabel")}: {[demandPollData.target_gender, demandPollData.target_age_group].filter(Boolean).join(", ")}
+                    {[demandPollData.area, demandPollData.price_range].filter(Boolean).join(" · ")}
                   </p>
                 )}
               </div>

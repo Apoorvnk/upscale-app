@@ -29,19 +29,10 @@ const PITCH_SYSTEM_PROMPT = `You write a single, sharp pitch line for a small bu
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
 {"pitch": "..."}`;
 
-const QUESTIONS_SYSTEM_PROMPT = `You suggest a short list of extra poll questions for a small business owner validating real demand for a product or service idea. The core question ("would you buy/use this?") is already asked separately — you're suggesting ADDITIONAL questions that would help the owner understand their buyers better: things like which area/region the respondent is from, their age bracket, how sensitive they are to price/discount, how often they'd buy, or similar — pick whichever 4-5 are most useful for this specific niche, not a generic fixed set.
-
-Each question must be answerable with a single tap from a short list of options (never free text) — provide 3-5 short, mutually exclusive options per question. This app is for small business owners in India — use Indian Rupees (₹) for any price/budget-related options, never $ or other currencies.
-
-If the owner specified a target age group or gender, make sure age/gender-related questions are still included and phrased naturally (don't assume — always ask, since the owner's stated target is just who they intend to reach, not a filter on respondents).
-
-Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
-{"questions": [{"id": "region", "label": "Which area are you in?", "options": ["...", "...", "..."]}]}`;
-
 async function handlePitch(req, res) {
-  const { subjectName, inputType, imageBase64, mediaType, description, language } = req.body || {};
-  if (inputType === "product" && !imageBase64) {
-    res.status(400).json({ error: "imageBase64 is required for a product pitch" });
+  const { subjectName, inputType, images, description, role, area, priceRange, language } = req.body || {};
+  if (inputType === "product" && !(Array.isArray(images) && images.length)) {
+    res.status(400).json({ error: "images is required for a product pitch" });
     return;
   }
   if (inputType === "service" && (!description || !description.trim())) {
@@ -51,10 +42,19 @@ async function handlePitch(req, res) {
   const langName = LANGUAGE_NAMES[language] || "English";
   try {
     const contents = [];
-    if (imageBase64) contents.push({ inlineData: { mimeType: mediaType || "image/jpeg", data: imageBase64 } });
-    contents.push({
-      text: `Business area: ${subjectName || "small business"}\nWhat they're testing: ${inputType === "service" ? `a service — "${description}"` : description ? `a product — "${description}"` : "a product (see photo)"}`,
-    });
+    if (Array.isArray(images)) {
+      for (const img of images.slice(0, 5)) {
+        if (img?.base64) contents.push({ inlineData: { mimeType: img.mediaType || "image/jpeg", data: img.base64 } });
+      }
+    }
+    const context = [
+      `Business area: ${subjectName || "small business"}`,
+      `What they're testing: ${inputType === "service" ? `a service — "${description}"` : description ? `a product — "${description}"` : "a product (see photos)"}`,
+      role ? `Seller role: ${role}` : "",
+      area ? `Area: ${area}` : "",
+      priceRange ? `Price: ${priceRange}` : "",
+    ].filter(Boolean).join("\n");
+    contents.push({ text: context });
     const response = await getGenai().models.generateContent({
       model: "gemini-3.6-flash",
       contents,
@@ -78,43 +78,8 @@ async function handlePitch(req, res) {
   }
 }
 
-async function handleQuestions(req, res) {
-  const { subjectName, inputType, description, targetAgeGroup, targetGender, language } = req.body || {};
-  if (!subjectName) {
-    res.status(400).json({ error: "subjectName is required" });
-    return;
-  }
-  const langName = LANGUAGE_NAMES[language] || "English";
-  const targetNote = [targetAgeGroup ? `Intended target age group: ${targetAgeGroup}` : "", targetGender ? `Intended target gender: ${targetGender}` : ""].filter(Boolean).join("\n");
-  try {
-    const response = await getGenai().models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: `Business niche: ${subjectName}\nWhat they're testing: ${inputType === "service" ? `a service — "${description || ""}"` : "a product (photo provided)"}\n${targetNote}`,
-      config: { systemInstruction: `${QUESTIONS_SYSTEM_PROMPT}\n\nRespond entirely in ${langName}.`, responseMimeType: "application/json" },
-    });
-    const text = (response.text || "").trim();
-    let data = null;
-    try {
-      data = JSON.parse(text.replace(/^```(json)?/i, "").replace(/```$/, "").trim());
-    } catch {
-      data = null;
-    }
-    if (!data || !Array.isArray(data.questions)) {
-      res.status(422).json({ error: "Could not suggest questions" });
-      return;
-    }
-    const questions = data.questions
-      .filter((q) => q && q.label && Array.isArray(q.options) && q.options.length >= 2)
-      .map((q, i) => ({ id: q.id || `q${i}`, label: q.label, options: q.options.slice(0, 6) }));
-    res.status(200).json({ questions });
-  } catch (err) {
-    logGeminiError("demand questions error", err);
-    res.status(500).json({ error: "Could not suggest questions" });
-  }
-}
-
 async function handleCreate(req, res) {
-  const { phone, subjectName, inputType, imageData, description, pitch, questions, targetAgeGroup, targetGender, language } = req.body || {};
+  const { phone, subjectName, inputType, images, description, pitch, questions, role, area, priceRange, language } = req.body || {};
   if (!phone || !pitch) {
     res.status(400).json({ error: "phone and pitch are required" });
     return;
@@ -126,12 +91,13 @@ async function handleCreate(req, res) {
         phone: phone.trim(),
         subject_name: subjectName || null,
         input_type: inputType || null,
-        image_data: imageData || null,
+        images: Array.isArray(images) ? images : null,
         description: description || null,
         pitch,
         questions: Array.isArray(questions) ? questions : null,
-        target_age_group: targetAgeGroup || null,
-        target_gender: targetGender || null,
+        role: role || null,
+        area: area || null,
+        price_range: priceRange || null,
         language: language || "en",
       })
       .select("id")
@@ -219,7 +185,6 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const { action } = req.body || {};
     if (action === "pitch") return handlePitch(req, res);
-    if (action === "questions") return handleQuestions(req, res);
     if (action === "create") return handleCreate(req, res);
     if (action === "vote") return handleVote(req, res);
     res.status(400).json({ error: "Unknown action" });
