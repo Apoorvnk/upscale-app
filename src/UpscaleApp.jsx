@@ -625,7 +625,7 @@ const STRINGS = {
     pollMessageWhatsApp: "Message on WhatsApp",
     pollTapToRespond: "Would you buy this / use this?",
     knowledgeBuildingLabel: "Build your knowledge",
-    knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Check the Marketing and Books tabs.",
+    knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Check the Books tab.",
     seeBooksTab: "See Books tab",
     marketingDemandCallout: "Your demand check isn't Green yet — check",
     marketingShareLabel: "Share this ad",
@@ -778,7 +778,7 @@ const STRINGS = {
     pollMessageWhatsApp: "व्हाट्सएप पर मैसेज करें",
     pollTapToRespond: "क्या आप इसे खरीदेंगे / इस्तेमाल करेंगे?",
     knowledgeBuildingLabel: "अपना ज्ञान बढ़ाएं",
-    knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। मार्केटिंग और पुस्तकें टैब देखें।",
+    knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। पुस्तकें टैब देखें।",
     seeBooksTab: "पुस्तकें टैब देखें",
     marketingDemandCallout: "आपकी मांग जांच अभी हरी नहीं है — देखें",
     marketingShareLabel: "यह विज्ञापन शेयर करें",
@@ -931,7 +931,7 @@ const STRINGS = {
     pollMessageWhatsApp: "व्हॉट्सअॅपवर मेसेज करा",
     pollTapToRespond: "तुम्ही हे खरेदी कराल / वापराल का?",
     knowledgeBuildingLabel: "तुमचे ज्ञान वाढवा",
-    knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. मार्केटिंग आणि पुस्तके टॅब पाहा.",
+    knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. पुस्तके टॅब पाहा.",
     seeBooksTab: "पुस्तके टॅब पाहा",
     marketingDemandCallout: "तुमची मागणी तपासणी अजून हिरवी नाही — पहा",
     marketingShareLabel: "ही जाहिरात शेअर करा",
@@ -3205,9 +3205,6 @@ function UpscaleAppInner() {
                     <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("knowledgeBuildingLabel")}</div>
                     <p className="text-xs" style={{ color: NAVY }}>{t("knowledgeBuildingNote", { day: Math.min(daysDone + 1, 7) })}</p>
                   </div>
-                  <button onClick={() => setTab("marketing")} className="text-xs font-medium block" style={{ color: BLUE }}>
-                    {t("seeMarketingTab")} →
-                  </button>
                   <button onClick={() => setTab("collaborate")} className="text-xs font-medium" style={{ color: BLUE }}>
                     {t("seeBooksTab")} →
                   </button>
