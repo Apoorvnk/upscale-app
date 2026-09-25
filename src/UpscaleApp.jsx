@@ -33,6 +33,7 @@ const CURATED = {
     events: [
       { name: "Pune Real Estate & Home Finance Expo", date: "14 Sept", price: "₹499", type: "Expo", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "NBFC-Bank Lending Roundtable", date: "22 Sept", price: "Free", type: "Networking", venue: "Lemon Tree Premier, Pune", stars: 3, secured: true },
+      { name: "State Bank Home Loan Mela", date: "5 Oct", price: "Free entry", type: "Mela", venue: "City Municipal Hall, Pune", stars: 4, secured: false },
     ],
     bookSuggestions: [
       { title: "The Trusted Advisor", author: "David H. Maister", why: "On earning client trust fast — core to closing loans where clients are anxious about fees and terms." },
@@ -62,6 +63,7 @@ const CURATED = {
     events: [
       { name: "Insurance Agents' Summit", date: "18 Sept", price: "₹799", type: "Summit", venue: "Hyatt Regency, Pune", stars: 5, secured: true },
       { name: "IRDAI Compliance Update Webinar", date: "10 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
+      { name: "Insurance Jagriti Mela", date: "12 Oct", price: "Free entry", type: "Mela", venue: "Community Hall, Pune", stars: 3, secured: false },
     ],
     bookSuggestions: [
       { title: "Exactly What to Say", author: "Phil M. Jones", why: "Short, specific phrases for renewal calls that avoid sounding scripted." },
@@ -91,6 +93,7 @@ const CURATED = {
     events: [
       { name: "Retail Sports Trade Fair", date: "20 Sept", price: "₹599", type: "Trade fair", venue: "Sheraton Grand, Pune", stars: 5, secured: true },
       { name: "Local School Sports Sponsors Meet", date: "5 Sept", price: "Free", type: "Networking", venue: "Ginger, Pune", stars: 3, secured: true },
+      { name: "Pune Sports & Fitness Utsav", date: "20 Oct", price: "₹50 entry", type: "Festival", venue: "Shivaji Nagar Grounds, Pune", stars: 4, secured: true },
     ],
     bookSuggestions: [
       { title: "The Retail Doctor's Guide to Growing Your Business", author: "Bob Phibbs", why: "Practical, store-floor-level advice for independent retailers, not big-box theory." },
@@ -120,6 +123,7 @@ const CURATED = {
     events: [
       { name: "SME Owners' Networking Breakfast", date: "12 Sept", price: "₹299", type: "Networking", venue: "Lemon Tree Premier, Pune", stars: 3, secured: true },
       { name: "Small Business Growth Webinar", date: "8 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
+      { name: "Pune Small Business Trade Fair", date: "8 Oct", price: "₹100 stall visit", type: "Fair", venue: "Pune Trade Centre", stars: 4, secured: true },
     ],
     bookSuggestions: [
       { title: "The E-Myth Revisited", author: "Michael Gerber", why: "On why working IN the business isn't the same as building one that runs without you." },
@@ -149,6 +153,7 @@ const CURATED = {
     events: [
       { name: "Share Market Investors' Summit", date: "16 Sept", price: "₹999", type: "Summit", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "SEBI Regulatory Update Webinar", date: "9 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
+      { name: "Investor Awareness Mela", date: "15 Oct", price: "Free entry", type: "Mela", venue: "NSE Investor Point, Pune", stars: 3, secured: false },
     ],
     bookSuggestions: [
       { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", why: "Understand the biases driving client panic during margin or volatility news." },
@@ -178,6 +183,7 @@ const CURATED = {
     events: [
       { name: "Mutual Fund Distributors' Conclave", date: "19 Sept", price: "₹699", type: "Conclave", venue: "Hyatt Regency, Pune", stars: 5, secured: true },
       { name: "AMFI Continuing Education Webinar", date: "11 Sept", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
+      { name: "Mutual Fund Investor Mela", date: "18 Oct", price: "Free entry", type: "Mela", venue: "AMFI Investor Point, Pune", stars: 3, secured: false },
     ],
     bookSuggestions: [
       { title: "The Psychology of Money", author: "Morgan Housel", why: "Reframes market dips as behavior, not math — good material for client check-in calls." },
@@ -223,6 +229,7 @@ const CURATED = {
     events: [
       { name: "Jewelry Trade & Design Expo", date: "21 Sept", price: "₹599", type: "Expo", venue: "JW Marriott, Pune", stars: 5, secured: true },
       { name: "Local Jewellers' Association Meet", date: "6 Sept", price: "Free", type: "Networking", venue: "Ginger, Pune", stars: 3, secured: true },
+      { name: "Diwali Jewelry & Gifting Mela", date: "25 Oct", price: "Free entry", type: "Mela", venue: "Pune Exhibition Centre", stars: 5, secured: true },
     ],
     collab: {
       offers: [
@@ -359,6 +366,7 @@ function genericContent(name) {
     events: [
       { name: `${name} Owners' Networking Meet`, date: "This month", price: "₹299", type: "Networking", venue: "Lemon Tree Premier, Pune", stars: 3, secured: true },
       { name: `${name} Growth Webinar`, date: "This month", price: "Free", type: "Webinar", venue: "Online", stars: null, secured: false },
+      { name: `${name} Local Business Mela`, date: "This month", price: "Free entry", type: "Mela", venue: "Community grounds, Pune", stars: 3, secured: false },
     ],
     collab: {
       offers: [
@@ -2619,12 +2627,52 @@ function UpscaleAppInner() {
             ))}
           </div>
 
+          <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>Events in {subject.name}</div>
+          <p className="text-sm text-gray-500 mb-4">Sales opportunities — fairs, melas, and festivals — alongside networking events and summits.</p>
+          <div className="space-y-2 mb-8">
+            {(subject.events || []).map((ev, i) => {
+              const key = `${form.interest}-${i}`;
+              const bought = ticketsBought.includes(key);
+              return (
+                <div key={i} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Calendar size={18} style={{ color: "#0F6E56" }} className="shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm text-gray-800">{ev.name}</div>
+                      <div className="text-[11px] text-gray-400">{ev.type} · {ev.date}</div>
+                      <div className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5 flex-wrap">
+                        <span>{ev.venue}</span>
+                        {ev.stars && <span className="text-amber-500">{"★".repeat(ev.stars)}</span>}
+                        {ev.secured && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: BLUE_BG, color: BLUE }}>
+                            <ShieldCheck size={9} /> Secured venue
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {bought ? (
+                    <span className="text-[11px] font-medium px-2 py-1 rounded-full flex items-center gap-1 shrink-0" style={{ background: "#E7F5EF", color: "#0F6E56" }}>
+                      <Check size={11} /> Reserved
+                    </span>
+                  ) : (
+                    <button onClick={() => setTicketsBought((t) => [...t, key])}
+                      className="text-[11px] font-medium px-2.5 py-1.5 rounded-full border flex items-center gap-1 shrink-0"
+                      style={{ borderColor: "#0F6E56", color: "#0F6E56" }}>
+                      <Ticket size={11} /> {ev.price === "Free" ? "Reserve — Free" : `Get ticket · ${ev.price}`}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           <div className="border-t border-gray-200 pt-6">
           {daysDone < 7 ? (
             <div className="text-center py-10">
               <Lock size={28} className="mx-auto mb-3" style={{ color: "#9CA3AF" }} />
               <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>Collaboration unlocks after 7 days</div>
-              <p className="text-xs text-gray-500 mb-4">Keep up the daily loop to unlock collaborator offers, events, and requests.</p>
+              <p className="text-xs text-gray-500 mb-4">Keep up the daily loop to unlock collaborator offers and requests.</p>
               <div className="inline-block text-xs font-medium px-3 py-1 rounded-full" style={{ background: BLUE_BG, color: BLUE }}>
                 Day {daysDone}/7
               </div>
@@ -3268,42 +3316,6 @@ function UpscaleAppInner() {
                     </>
                   )}
 
-                  <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Events & collaborations in {subject.name}</div>
-                  {subject.events.map((ev, i) => {
-                    const key = `${form.interest}-${i}`;
-                    const bought = ticketsBought.includes(key);
-                    return (
-                      <div key={i} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <Calendar size={18} style={{ color: "#0F6E56" }} className="shrink-0" />
-                          <div className="min-w-0">
-                            <div className="text-sm text-gray-800">{ev.name}</div>
-                            <div className="text-[11px] text-gray-400">{ev.type} · {ev.date}</div>
-                            <div className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5 flex-wrap">
-                              <span>{ev.venue}</span>
-                              {ev.stars && <span className="text-amber-500">{"★".repeat(ev.stars)}</span>}
-                              {ev.secured && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: BLUE_BG, color: BLUE }}>
-                                  <ShieldCheck size={9} /> Secured venue
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {bought ? (
-                          <span className="text-[11px] font-medium px-2 py-1 rounded-full flex items-center gap-1 shrink-0" style={{ background: "#E7F5EF", color: "#0F6E56" }}>
-                            <Check size={11} /> Reserved
-                          </span>
-                        ) : (
-                          <button onClick={() => setTicketsBought((t) => [...t, key])}
-                            className="text-[11px] font-medium px-2.5 py-1.5 rounded-full border flex items-center gap-1 shrink-0"
-                            style={{ borderColor: "#0F6E56", color: "#0F6E56" }}>
-                            <Ticket size={11} /> {ev.price === "Free" ? "Reserve — Free" : `Get ticket · ${ev.price}`}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
                   {lastClaimedDate === todayStr() && (
                     <div className="text-xs text-gray-500 flex items-center gap-1.5">
                       <Check size={12} style={{ color: "#0F6E56" }} /> Today's streak is already secured — claiming here just refreshes this product's loop for tomorrow.
