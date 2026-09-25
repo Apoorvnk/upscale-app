@@ -1388,6 +1388,12 @@ function UpscaleAppInner() {
     ? products.reduce((s, p) => s + parseCurrency(p.investment), 0)
     : parseCurrency(form.investment);
   const netAmount = totalSales - totalCosts - investmentAmount;
+  // Cost per acquisition: total spend divided by how many sales it took to
+  // generate — null (shown as "—") until there's at least one logged sale,
+  // since dividing by zero sales says nothing useful yet.
+  const salesCount = ledgerEntries.filter((e) => e.type === "sales").length;
+  const costPerAcquisition = salesCount > 0 ? totalCosts / salesCount : null;
+  const profitMarginPct = totalSales > 0 ? Math.round(((totalSales - totalCosts) / totalSales) * 100) : null;
   const obsComplete = obsText.trim().length > 0;
 
   // Auto per-tier execution progress: derived straight from the existing
@@ -3040,6 +3046,26 @@ function UpscaleAppInner() {
                 </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-1">
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Cost per sale</div>
+                <div className="text-lg font-medium" style={{ color: NAVY }}>
+                  {costPerAcquisition != null ? `₹${Math.round(costPerAcquisition).toLocaleString("en-IN")}` : "—"}
+                </div>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Profit margin</div>
+                <div className="text-lg font-medium" style={{ color: profitMarginPct != null && profitMarginPct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                  {profitMarginPct != null ? `${profitMarginPct}%` : "—"}
+                </div>
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400 mb-6">
+              {salesCount > 0
+                ? "Cost per sale is total costs divided by logged sales; profit margin is sales minus costs as a share of sales (doesn't subtract your starting investment)."
+                : "Cost per sale and profit margin will show once you've logged at least one sale."}
+            </p>
             {investmentAmount > 0 && (
               <p className="text-[11px] text-gray-400 -mt-4 mb-6">
                 Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
