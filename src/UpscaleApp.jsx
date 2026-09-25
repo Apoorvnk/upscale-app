@@ -312,6 +312,39 @@ function buildDemandQuestions(priceStr) {
     { id: "when", label: "When would you buy this?", options: ["Right away", "Within a week", "Within a month", "Not anytime soon"] },
   ];
 }
+
+// Orange-result guidance: rule-based, not AI — reads the same tallies
+// already rendered on the results view, so it costs nothing and never
+// competes with the shared Gemini quota.
+function buildDemandOrangeSuggestions(tallies) {
+  const topAnswer = (q) => {
+    if (!q) return null;
+    let best = null, bestCount = 0;
+    for (const opt of q.options) {
+      const c = q.counts[opt] || 0;
+      if (c > bestCount) { bestCount = c; best = opt; }
+    }
+    return best;
+  };
+  const suggestions = [];
+  const why = tallies.find((q) => q.id === "why");
+  const price = tallies.find((q) => q.id === "price");
+  const when = tallies.find((q) => q.id === "when");
+
+  if (topAnswer(why) === "Just exploring, not sure yet") {
+    suggestions.push("Most respondents are just curious, not convinced — sharpen the pitch to name the specific problem this solves.");
+  }
+  const topPrice = topAnswer(price);
+  if (topPrice && price) {
+    const idx = price.options.indexOf(topPrice);
+    if (idx === 0 || idx === 1) suggestions.push(`Most people would only pay ${topPrice} — consider a lower price or a simpler, cheaper version.`);
+    else if (idx === 3) suggestions.push(`Respondents are comfortable paying ${topPrice} — there may be room to price higher or add premium extras.`);
+  }
+  if (topAnswer(when) === "Not anytime soon") {
+    suggestions.push("Most say they wouldn't buy soon — try adding urgency (a launch offer, festival timing) or revisit whether now is the right time.");
+  }
+  return suggestions;
+}
 function genericContent(name) {
   const lower = name.toLowerCase();
   return {
@@ -573,6 +606,10 @@ const STRINGS = {
     demandStatusGreen: "Strong demand — go ahead",
     demandStatusOrange: "Mixed signal — minor changes needed",
     demandStatusRed: "Weak demand — reconsider the idea",
+    demandGreenCta: "Strong demand — this idea is worth pursuing. Head to Marketing to launch your ad.",
+    demandGoToMarketing: "Go to Marketing",
+    demandSuggestedChangesLabel: "Suggested changes",
+    demandRedMessage: "Based on the responses so far, this idea isn't showing strong demand. Consider reworking the concept, trying a different price, or testing a different idea before investing further.",
     demandNoResponsesYet: "No responses yet — share the poll to start collecting them.",
     pollLoading: "Loading...",
     pollNotFound: "This poll couldn't be found.",
@@ -722,6 +759,10 @@ const STRINGS = {
     demandStatusGreen: "अच्छी मांग — आगे बढ़ें",
     demandStatusOrange: "मिश्रित संकेत — थोड़ा बदलाव करें",
     demandStatusRed: "कम मांग — विचार पर फिर से सोचें",
+    demandGreenCta: "अच्छी मांग — यह विचार आगे बढ़ाने लायक है। विज्ञापन बनाने के लिए मार्केटिंग टैब पर जाएं।",
+    demandGoToMarketing: "मार्केटिंग पर जाएं",
+    demandSuggestedChangesLabel: "सुझाए गए बदलाव",
+    demandRedMessage: "अब तक के जवाबों के आधार पर, इस विचार में मजबूत मांग नहीं दिख रही है। आगे निवेश करने से पहले विचार में बदलाव करें, अलग कीमत आज़माएं, या कोई और विचार परखें।",
     demandNoResponsesYet: "अभी तक कोई जवाब नहीं — जवाब पाने के लिए पोल शेयर करें।",
     pollLoading: "लोड हो रहा है...",
     pollNotFound: "यह पोल नहीं मिला।",
@@ -871,6 +912,10 @@ const STRINGS = {
     demandStatusGreen: "चांगली मागणी — पुढे जा",
     demandStatusOrange: "संमिश्र संकेत — थोडे बदल करा",
     demandStatusRed: "कमी मागणी — कल्पनेचा पुनर्विचार करा",
+    demandGreenCta: "चांगली मागणी — ही कल्पना पुढे नेण्यासारखी आहे. जाहिरात तयार करण्यासाठी मार्केटिंग टॅबवर जा.",
+    demandGoToMarketing: "मार्केटिंगवर जा",
+    demandSuggestedChangesLabel: "सुचवलेले बदल",
+    demandRedMessage: "आतापर्यंतच्या प्रतिसादांवरून, या कल्पनेला मजबूत मागणी दिसत नाही. पुढे गुंतवणूक करण्यापूर्वी कल्पनेत बदल करा, वेगळी किंमत वापरून पाहा, किंवा दुसरी कल्पना तपासा.",
     demandNoResponsesYet: "अजून कोणतेही उत्तर नाही — उत्तरे मिळवण्यासाठी पोल शेअर करा.",
     pollLoading: "लोड होत आहे...",
     pollNotFound: "हा पोल सापडला नाही.",
@@ -2799,6 +2844,33 @@ function UpscaleAppInner() {
                         <span className="text-xs font-medium" style={{ color: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
                           {t(demandStatusColor === "green" ? "demandStatusGreen" : demandStatusColor === "orange" ? "demandStatusOrange" : "demandStatusRed")}
                         </span>
+                      </div>
+                    )}
+
+                    {demandStatusColor === "green" && (
+                      <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#0F6E56", background: "#E7F5EF" }}>
+                        <p className="text-xs mb-2" style={{ color: "#0F6E56" }}>{t("demandGreenCta")}</p>
+                        <button onClick={() => setTab("marketing")}
+                          className="text-xs font-medium px-3 py-1.5 rounded-lg text-white" style={{ background: "#0F6E56" }}>
+                          {t("demandGoToMarketing")} →
+                        </button>
+                      </div>
+                    )}
+
+                    {demandStatusColor === "orange" && buildDemandOrangeSuggestions(demandQuestionTallies).length > 0 && (
+                      <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#B45309", background: "#FEF3E7" }}>
+                        <div className="text-[11px] font-medium uppercase tracking-wide mb-1.5" style={{ color: "#B45309" }}>{t("demandSuggestedChangesLabel")}</div>
+                        <ul className="space-y-1.5">
+                          {buildDemandOrangeSuggestions(demandQuestionTallies).map((s, i) => (
+                            <li key={i} className="text-xs" style={{ color: "#92400E" }}>• {s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {demandStatusColor === "red" && (
+                      <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#B91C1C", background: "#FDECEC" }}>
+                        <p className="text-xs" style={{ color: "#B91C1C" }}>{t("demandRedMessage")}</p>
                       </div>
                     )}
 
