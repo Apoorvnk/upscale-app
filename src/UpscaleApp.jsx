@@ -2722,6 +2722,79 @@ function UpscaleAppInner() {
         </div>
       ) : tab === "demand" ? (
         <div className="px-6 py-6 bg-white">
+          <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
+          {marketingLoading && !marketingData && (
+            <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
+              <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
+            </div>
+          )}
+          {marketingData ? (
+            <div className="space-y-4">
+              <div className="rounded-lg p-4 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("marketingAngleLabel")}</div>
+                <div className="text-sm font-medium mb-2" style={{ color: NAVY }}>{marketingData.angle}</div>
+                <div className="text-sm text-gray-700 italic">"{marketingData.pitch}"</div>
+              </div>
+              <div className="text-sm text-gray-600">{marketingData.strategy}</div>
+              <div>
+                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{t("marketingTacticsLabel")}</div>
+                <div className="space-y-2">
+                  {(marketingData.tactics || []).map((tc, i) => (
+                    <div key={i} className="rounded-lg p-3 border border-gray-200">
+                      <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {marketingData.video?.title && (
+                <div>
+                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
+                  <a href={marketingData.video.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(marketingData.video.title)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
+                    <PlayCircle size={24} style={{ color: BLUE }} />
+                    <div className="text-sm text-gray-800">{marketingData.video.title}</div>
+                  </a>
+                </div>
+              )}
+              <div>
+                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
+                {!activeProduct?.marketingPageId ? (
+                  <button onClick={createMarketingPage} disabled={marketingPageCreating}
+                    className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
+                    {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch + " " + marketingPageShareUrl)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                      <WhatsAppIcon /> WhatsApp
+                    </a>
+                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(marketingPageShareUrl)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
+                      <FacebookIcon /> Facebook
+                    </a>
+                    <button onClick={() => { navigator.clipboard.writeText(marketingPageShareUrl).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                      <InstagramIcon /> {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            !marketingLoading && marketingFetchAttempted && (
+              <div className="text-sm text-gray-400 flex items-center gap-3">
+                {t("marketingUnavailable")}
+                <button onClick={() => setMarketingFetchAttempted(false)} className="text-xs font-medium underline" style={{ color: BLUE }}>{t("tryAgain")}</button>
+              </div>
+            )
+          )}
+
+          <div className="border-t border-gray-200 mt-8 pt-6">
           {!activeProduct?.demandPollId ? (
             <div className="space-y-3">
               <p className="text-sm text-gray-500">{t("demandIntro")}</p>
@@ -2960,81 +3033,10 @@ function UpscaleAppInner() {
               </div>
             </div>
           )}
+          </div>
 
           <div className="border-t border-gray-200 mt-8 pt-6">
-            <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
-            {marketingLoading && !marketingData && (
-              <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
-                <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
-              </div>
-            )}
-            {marketingData ? (
-              <div className="space-y-4">
-                <div className="rounded-lg p-4 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
-                  <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("marketingAngleLabel")}</div>
-                  <div className="text-sm font-medium mb-2" style={{ color: NAVY }}>{marketingData.angle}</div>
-                  <div className="text-sm text-gray-700 italic">"{marketingData.pitch}"</div>
-                </div>
-                <div className="text-sm text-gray-600">{marketingData.strategy}</div>
-                <div>
-                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{t("marketingTacticsLabel")}</div>
-                  <div className="space-y-2">
-                    {(marketingData.tactics || []).map((tc, i) => (
-                      <div key={i} className="rounded-lg p-3 border border-gray-200">
-                        <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {marketingData.video?.title && (
-                  <div>
-                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
-                    <a href={marketingData.video.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(marketingData.video.title)}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
-                      <PlayCircle size={24} style={{ color: BLUE }} />
-                      <div className="text-sm text-gray-800">{marketingData.video.title}</div>
-                    </a>
-                  </div>
-                )}
-                <div>
-                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
-                  {!activeProduct?.marketingPageId ? (
-                    <button onClick={createMarketingPage} disabled={marketingPageCreating}
-                      className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
-                      {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch + " " + marketingPageShareUrl)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
-                        <WhatsAppIcon /> WhatsApp
-                      </a>
-                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(marketingPageShareUrl)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
-                        <FacebookIcon /> Facebook
-                      </a>
-                      <button onClick={() => { navigator.clipboard.writeText(marketingPageShareUrl).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
-                        <InstagramIcon /> {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              !marketingLoading && marketingFetchAttempted && (
-                <div className="text-sm text-gray-400 flex items-center gap-3">
-                  {t("marketingUnavailable")}
-                  <button onClick={() => setMarketingFetchAttempted(false)} className="text-xs font-medium underline" style={{ color: BLUE }}>{t("tryAgain")}</button>
-                </div>
-              )
-            )}
-
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">Market analytics</div>
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Market analytics</div>
             {marketAnalyticsLoading && !Object.keys(marketAnalyticsByProduct).length && (
               <div className="text-sm text-gray-500 flex items-center gap-2 mb-2">
                 <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketAnalyticsBuilding")}
