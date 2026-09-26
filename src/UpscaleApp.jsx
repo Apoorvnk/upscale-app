@@ -1282,6 +1282,7 @@ function UpscaleAppInner() {
   // collected as part of initial signup.
   const [addingProduct, setAddingProduct] = useState(false);
   const [showProductSwitcher, setShowProductSwitcher] = useState(false);
+  const [showLanguageSwitcher, setShowLanguageSwitcher] = useState(false);
 
   const [goal, setGoal] = useState("");
   const [period, setPeriod] = useState("Monthly");
@@ -2537,6 +2538,24 @@ function UpscaleAppInner() {
             <Flame size={12} /> {streak} {t("dayStreak")}
           </span>
           <span className="rounded-full px-3 py-1 text-xs font-medium bg-white/10">{daysDone}/{totalDays} days</span>
+          <div className="relative">
+            <button onClick={() => setShowLanguageSwitcher((v) => !v)} title="Change language"
+              className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 shrink-0">
+              <Globe size={13} />
+            </button>
+            {showLanguageSwitcher && (
+              <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg border border-gray-200 shadow-lg z-10 py-1 text-left">
+                {Object.entries(LANGUAGES).map(([code, label]) => (
+                  <button key={code} onClick={() => { setLanguage(code); setShowLanguageSwitcher(false); saveUserState(form.contact, buildPersistedState({ language: code })); }}
+                    className="w-full text-left px-3 py-2 text-xs flex items-center justify-between gap-2 hover:bg-gray-50"
+                    style={{ color: language === code ? BLUE : "#374151" }}>
+                    <span>{label}</span>
+                    {language === code && <Check size={12} className="shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={() => { setScreen("welcome"); setLoginContact(""); }} title={t("logOut")}
             className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 shrink-0">
             <LogOut size={13} />
