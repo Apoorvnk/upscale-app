@@ -571,7 +571,6 @@ const STRINGS = {
     sponsoredUnlock: "Sponsored — watch to unlock collaboration",
     marketingStrategyLabel: "Marketing strategy",
     marketingPreviewHint: "Open the Marketing tab to see today's strategy.",
-    seeMarketingTab: "See in Marketing tab",
     marketingIntro: "Your marketing strategy for {subject}.",
     marketingBuilding: "Building your marketing strategy...",
     marketingAngleLabel: "The angle",
@@ -724,7 +723,6 @@ const STRINGS = {
     sponsoredUnlock: "प्रायोजित — सहयोग अनलॉक करने के लिए देखें",
     marketingStrategyLabel: "मार्केटिंग रणनीति",
     marketingPreviewHint: "आज की रणनीति देखने के लिए मार्केटिंग टैब खोलें।",
-    seeMarketingTab: "मार्केटिंग टैब में देखें",
     marketingIntro: "{subject} के लिए आपकी मार्केटिंग रणनीति।",
     marketingBuilding: "आपकी मार्केटिंग रणनीति बनाई जा रही है...",
     marketingAngleLabel: "एंगल",
@@ -877,7 +875,6 @@ const STRINGS = {
     sponsoredUnlock: "प्रायोजित — सहयोग अनलॉक करण्यासाठी पहा",
     marketingStrategyLabel: "मार्केटिंग रणनीती",
     marketingPreviewHint: "आजची रणनीती पाहण्यासाठी मार्केटिंग टॅब उघडा.",
-    seeMarketingTab: "मार्केटिंग टॅबमध्ये पहा",
     marketingIntro: "{subject} साठी तुमची मार्केटिंग रणनीती.",
     marketingBuilding: "तुमची मार्केटिंग रणनीती तयार होत आहे...",
     marketingAngleLabel: "एंगल",
@@ -3286,10 +3283,6 @@ function UpscaleAppInner() {
                   ) : (
                     <div className="bg-white rounded-lg p-3 border border-gray-200 text-xs text-gray-500">{t("marketingPreviewHint")}</div>
                   )}
-                  <button onClick={() => setTab("marketing")} className="text-xs font-medium" style={{ color: BLUE }}>
-                    {t("seeMarketingTab")} →
-                  </button>
-
                   <div className="text-xs font-medium text-gray-400 uppercase tracking-wide pt-1">Collaboration requests in {subject.name}</div>
                   {daysDone < 7 ? (
                     <div className="bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-2">
