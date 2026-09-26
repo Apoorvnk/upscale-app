@@ -1,5 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { google } from "googleapis";
+import mammoth from "mammoth";
+
+const DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const LEGACY_DOC_MEDIA_TYPE = "application/msword";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const LEDGER_SHEET_TITLE = "Ledger";
@@ -58,9 +62,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { imageBase64, mediaType, type, name, contact } = req.body || {};
-  if (!imageBase64 || !mediaType || !mediaType.startsWith("image/")) {
-    res.status(400).json({ error: "imageBase64 and an image mediaType are required" });
+  const { fileBase64, mediaType, type, name, contact } = req.body || {};
+  const isSupportedMediaType = mediaType && (
+    mediaType.startsWith("image/") ||
+    mediaType === "application/pdf" ||
+    mediaType === DOCX_MEDIA_TYPE ||
+    mediaType === LEGACY_DOC_MEDIA_TYPE
+  );
+  if (!fileBase64 || !isSupportedMediaType) {
+    res.status(400).json({ error: "fileBase64 and a supported mediaType (image, PDF, or .docx) are required" });
+    return;
+  }
+  if (mediaType === LEGACY_DOC_MEDIA_TYPE) {
+    res.status(422).json({ error: "Older .doc files aren't supported — please upload a photo, PDF, or .docx instead." });
     return;
   }
   if (type !== "cost" && type !== "sales") {
@@ -69,17 +83,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const systemPrompt = `You are extracting structured data from a photo of a business ${type === "cost" ? "bill or receipt" : "sales voucher"}. Read the amount (total, numeric, no currency symbol or commas), the vendor or party name, the date shown on the document (YYYY-MM-DD; if no date is visible, use "unknown"), and a short one-line description of what it's for. If the amount isn't legible, respond with 0 and say so in the description.
+    const systemPrompt = `You are extracting structured data from a business ${type === "cost" ? "bill or receipt" : "sales voucher"}, given as a photo, PDF, or the text of a Word document. Read the amount (total, numeric, no currency symbol or commas), the vendor or party name, the date shown on the document (YYYY-MM-DD; if no date is visible, use "unknown"), and a short one-line description of what it's for. If the amount isn't legible, respond with 0 and say so in the description.
 
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
 {"amount": 0, "vendor": "...", "date": "...", "description": "..."}`;
 
+    let contents;
+    if (mediaType === DOCX_MEDIA_TYPE) {
+      const { value: docText } = await mammoth.extractRawText({ buffer: Buffer.from(fileBase64, "base64") });
+      if (!docText.trim()) {
+        res.status(422).json({ error: "Could not read any text from that document" });
+        return;
+      }
+      contents = [{ text: `Extract the details from this document:\n\n${docText.slice(0, 8000)}` }];
+    } else {
+      contents = [
+        { inlineData: { mimeType: mediaType, data: fileBase64 } },
+        { text: "Extract the details from this document." },
+      ];
+    }
+
     const response = await getGenaiClient().models.generateContent({
       model: "gemini-3.6-flash",
-      contents: [
-        { inlineData: { mimeType, data: imageBase64 } },
-        { text: "Extract the details from this document." },
-      ],
+      contents,
       config: {
         systemInstruction: systemPrompt,
         responseMimeType: "application/json",

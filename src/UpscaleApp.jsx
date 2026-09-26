@@ -1003,6 +1003,17 @@ function resizeImageFile(file, maxDim = 1200, quality = 0.7) {
   });
 }
 
+// Reads a non-image file (PDF, Word doc) as base64 as-is — these can't be
+// canvas-resized like photos, so callers must cap file size separately.
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function Logo({ dark }) {
   return (
     <div className="flex items-center gap-2">
@@ -1778,19 +1789,26 @@ function UpscaleAppInner() {
     resetLoopStateForActiveProduct();
   }
 
+  const MAX_RECEIPT_DOCUMENT_BYTES = 3 * 1024 * 1024;
+
   async function handleReceiptUpload(file, type) {
     if (!file) return;
     setLedgerError(null);
+    const isImage = file.type.startsWith("image/");
+    if (!isImage && file.size > MAX_RECEIPT_DOCUMENT_BYTES) {
+      setLedgerError("That file is too large — please keep documents under 3MB.");
+      return;
+    }
     if (type === "cost") setUploadingCost(true); else setUploadingSales(true);
     try {
-      const dataUrl = await resizeImageFile(file);
+      const dataUrl = isImage ? await resizeImageFile(file) : await readFileAsBase64(file);
       const match = dataUrl.match(/^data:(.+);base64,(.*)$/);
-      if (!match) throw new Error("Could not read image data");
+      if (!match) throw new Error("Could not read file data");
       const [, mediaType, base64] = match;
       const res = await fetch("/api/extract-receipt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64, mediaType, type, name: form.name, contact: form.contact }),
+        body: JSON.stringify({ fileBase64: base64, mediaType, type, name: form.name, contact: form.contact }),
       });
       if (!res.ok) throw new Error(`extract-receipt returned ${res.status}`);
       const data = await res.json();
@@ -1799,7 +1817,7 @@ function UpscaleAppInner() {
       saveUserState(form.contact, buildPersistedState({ ledgerEntries: newEntries }));
     } catch (err) {
       console.error("handleReceiptUpload failed:", err);
-      setLedgerError("Couldn't read that photo — please try again with a clearer shot.");
+      setLedgerError("Couldn't read that file — please try again with a clearer photo or document.");
     } finally {
       if (type === "cost") setUploadingCost(false); else setUploadingSales(false);
     }
@@ -3091,18 +3109,18 @@ function UpscaleAppInner() {
       ) : tab === "marketing" ? (
         <div className="px-6 py-6 bg-white">
           <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabAnalytics")}</div>
-          <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
+          <p className="text-sm text-gray-500 mb-1">Upload a photo, PDF, or Word document of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
           <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-              <input type="file" accept="image/*" capture="environment" className="hidden"
+              <input type="file" accept="image/*,application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" capture="environment" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
               <Upload size={18} style={{ color: "#B91C1C" }} />
               <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
             </label>
             <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-              <input type="file" accept="image/*" capture="environment" className="hidden"
+              <input type="file" accept="image/*,application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" capture="environment" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
               <Upload size={18} style={{ color: "#0F6E56" }} />
               <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
