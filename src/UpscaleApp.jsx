@@ -539,8 +539,8 @@ const STRINGS = {
     tabCollaborate: "Learn & Collaboration",
     tabRecommendations: "Books",
     tabAnalytics: "Analytics",
-    tabMarketing: "Marketing & Analytics",
-    tabDemand: "Demand",
+    tabMarketing: "Account & Analytics",
+    tabDemand: "Demand & Marketing",
     stageContent: "Today's content",
     stageObservation: "Observation",
     stageGuidance: "Guidance",
@@ -614,7 +614,6 @@ const STRINGS = {
     demandStatusOrange: "Mixed signal — minor changes needed",
     demandStatusRed: "Weak demand — reconsider the idea",
     demandGreenCta: "Strong demand — this idea is worth pursuing. Head to Marketing to launch your ad.",
-    demandGoToMarketing: "Go to Marketing",
     demandSuggestedChangesLabel: "Suggested changes",
     demandRedMessage: "Based on the responses so far, this idea isn't showing strong demand. Consider reworking the concept, trying a different price, or testing a different idea before investing further.",
     demandNoResponsesYet: "No responses yet — share the poll to start collecting them.",
@@ -626,7 +625,6 @@ const STRINGS = {
     knowledgeBuildingLabel: "Build your knowledge",
     knowledgeBuildingNote: "Recommended: spend your first 7 days here before pitching — day {day} of 7. Check the Books tab.",
     seeBooksTab: "See Books tab",
-    marketingDemandCallout: "Your demand check isn't Green yet — check",
     marketingShareLabel: "Share this ad",
     marketingCreatePage: "Create ad page",
     marketingCreatingPage: "Creating...",
@@ -691,8 +689,8 @@ const STRINGS = {
     tabCollaborate: "सीखें और सहयोग",
     tabRecommendations: "पुस्तकें",
     tabAnalytics: "विश्लेषण",
-    tabMarketing: "मार्केटिंग और विश्लेषण",
-    tabDemand: "मांग",
+    tabMarketing: "खाता और विश्लेषण",
+    tabDemand: "मांग और मार्केटिंग",
     stageContent: "आज की सामग्री",
     stageObservation: "अवलोकन",
     stageGuidance: "मार्गदर्शन",
@@ -766,7 +764,6 @@ const STRINGS = {
     demandStatusOrange: "मिश्रित संकेत — थोड़ा बदलाव करें",
     demandStatusRed: "कम मांग — विचार पर फिर से सोचें",
     demandGreenCta: "अच्छी मांग — यह विचार आगे बढ़ाने लायक है। विज्ञापन बनाने के लिए मार्केटिंग टैब पर जाएं।",
-    demandGoToMarketing: "मार्केटिंग पर जाएं",
     demandSuggestedChangesLabel: "सुझाए गए बदलाव",
     demandRedMessage: "अब तक के जवाबों के आधार पर, इस विचार में मजबूत मांग नहीं दिख रही है। आगे निवेश करने से पहले विचार में बदलाव करें, अलग कीमत आज़माएं, या कोई और विचार परखें।",
     demandNoResponsesYet: "अभी तक कोई जवाब नहीं — जवाब पाने के लिए पोल शेयर करें।",
@@ -778,7 +775,6 @@ const STRINGS = {
     knowledgeBuildingLabel: "अपना ज्ञान बढ़ाएं",
     knowledgeBuildingNote: "सुझाव: पिच करने से पहले पहले 7 दिन यहां बिताएं — दिन {day} / 7। पुस्तकें टैब देखें।",
     seeBooksTab: "पुस्तकें टैब देखें",
-    marketingDemandCallout: "आपकी मांग जांच अभी हरी नहीं है — देखें",
     marketingShareLabel: "यह विज्ञापन शेयर करें",
     marketingCreatePage: "विज्ञापन पेज बनाएं",
     marketingCreatingPage: "बनाया जा रहा है...",
@@ -843,8 +839,8 @@ const STRINGS = {
     tabCollaborate: "शिका आणि सहयोग",
     tabRecommendations: "पुस्तके",
     tabAnalytics: "विश्लेषण",
-    tabMarketing: "मार्केटिंग आणि विश्लेषण",
-    tabDemand: "मागणी",
+    tabMarketing: "खाते आणि विश्लेषण",
+    tabDemand: "मागणी आणि मार्केटिंग",
     stageContent: "आजची सामग्री",
     stageObservation: "निरीक्षण",
     stageGuidance: "मार्गदर्शन",
@@ -918,7 +914,6 @@ const STRINGS = {
     demandStatusOrange: "संमिश्र संकेत — थोडे बदल करा",
     demandStatusRed: "कमी मागणी — कल्पनेचा पुनर्विचार करा",
     demandGreenCta: "चांगली मागणी — ही कल्पना पुढे नेण्यासारखी आहे. जाहिरात तयार करण्यासाठी मार्केटिंग टॅबवर जा.",
-    demandGoToMarketing: "मार्केटिंगवर जा",
     demandSuggestedChangesLabel: "सुचवलेले बदल",
     demandRedMessage: "आतापर्यंतच्या प्रतिसादांवरून, या कल्पनेला मजबूत मागणी दिसत नाही. पुढे गुंतवणूक करण्यापूर्वी कल्पनेत बदल करा, वेगळी किंमत वापरून पाहा, किंवा दुसरी कल्पना तपासा.",
     demandNoResponsesYet: "अजून कोणतेही उत्तर नाही — उत्तरे मिळवण्यासाठी पोल शेअर करा.",
@@ -930,7 +925,6 @@ const STRINGS = {
     knowledgeBuildingLabel: "तुमचे ज्ञान वाढवा",
     knowledgeBuildingNote: "सुचवलेले: पिच करण्यापूर्वी पहिले 7 दिवस इथे घालवा — दिवस {day} / 7. पुस्तके टॅब पाहा.",
     seeBooksTab: "पुस्तके टॅब पाहा",
-    marketingDemandCallout: "तुमची मागणी तपासणी अजून हिरवी नाही — पहा",
     marketingShareLabel: "ही जाहिरात शेअर करा",
     marketingCreatePage: "जाहिरात पेज तयार करा",
     marketingCreatingPage: "तयार होत आहे...",
@@ -1425,15 +1419,15 @@ function UpscaleAppInner() {
   }
 
   // Marketing strategy: fetched at most once per loop cycle, lazily on
-  // first visit to the Marketing tab (guarded by marketingFetchAttempted,
+  // first visit to the Demand tab (guarded by marketingFetchAttempted,
   // reset in claimReward). There's no static fallback for this content, so
   // on failure the tab shows a retry affordance instead of silently
   // degrading. No "cancelled" gate on the state updates: leaving the
-  // Marketing tab and coming back while the request is still in flight
+  // Demand tab and coming back while the request is still in flight
   // must not leave marketingLoading stuck true forever with no way to
   // resolve.
   useEffect(() => {
-    if (screen !== "app" || tab !== "marketing" || marketingFetchAttempted) return;
+    if (screen !== "app" || tab !== "demand" || marketingFetchAttempted) return;
     setMarketingFetchAttempted(true);
     setMarketingLoading(true);
     fetch("/api/marketing", {
@@ -1451,7 +1445,7 @@ function UpscaleAppInner() {
   }, [screen, tab, subject.name, subject.label, language, marketingFetchAttempted]);
 
   // Market analytics: fetched once per product, on first visit to the
-  // Analytics tab (NOT reset in claimReward like the daily content — a
+  // Demand tab (NOT reset in claimReward like the daily content — a
   // 6-month demand trend doesn't need to regenerate every day, so this
   // deliberately fetches less often to keep API usage low). The tab itself
   // stays unified/shared, but the underlying trend is inherently per-product
@@ -1459,7 +1453,7 @@ function UpscaleAppInner() {
   // businesses) — so this fetches one result per product and caches it by
   // product id, rather than one shared value for whichever is active.
   useEffect(() => {
-    if (screen !== "app" || tab !== "analytics") return;
+    if (screen !== "app" || tab !== "demand") return;
     const unfetched = products.filter((p) => !marketAnalyticsFetchedIds[p.id]);
     if (!unfetched.length) return;
     setMarketAnalyticsFetchedIds((prev) => {
@@ -2900,11 +2894,7 @@ function UpscaleAppInner() {
 
                     {demandStatusColor === "green" && (
                       <div className="rounded-lg p-3 mb-3 border" style={{ borderColor: "#0F6E56", background: "#E7F5EF" }}>
-                        <p className="text-xs mb-2" style={{ color: "#0F6E56" }}>{t("demandGreenCta")}</p>
-                        <button onClick={() => setTab("marketing")}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg text-white" style={{ background: "#0F6E56" }}>
-                          {t("demandGoToMarketing")} →
-                        </button>
+                        <p className="text-xs" style={{ color: "#0F6E56" }}>{t("demandGreenCta")}</p>
                       </div>
                     )}
 
@@ -2970,172 +2960,79 @@ function UpscaleAppInner() {
               </div>
             </div>
           )}
-        </div>
-      ) : tab === "marketing" ? (
-        <div className="px-6 py-6 bg-white">
-          <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
-          {activeProduct?.demandPollId && demandStatusColor && demandStatusColor !== "green" && (
-            <div className="rounded-lg p-3 mb-4 flex items-center gap-2" style={{ background: demandStatusColor === "orange" ? "#FEF3E7" : "#FDECEC" }}>
-              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }} />
-              <span className="text-xs" style={{ color: demandStatusColor === "orange" ? "#B45309" : "#B91C1C" }}>
-                {t("marketingDemandCallout")} <button onClick={() => setTab("demand")} className="font-medium underline">{t("tabDemand")} →</button>
-              </span>
-            </div>
-          )}
-          {marketingLoading && !marketingData && (
-            <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
-              <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
-            </div>
-          )}
-          {marketingData ? (
-            <div className="space-y-4">
-              <div className="rounded-lg p-4 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
-                <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("marketingAngleLabel")}</div>
-                <div className="text-sm font-medium mb-2" style={{ color: NAVY }}>{marketingData.angle}</div>
-                <div className="text-sm text-gray-700 italic">"{marketingData.pitch}"</div>
-              </div>
-              <div className="text-sm text-gray-600">{marketingData.strategy}</div>
-              <div>
-                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{t("marketingTacticsLabel")}</div>
-                <div className="space-y-2">
-                  {(marketingData.tactics || []).map((tc, i) => (
-                    <div key={i} className="rounded-lg p-3 border border-gray-200">
-                      <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {marketingData.video?.title && (
-                <div>
-                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
-                  <a href={marketingData.video.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(marketingData.video.title)}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
-                    <PlayCircle size={24} style={{ color: BLUE }} />
-                    <div className="text-sm text-gray-800">{marketingData.video.title}</div>
-                  </a>
-                </div>
-              )}
-              <div>
-                <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
-                {!activeProduct?.marketingPageId ? (
-                  <button onClick={createMarketingPage} disabled={marketingPageCreating}
-                    className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
-                    {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
-                    <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch + " " + marketingPageShareUrl)}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
-                      <WhatsAppIcon /> WhatsApp
-                    </a>
-                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(marketingPageShareUrl)}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
-                      <FacebookIcon /> Facebook
-                    </a>
-                    <button onClick={() => { navigator.clipboard.writeText(marketingPageShareUrl).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
-                      <InstagramIcon /> {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            !marketingLoading && marketingFetchAttempted && (
-              <div className="text-sm text-gray-400 flex items-center gap-3">
-                {t("marketingUnavailable")}
-                <button onClick={() => setMarketingFetchAttempted(false)} className="text-xs font-medium underline" style={{ color: BLUE }}>{t("tryAgain")}</button>
-              </div>
-            )
-          )}
 
           <div className="border-t border-gray-200 mt-8 pt-6">
-            <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabAnalytics")}</div>
-            <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
-            <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-                <input type="file" accept="image/*" capture="environment" className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
-                <Upload size={18} style={{ color: "#B91C1C" }} />
-                <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
-              </label>
-              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
-                <input type="file" accept="image/*" capture="environment" className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
-                <Upload size={18} style={{ color: "#0F6E56" }} />
-                <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
-              </label>
-            </div>
-
-            {ledgerError && <div className="text-xs mb-4" style={{ color: "#B91C1C" }}>{ledgerError}</div>}
-
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-1">Total costs</div>
-                <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalCosts.toLocaleString("en-IN")}</div>
+            <p className="text-sm text-gray-500 mb-4">{t("marketingIntro", { subject: subject.name })}</p>
+            {marketingLoading && !marketingData && (
+              <div className="text-sm text-gray-500 flex items-center gap-2 mb-4">
+                <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("marketingBuilding")}
               </div>
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-1">Total sales</div>
-                <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-1">Net (incl. investment)</div>
-                <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                  {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-1">
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-1">Cost per sale</div>
-                <div className="text-lg font-medium" style={{ color: NAVY }}>
-                  {costPerAcquisition != null ? `₹${Math.round(costPerAcquisition).toLocaleString("en-IN")}` : "—"}
-                </div>
-              </div>
-              <div className="border border-gray-200 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-1">Profit margin</div>
-                <div className="text-lg font-medium" style={{ color: profitMarginPct != null && profitMarginPct >= 0 ? "#0F6E56" : "#B91C1C" }}>
-                  {profitMarginPct != null ? `${profitMarginPct}%` : "—"}
-                </div>
-              </div>
-            </div>
-            <p className="text-[11px] text-gray-400 mb-6">
-              {salesCount > 0
-                ? "Cost per sale is total costs divided by logged sales; profit margin is sales minus costs as a share of sales (doesn't subtract your starting investment)."
-                : "Cost per sale and profit margin will show once you've logged at least one sale."}
-            </p>
-            {investmentAmount > 0 && (
-              <p className="text-[11px] text-gray-400 -mt-4 mb-6">
-                Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
-              </p>
             )}
-
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
-            {ledgerEntries.length ? (
-              <div className="space-y-2">
-                {ledgerEntries.map((e, i) => (
-                  <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-sm text-gray-800 truncate">{e.vendor || "Unknown vendor"}</div>
-                      <div className="text-[11px] text-gray-400 truncate">{e.description}{e.date && e.date !== "unknown" ? ` · ${e.date}` : ""}</div>
-                    </div>
-                    <span className="text-sm font-medium shrink-0" style={{ color: e.type === "cost" ? "#B91C1C" : "#0F6E56" }}>
-                      {e.type === "cost" ? "-" : "+"}₹{Number(e.amount || 0).toLocaleString("en-IN")}
-                    </span>
+            {marketingData ? (
+              <div className="space-y-4">
+                <div className="rounded-lg p-4 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                  <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("marketingAngleLabel")}</div>
+                  <div className="text-sm font-medium mb-2" style={{ color: NAVY }}>{marketingData.angle}</div>
+                  <div className="text-sm text-gray-700 italic">"{marketingData.pitch}"</div>
+                </div>
+                <div className="text-sm text-gray-600">{marketingData.strategy}</div>
+                <div>
+                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-2">{t("marketingTacticsLabel")}</div>
+                  <div className="space-y-2">
+                    {(marketingData.tactics || []).map((tc, i) => (
+                      <div key={i} className="rounded-lg p-3 border border-gray-200">
+                        <div className="text-sm font-medium" style={{ color: NAVY }}>{tc.tactic}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{tc.how}</div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+                {marketingData.video?.title && (
+                  <div>
+                    <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1">{t("videoLabel")}</div>
+                    <a href={marketingData.video.url || `https://www.youtube.com/results?search_query=${encodeURIComponent(marketingData.video.title)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="block bg-white rounded-lg p-3 border border-gray-200 flex items-center gap-3 hover:border-gray-300">
+                      <PlayCircle size={24} style={{ color: BLUE }} />
+                      <div className="text-sm text-gray-800">{marketingData.video.title}</div>
+                    </a>
+                  </div>
+                )}
+                <div>
+                  <div className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("marketingShareLabel")}</div>
+                  {!activeProduct?.marketingPageId ? (
+                    <button onClick={createMarketingPage} disabled={marketingPageCreating}
+                      className="w-full text-sm font-medium px-4 py-2.5 rounded-lg text-white disabled:opacity-40" style={{ background: BLUE }}>
+                      {marketingPageCreating ? t("marketingCreatingPage") : t("marketingCreatePage")}
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <a href={`https://wa.me/?text=${encodeURIComponent(marketingData.pitch + " " + marketingPageShareUrl)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#25D366", color: "#0F6E56" }}>
+                        <WhatsAppIcon /> WhatsApp
+                      </a>
+                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(marketingPageShareUrl)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: BLUE, color: BLUE }}>
+                        <FacebookIcon /> Facebook
+                      </a>
+                      <button onClick={() => { navigator.clipboard.writeText(marketingPageShareUrl).then(() => { setMarketingLinkCopied("instagram"); setTimeout(() => setMarketingLinkCopied(null), 2000); }); }}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#374151" }}>
+                        <InstagramIcon /> {marketingLinkCopied === "instagram" ? t("demandLinkCopied") : t("demandCopyForInstagram")}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
+              !marketingLoading && marketingFetchAttempted && (
+                <div className="text-sm text-gray-400 flex items-center gap-3">
+                  {t("marketingUnavailable")}
+                  <button onClick={() => setMarketingFetchAttempted(false)} className="text-xs font-medium underline" style={{ color: BLUE }}>{t("tryAgain")}</button>
+                </div>
+              )
             )}
-            <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
 
             <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-8 mb-2">Market analytics</div>
             {marketAnalyticsLoading && !Object.keys(marketAnalyticsByProduct).length && (
@@ -3169,6 +3066,91 @@ function UpscaleAppInner() {
               })}
             </div>
           </div>
+        </div>
+      ) : tab === "marketing" ? (
+        <div className="px-6 py-6 bg-white">
+          <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabAnalytics")}</div>
+          <p className="text-sm text-gray-500 mb-1">Upload a photo of a bill or sales voucher — the amount, vendor, and date are read automatically.</p>
+          <p className="text-xs text-gray-400 mb-4">A simple cost/sales tracker, not full accounting software — no GST or tax filing here.</p>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+              <input type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "cost"); }} />
+              <Upload size={18} style={{ color: "#B91C1C" }} />
+              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingCost ? "Reading..." : "Add cost bill"}</span>
+            </label>
+            <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 flex flex-col items-center gap-1.5">
+              <input type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) handleReceiptUpload(f, "sales"); }} />
+              <Upload size={18} style={{ color: "#0F6E56" }} />
+              <span className="text-xs font-medium" style={{ color: NAVY }}>{uploadingSales ? "Reading..." : "Add sales voucher"}</span>
+            </label>
+          </div>
+
+          {ledgerError && <div className="text-xs mb-4" style={{ color: "#B91C1C" }}>{ledgerError}</div>}
+
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Total costs</div>
+              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalCosts.toLocaleString("en-IN")}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Total sales</div>
+              <div className="text-lg font-medium" style={{ color: NAVY }}>₹{totalSales.toLocaleString("en-IN")}</div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Net (incl. investment)</div>
+              <div className="text-lg font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-1">
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Cost per sale</div>
+              <div className="text-lg font-medium" style={{ color: NAVY }}>
+                {costPerAcquisition != null ? `₹${Math.round(costPerAcquisition).toLocaleString("en-IN")}` : "—"}
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Profit margin</div>
+              <div className="text-lg font-medium" style={{ color: profitMarginPct != null && profitMarginPct >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {profitMarginPct != null ? `${profitMarginPct}%` : "—"}
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-gray-400 mb-6">
+            {salesCount > 0
+              ? "Cost per sale is total costs divided by logged sales; profit margin is sales minus costs as a share of sales (doesn't subtract your starting investment)."
+              : "Cost per sale and profit margin will show once you've logged at least one sale."}
+          </p>
+          {investmentAmount > 0 && (
+            <p className="text-[11px] text-gray-400 -mt-4 mb-6">
+              Net accounts for your ₹{investmentAmount.toLocaleString("en-IN")} starting investment — it turns positive once sales have covered both costs and that investment.
+            </p>
+          )}
+
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">This session's entries</div>
+          {ledgerEntries.length ? (
+            <div className="space-y-2">
+              {ledgerEntries.map((e, i) => (
+                <div key={i} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm text-gray-800 truncate">{e.vendor || "Unknown vendor"}</div>
+                    <div className="text-[11px] text-gray-400 truncate">{e.description}{e.date && e.date !== "unknown" ? ` · ${e.date}` : ""}</div>
+                  </div>
+                  <span className="text-sm font-medium shrink-0" style={{ color: e.type === "cost" ? "#B91C1C" : "#0F6E56" }}>
+                    {e.type === "cost" ? "-" : "+"}₹{Number(e.amount || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-400">No entries yet — upload a bill or voucher to get started.</div>
+          )}
+          <p className="text-[11px] text-gray-400 mt-4">Every entry is also saved to your team's ledger for permanent record-keeping.</p>
         </div>
       ) : (
         <div className="px-6 py-6 bg-white">
