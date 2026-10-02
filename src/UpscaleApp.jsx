@@ -2587,9 +2587,9 @@ function UpscaleAppInner() {
         {[
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
-          { key: "journal", label: t("tabJournal"), icon: LayoutGrid },
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
+          { key: "journal", label: t("tabJournal"), icon: LayoutGrid },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
         ].map((tabItem) => (
           <button key={tabItem.key} onClick={() => setTab(tabItem.key)}
