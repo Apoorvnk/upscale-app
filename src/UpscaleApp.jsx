@@ -451,7 +451,7 @@ function todayStr() {
 function normalizeState(raw, fallbackContact) {
   if (!raw) return null;
   if (Array.isArray(raw.products) && raw.products.length) {
-    return { ...raw, lastClaimedDate: raw.lastClaimedDate || null };
+    return { ...raw, lastClaimedDate: raw.lastClaimedDate || null, products: raw.products.map((p) => ({ ...p, journal: p.journal ?? [] })) };
   }
   const legacyForm = raw.form || {};
   const product = {
@@ -467,6 +467,7 @@ function normalizeState(raw, fallbackContact) {
     goal: raw.goal || "",
     period: raw.period || "Monthly",
     planData: raw.planData || null,
+    journal: [],
     demandPollId: raw.demandPollId || null,
     marketingPageId: null,
   };
@@ -523,7 +524,7 @@ const STRINGS = {
     workingToward: "What are you working toward, {name}?",
     goalHint: "A real goal, not just a number — e.g. \"start my own {subject} firm.\"",
     goalPlaceholder: "Your goal for this period",
-    overWhatPeriod: "Over what period?",
+    overWhatPeriod: "How often should your checklist refresh?",
     periodMonthly: "Monthly",
     periodQuarterly: "Quarterly",
     periodSemiYearly: "Semi-yearly",
@@ -543,7 +544,7 @@ const STRINGS = {
     tabDemand: "Demand & Marketing",
     stageContent: "Today's content",
     stageObservation: "Observation",
-    stageGuidance: "Guidance",
+    stageGuidance: "AI Validation",
     stageCollaboration: "Collaboration",
     updateLabel: "Update",
     trendLabel: "Trend",
@@ -555,14 +556,17 @@ const STRINGS = {
     forLabel: " for {label}",
     obsPlaceholder: "What have you noticed in your business this week?",
     getGuidance: "Get guidance",
-    yourGuidance: "Your guidance",
+    yourGuidance: "AI Validation",
     guidanceThinking: "Thinking through your goal...",
     unlockCollaboration: "Unlock collaboration",
     yourPlan: "Your plan",
     towardPrefix: "Toward:",
     overTheNext: "Over the next {period}, here's how we'll get there.",
-    buildingPlan: "Building your plan...",
-    yearlyTier: "Yearly",
+    buildingPlan: "Building your checklist...",
+    yourChecklist: "Your checklist",
+    refreshChecklist: "Refresh checklist",
+    yourJournal: "Journal",
+    journalEmpty: "Your daily observations and AI Validation notes will show up here.",
     dailyLoopNote: "Each day: content → observation → guidance → collaboration. Complete it daily to stay on track.",
     daysCompleted: "{done}/{total} days completed",
     startTodaysLoop: "Start today's loop",
@@ -578,16 +582,11 @@ const STRINGS = {
     marketingUnavailable: "Couldn't build your strategy just now.",
     tryAgain: "Try again",
     invalidPhone: "Enter a valid 10-digit phone number.",
-    planFallbackMonthlyStep: "Take one small, concrete action this week",
-    planFallbackMonthlyHow: "Break \"{goal}\" into a single task you can finish in the next 7 days.",
-    planFallbackQuarterlyStep: "Check your overall direction",
-    planFallbackQuarterlyHow: "Set aside 30 minutes to see whether this quarter's progress is on track toward your goal.",
-    planFallbackYearlyStep: "Stay the course",
-    planFallbackYearlyHow: "Revisit your goal each quarter and keep the daily loop going to compound progress.",
-    tierProgress: "{pct}% through this tier's timeframe",
+    planFallbackTask1: "Take one small, concrete action this week",
+    planFallbackHow1: "Break \"{goal}\" into a single task you can finish in the next 7 days.",
+    planFallbackTask2: "Check your overall direction",
+    planFallbackHow2: "Set aside 30 minutes to see whether you're on track toward your goal, and adjust one thing if not.",
     marketAnalyticsBuilding: "Building your market analytics...",
-    planProgressBuilding: "Assessing your progress...",
-    whatToDoNext: "What to do next",
     demandLabel: "Demand",
     demandIntro: "Test real demand for this idea before committing to it.",
     demandProduct: "Product (photo)",
@@ -673,7 +672,7 @@ const STRINGS = {
     workingToward: "{name}, आप किस दिशा में काम कर रहे हैं?",
     goalHint: "एक असली लक्ष्य, सिर्फ एक संख्या नहीं — जैसे \"अपनी खुद की {subject} फर्म शुरू करना।\"",
     goalPlaceholder: "इस अवधि के लिए आपका लक्ष्य",
-    overWhatPeriod: "किस अवधि में?",
+    overWhatPeriod: "आपकी चेकलिस्ट कितनी बार रिफ्रेश होनी चाहिए?",
     periodMonthly: "मासिक",
     periodQuarterly: "त्रैमासिक",
     periodSemiYearly: "छमाही",
@@ -693,7 +692,7 @@ const STRINGS = {
     tabDemand: "मांग और मार्केटिंग",
     stageContent: "आज की सामग्री",
     stageObservation: "अवलोकन",
-    stageGuidance: "मार्गदर्शन",
+    stageGuidance: "AI Validation",
     stageCollaboration: "सहयोग",
     updateLabel: "अपडेट",
     trendLabel: "ट्रेंड",
@@ -705,14 +704,17 @@ const STRINGS = {
     forLabel: " {label} के लिए",
     obsPlaceholder: "इस हफ्ते आपने अपने व्यवसाय में क्या देखा?",
     getGuidance: "मार्गदर्शन पाएं",
-    yourGuidance: "आपका मार्गदर्शन",
+    yourGuidance: "AI Validation",
     guidanceThinking: "आपके लक्ष्य पर विचार कर रहे हैं...",
     unlockCollaboration: "सहयोग अनलॉक करें",
     yourPlan: "आपकी योजना",
     towardPrefix: "लक्ष्य:",
     overTheNext: "अगले {period} में, हम इस तरह वहां पहुंचेंगे।",
-    buildingPlan: "आपकी योजना बनाई जा रही है...",
-    yearlyTier: "वार्षिक",
+    buildingPlan: "आपकी चेकलिस्ट बनाई जा रही है...",
+    yourChecklist: "आपकी चेकलिस्ट",
+    refreshChecklist: "चेकलिस्ट रिफ्रेश करें",
+    yourJournal: "जर्नल",
+    journalEmpty: "आपके दैनिक अवलोकन और AI Validation नोट्स यहां दिखेंगे।",
     dailyLoopNote: "हर दिन: सामग्री → अवलोकन → मार्गदर्शन → सहयोग। ट्रैक पर बने रहने के लिए इसे रोज़ पूरा करें।",
     daysCompleted: "{done}/{total} दिन पूरे हुए",
     startTodaysLoop: "आज का लूप शुरू करें",
@@ -728,16 +730,11 @@ const STRINGS = {
     marketingUnavailable: "अभी आपकी रणनीति नहीं बन सकी।",
     tryAgain: "फिर कोशिश करें",
     invalidPhone: "एक मान्य 10 अंकों का फ़ोन नंबर दर्ज करें।",
-    planFallbackMonthlyStep: "इस हफ्ते एक छोटा, ठोस कदम उठाएं",
-    planFallbackMonthlyHow: "\"{goal}\" को अगले 7 दिनों में पूरा किए जा सकने वाले एक काम में बांटें।",
-    planFallbackQuarterlyStep: "अपनी समग्र दिशा जांचें",
-    planFallbackQuarterlyHow: "यह देखने के लिए 30 मिनट निकालें कि क्या इस तिमाही की प्रगति आपके लक्ष्य की दिशा में सही है।",
-    planFallbackYearlyStep: "लगे रहें",
-    planFallbackYearlyHow: "हर तिमाही अपने लक्ष्य को फिर से देखें और रोज़ का लूप जारी रखें।",
-    tierProgress: "इस चरण की समयसीमा का {pct}% पूरा",
+    planFallbackTask1: "इस हफ्ते एक छोटा, ठोस कदम उठाएं",
+    planFallbackHow1: "\"{goal}\" को अगले 7 दिनों में पूरा किए जा सकने वाले एक काम में बांटें।",
+    planFallbackTask2: "अपनी समग्र दिशा जांचें",
+    planFallbackHow2: "यह देखने के लिए 30 मिनट निकालें कि क्या आप अपने लक्ष्य की दिशा में सही हैं, और ज़रूरत हो तो एक चीज़ बदलें।",
     marketAnalyticsBuilding: "आपका मार्केट एनालिटिक्स तैयार हो रहा है...",
-    planProgressBuilding: "आपकी प्रगति का आकलन किया जा रहा है...",
-    whatToDoNext: "आगे क्या करना है",
     demandLabel: "मांग",
     demandIntro: "प्रतिबद्ध होने से पहले इस विचार की असली मांग जांचें।",
     demandProduct: "उत्पाद (फोटो)",
@@ -823,7 +820,7 @@ const STRINGS = {
     workingToward: "{name}, तुम्ही कशासाठी काम करत आहात?",
     goalHint: "एक खरे ध्येय, फक्त एक आकडा नाही — उदा. \"स्वतःची {subject} फर्म सुरू करणे.\"",
     goalPlaceholder: "या कालावधीसाठी तुमचे ध्येय",
-    overWhatPeriod: "कोणत्या कालावधीत?",
+    overWhatPeriod: "तुमची चेकलिस्ट किती वेळा रिफ्रेश व्हावी?",
     periodMonthly: "मासिक",
     periodQuarterly: "त्रैमासिक",
     periodSemiYearly: "सहामाही",
@@ -843,7 +840,7 @@ const STRINGS = {
     tabDemand: "मागणी आणि मार्केटिंग",
     stageContent: "आजची सामग्री",
     stageObservation: "निरीक्षण",
-    stageGuidance: "मार्गदर्शन",
+    stageGuidance: "AI Validation",
     stageCollaboration: "सहयोग",
     updateLabel: "अपडेट",
     trendLabel: "ट्रेंड",
@@ -855,14 +852,17 @@ const STRINGS = {
     forLabel: " {label} साठी",
     obsPlaceholder: "या आठवड्यात तुम्ही तुमच्या व्यवसायात काय लक्षात घेतले?",
     getGuidance: "मार्गदर्शन मिळवा",
-    yourGuidance: "तुमचे मार्गदर्शन",
+    yourGuidance: "AI Validation",
     guidanceThinking: "तुमच्या ध्येयाचा विचार करत आहोत...",
     unlockCollaboration: "सहयोग अनलॉक करा",
     yourPlan: "तुमची योजना",
     towardPrefix: "ध्येय:",
     overTheNext: "पुढील {period} मध्ये, आपण असे तिथे पोहोचू.",
-    buildingPlan: "तुमची योजना तयार होत आहे...",
-    yearlyTier: "वार्षिक",
+    buildingPlan: "तुमची चेकलिस्ट तयार होत आहे...",
+    yourChecklist: "तुमची चेकलिस्ट",
+    refreshChecklist: "चेकलिस्ट रिफ्रेश करा",
+    yourJournal: "जर्नल",
+    journalEmpty: "तुमची रोजची निरीक्षणे आणि AI Validation नोट्स इथे दिसतील.",
     dailyLoopNote: "दररोज: सामग्री → निरीक्षण → मार्गदर्शन → सहयोग. ट्रॅकवर राहण्यासाठी हे दररोज पूर्ण करा.",
     daysCompleted: "{done}/{total} दिवस पूर्ण झाले",
     startTodaysLoop: "आजचा लूप सुरू करा",
@@ -878,16 +878,11 @@ const STRINGS = {
     marketingUnavailable: "आत्ता तुमची रणनीती तयार होऊ शकली नाही.",
     tryAgain: "पुन्हा प्रयत्न करा",
     invalidPhone: "वैध 10-अंकी फोन नंबर टाका.",
-    planFallbackMonthlyStep: "या आठवड्यात एक छोटी, ठोस कृती करा",
-    planFallbackMonthlyHow: "\"{goal}\" पुढील 7 दिवसांत पूर्ण करता येईल अशा एका कामात विभागा.",
-    planFallbackQuarterlyStep: "तुमची एकूण दिशा तपासा",
-    planFallbackQuarterlyHow: "या तिमाहीची प्रगती तुमच्या ध्येयाच्या दिशेने योग्य आहे का हे पाहण्यासाठी 30 मिनिटे काढा.",
-    planFallbackYearlyStep: "सातत्य ठेवा",
-    planFallbackYearlyHow: "दर तिमाहीला तुमचे ध्येय पुन्हा पाहा आणि रोजचा लूप सुरू ठेवा.",
-    tierProgress: "या टप्प्याच्या कालावधीपैकी {pct}% पूर्ण",
+    planFallbackTask1: "या आठवड्यात एक छोटी, ठोस कृती करा",
+    planFallbackHow1: "\"{goal}\" पुढील 7 दिवसांत पूर्ण करता येईल अशा एका कामात विभागा.",
+    planFallbackTask2: "तुमची एकूण दिशा तपासा",
+    planFallbackHow2: "तुम्ही तुमच्या ध्येयाच्या दिशेने योग्य आहात का हे पाहण्यासाठी 30 मिनिटे काढा, आणि गरज असल्यास एक गोष्ट बदला.",
     marketAnalyticsBuilding: "तुमचे मार्केट अॅनालिटिक्स तयार होत आहे...",
-    planProgressBuilding: "तुमच्या प्रगतीचे मूल्यांकन होत आहे...",
-    whatToDoNext: "पुढे काय करायचे",
     demandLabel: "मागणी",
     demandIntro: "वचनबद्ध होण्यापूर्वी या कल्पनेची खरी मागणी तपासा.",
     demandProduct: "उत्पादन (फोटो)",
@@ -1070,29 +1065,6 @@ function PrimaryButton({ children, onClick, disabled }) {
   );
 }
 function FadeIn({ children, keyProp }) { return <div key={keyProp} className="upscale-fadein">{children}</div>; }
-function PlanTier({ title, items, progressPct, progressLabel }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{title}</div>
-        {progressPct != null && <div className="text-[11px] text-gray-400 shrink-0">{progressLabel}</div>}
-      </div>
-      {progressPct != null && (
-        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden mb-2">
-          <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progressPct}%`, background: BLUE }} />
-        </div>
-      )}
-      <div className="space-y-2">
-        {items.map((it, i) => (
-          <div key={i} className="rounded-lg p-3 border border-gray-200">
-            <div className="text-sm font-medium" style={{ color: NAVY }}>{it.step}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{it.how}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // Public demand-poll page: reached via a shared link (?poll=<id>), no
 // account or onboarding needed. Deliberately self-contained — it doesn't
@@ -1342,6 +1314,7 @@ function UpscaleAppInner() {
   const [obsText, setObsText] = useState("");
   const [guiding, setGuiding] = useState(false);
   const [guidance, setGuidance] = useState(null);
+  const [progressNote, setProgressNote] = useState(null);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [ticketsBought, setTicketsBought] = useState([]);
   const [adElapsed, setAdElapsed] = useState(0);
@@ -1359,10 +1332,6 @@ function UpscaleAppInner() {
   const [marketAnalyticsByProduct, setMarketAnalyticsByProduct] = useState({});
   const [marketAnalyticsLoading, setMarketAnalyticsLoading] = useState(false);
   const [marketAnalyticsFetchedIds, setMarketAnalyticsFetchedIds] = useState({});
-
-  const [planProgressData, setPlanProgressData] = useState(null);
-  const [planProgressLoading, setPlanProgressLoading] = useState(false);
-  const [planProgressFetchAttempted, setPlanProgressFetchAttempted] = useState(false);
 
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [uploadingCost, setUploadingCost] = useState(false);
@@ -1406,13 +1375,6 @@ function UpscaleAppInner() {
   const costPerAcquisition = salesCount > 0 ? totalCosts / salesCount : null;
   const profitMarginPct = totalSales > 0 ? Math.round(((totalSales - totalCosts) / totalSales) * 100) : null;
   const obsComplete = obsText.trim().length > 0;
-
-  // Auto per-tier execution progress: derived straight from the existing
-  // daily-loop counter (no separate tracking state) against each tier's
-  // natural cadence, capped at 100%.
-  const monthlyPct = Math.min(100, Math.round((daysDone / 30) * 100));
-  const quarterlyPct = Math.min(100, Math.round((daysDone / 90) * 100));
-  const yearlyPct = Math.min(100, Math.round((daysDone / 365) * 100));
 
   // Centralizes the shape of what gets persisted for a proprietor, so the
   // save points below can't drift out of sync with each other. Takes
@@ -1549,43 +1511,6 @@ function UpscaleAppInner() {
   });
   const demandReviews = (demandPollData?.responses || []).filter((r) => r.review && r.review.trim());
 
-  // Plan execution progress: unlike the simple day-count bars (used as an
-  // immediate 0% starting state right after the goal is set), the Progress
-  // tab's version is reasoned from the real ledger numbers and the market
-  // demand trend, not just days logged — two people with the same streak
-  // but very different sales shouldn't show the same progress. Fetched once
-  // per loop cycle (reset in claimReward, same guard pattern as the other
-  // AI fetches) once a plan exists. Falls back to the day-based bars above
-  // if the call hasn't returned yet or fails — never blocks the tab.
-  useEffect(() => {
-    const effectivePlanData = activeProduct?.planData ?? planData;
-    if (screen !== "app" || tab !== "progress" || !effectivePlanData || planProgressFetchAttempted) return;
-    setPlanProgressFetchAttempted(true);
-    setPlanProgressLoading(true);
-    fetch("/api/insights", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "plan-progress",
-        goal: activeProduct?.goal ?? goal, subjectName: subject.name, planData: effectivePlanData, daysDone, totalDays,
-        totalCosts, totalSales, netAmount, investmentAmount,
-        demandChangePct: (activeProductId && marketAnalyticsByProduct[activeProductId]?.demandChangePct) ?? null,
-        language,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`plan-progress returned ${res.status}`);
-        return res.json();
-      })
-      .then((data) => setPlanProgressData(data))
-      .catch((err) => console.error("fetchPlanProgress failed:", err))
-      .finally(() => setPlanProgressLoading(false));
-  }, [screen, tab, activeProduct?.planData, planData, planProgressFetchAttempted]);
-
-  const progressMonthlyPct = planProgressData?.monthlyProgressPct ?? monthlyPct;
-  const progressQuarterlyPct = planProgressData?.quarterlyProgressPct ?? quarterlyPct;
-  const progressYearlyPct = planProgressData?.yearlyProgressPct ?? yearlyPct;
-
   // Rewarded ad: minimum 30s watch time, skip unlocks at 20s.
   useEffect(() => {
     if (stage !== "reward" || adDone) return;
@@ -1628,6 +1553,7 @@ function UpscaleAppInner() {
       goal,
       period,
       planData: resolvedPlanData,
+      journal: [],
       demandPollId: null,
       marketingPageId: null,
     };
@@ -1636,6 +1562,13 @@ function UpscaleAppInner() {
     setActiveProductId(product.id);
     setAddingProduct(false);
     return newProducts;
+  }
+
+  // Assigns a stable client-side id + done:false to each AI-returned
+  // checklist item — the API only returns {task, how}, since completion
+  // is tracked here, not by the model.
+  function buildPlanData(checklistItems) {
+    return { checklist: checklistItems.map((it, i) => ({ id: `c${i}`, ...it, done: false })) };
   }
 
   async function confirmTarget() {
@@ -1650,22 +1583,59 @@ function UpscaleAppInner() {
       });
       if (!res.ok) throw new Error(`generate-plan returned ${res.status}`);
       const data = await res.json();
-      setPlanData(data);
-      const newProducts = appendProductFromForm(data);
-      saveUserState(form.contact, buildPersistedState({ planData: data, products: newProducts, activeProductId: newProducts[newProducts.length - 1].id }));
+      const resolvedPlanData = buildPlanData(data.checklist);
+      setPlanData(resolvedPlanData);
+      const newProducts = appendProductFromForm(resolvedPlanData);
+      saveUserState(form.contact, buildPersistedState({ planData: resolvedPlanData, products: newProducts, activeProductId: newProducts[newProducts.length - 1].id }));
     } catch (err) {
       console.error("confirmTarget plan generation failed:", err);
-      const fallbackPlan = {
-        monthly: [{ step: t("planFallbackMonthlyStep"), how: t("planFallbackMonthlyHow", { goal }) }],
-        quarterly: [{ step: t("planFallbackQuarterlyStep"), how: t("planFallbackQuarterlyHow") }],
-        yearly: { step: t("planFallbackYearlyStep"), how: t("planFallbackYearlyHow") },
-      };
+      const fallbackPlan = buildPlanData([
+        { task: t("planFallbackTask1"), how: t("planFallbackHow1", { goal }) },
+        { task: t("planFallbackTask2"), how: t("planFallbackHow2") },
+      ]);
       setPlanData(fallbackPlan);
       const newProducts = appendProductFromForm(fallbackPlan);
       saveUserState(form.contact, buildPersistedState({ planData: fallbackPlan, products: newProducts, activeProductId: newProducts[newProducts.length - 1].id }));
     } finally {
       setPlanLoading(false);
     }
+  }
+
+  // Re-generates the checklist for the active product's existing goal —
+  // same call as confirmTarget, but replaces an existing product's plan
+  // instead of creating a new product.
+  async function refreshChecklist() {
+    if (!activeProductId) return;
+    const targetGoal = activeProduct?.goal ?? goal;
+    const targetPeriod = activeProduct?.period ?? period;
+    setPlanLoading(true);
+    try {
+      const res = await fetch("/api/generate-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: targetGoal, subjectName: subject.name, period: targetPeriod, language }),
+      });
+      if (!res.ok) throw new Error(`generate-plan returned ${res.status}`);
+      const data = await res.json();
+      const resolvedPlanData = buildPlanData(data.checklist);
+      const newProducts = products.map((p) => (p.id === activeProductId ? { ...p, planData: resolvedPlanData } : p));
+      setProducts(newProducts);
+      saveUserState(form.contact, buildPersistedState({ products: newProducts }));
+    } catch (err) {
+      console.error("refreshChecklist failed:", err);
+    } finally {
+      setPlanLoading(false);
+    }
+  }
+
+  function toggleChecklistItem(itemId) {
+    if (!activeProductId) return;
+    const newProducts = products.map((p) => {
+      if (p.id !== activeProductId || !p.planData?.checklist) return p;
+      return { ...p, planData: { ...p.planData, checklist: p.planData.checklist.map((it) => (it.id === itemId ? { ...it, done: !it.done } : it)) } };
+    });
+    setProducts(newProducts);
+    saveUserState(form.contact, buildPersistedState({ products: newProducts }));
   }
 
   function nextOnb() { if (obStep < onbSteps.length - 1) setObStep(obStep + 1); else setScreen("target"); }
@@ -1696,8 +1666,6 @@ function UpscaleAppInner() {
     setContentDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
-    setPlanProgressData(null);
-    setPlanProgressFetchAttempted(false);
     setDemandPollData(null);
     setDemandPollFetchedForId(null);
     setStage("content");
@@ -1705,10 +1673,23 @@ function UpscaleAppInner() {
     saveUserState(form.contact, buildPersistedState({ activeProductId: productId }));
   }
 
+  // Appends to the active product's journal — the running, BI-dashboard-
+  // style history of each day's observation + AI Validation result. No
+  // extra AI call: this just records what guide-observation already
+  // returned, same prepend-newest-first pattern as ledgerEntries.
+  function recordJournalEntry(guidanceText, progressNoteText) {
+    if (!activeProductId) return;
+    const entry = { date: todayStr(), observation: obsText, guidance: guidanceText, progressNote: progressNoteText };
+    const newProducts = products.map((p) => (p.id === activeProductId ? { ...p, journal: [entry, ...(p.journal || [])] } : p));
+    setProducts(newProducts);
+    saveUserState(form.contact, buildPersistedState({ products: newProducts }));
+  }
+
   async function submitObservation() {
     setStage("guidance");
     setGuiding(true);
     setGuidance(null);
+    setProgressNote(null);
     logToSheet({
       name: form.name,
       subject: subject.name,
@@ -1720,17 +1701,26 @@ function UpscaleAppInner() {
       streak,
     });
     try {
+      const checklist = (activeProduct?.planData?.checklist || []).map((it) => ({ task: it.task, done: it.done }));
       const res = await fetch("/api/guide-observation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ observationText: obsText, goal: activeProduct?.goal ?? goal, subjectName: subject.name }),
+        body: JSON.stringify({
+          observationText: obsText, goal: activeProduct?.goal ?? goal, subjectName: subject.name,
+          checklist, demandStatusColor, totalCosts, totalSales, netAmount, investmentAmount, language,
+        }),
       });
       if (!res.ok) throw new Error(`guide-observation returned ${res.status}`);
       const data = await res.json();
-      setGuidance(data.guidance || "Keep going — consistency here is what compounds.");
+      const guidanceText = data.guidance || "Keep going — consistency here is what compounds.";
+      setGuidance(guidanceText);
+      setProgressNote(data.progressNote || null);
+      recordJournalEntry(guidanceText, data.progressNote || "");
     } catch (err) {
       console.error("submitObservation guidance failed:", err);
-      setGuidance("We couldn't reach your coach just now — take a moment to think about one concrete step this observation suggests for tomorrow.");
+      const fallbackGuidance = "We couldn't reach your coach just now — take a moment to think about one concrete step this observation suggests for tomorrow.";
+      setGuidance(fallbackGuidance);
+      recordJournalEntry(fallbackGuidance, "");
     } finally {
       setGuiding(false);
     }
@@ -1760,13 +1750,12 @@ function UpscaleAppInner() {
     setContentDone(false);
     setObsText("");
     setGuidance(null);
+    setProgressNote(null);
     setRewardClaimed(false);
     setAdElapsed(0);
     setAdDone(false);
     setMarketingData(null);
     setMarketingFetchAttempted(false);
-    setPlanProgressData(null);
-    setPlanProgressFetchAttempted(false);
     if (activeProductId) {
       setProducts((prev) => prev.map((p) => (p.id === activeProductId ? { ...p, marketingPageId: null } : p)));
     }
@@ -2432,11 +2421,15 @@ function UpscaleAppInner() {
               </div>
             )}
 
-            {planData && !planLoading && (
-              <div className="space-y-4 mb-6">
-                <PlanTier title={t("periodMonthly")} items={planData.monthly} progressPct={monthlyPct} progressLabel={t("tierProgress", { pct: monthlyPct })} />
-                <PlanTier title={t("periodQuarterly")} items={planData.quarterly} progressPct={quarterlyPct} progressLabel={t("tierProgress", { pct: quarterlyPct })} />
-                <PlanTier title={t("yearlyTier")} items={[planData.yearly]} progressPct={yearlyPct} progressLabel={t("tierProgress", { pct: yearlyPct })} />
+            {planData?.checklist && !planLoading && (
+              <div className="space-y-2 mb-6">
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">{t("yourChecklist")}</div>
+                {planData.checklist.map((it) => (
+                  <div key={it.id} className="rounded-lg p-3 border border-gray-200">
+                    <div className="text-sm font-medium" style={{ color: NAVY }}>{it.task}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{it.how}</div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -2616,27 +2609,50 @@ function UpscaleAppInner() {
             </div>
           </div>
 
-          {(activeProduct?.planData ?? planData) && (
+          {(activeProduct?.planData ?? planData)?.checklist && (
             <div className="mb-6">
-              <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourPlan")}</div>
-              <div className="space-y-4 mb-3">
-                <PlanTier title={t("periodMonthly")} items={(activeProduct?.planData ?? planData).monthly} progressPct={progressMonthlyPct} progressLabel={t("tierProgress", { pct: progressMonthlyPct })} />
-                <PlanTier title={t("periodQuarterly")} items={(activeProduct?.planData ?? planData).quarterly} progressPct={progressQuarterlyPct} progressLabel={t("tierProgress", { pct: progressQuarterlyPct })} />
-                <PlanTier title={t("yearlyTier")} items={[(activeProduct?.planData ?? planData).yearly]} progressPct={progressYearlyPct} progressLabel={t("tierProgress", { pct: progressYearlyPct })} />
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{t("yourChecklist")}</div>
+                <button onClick={refreshChecklist} disabled={planLoading} className="text-xs font-medium disabled:opacity-40" style={{ color: BLUE }}>
+                  {planLoading ? t("buildingPlan") : t("refreshChecklist")}
+                </button>
               </div>
-              {planProgressLoading && !planProgressData && (
-                <div className="text-sm text-gray-500 flex items-center gap-2">
-                  <Sparkles size={14} className="animate-pulse" style={{ color: BLUE }} /> {t("planProgressBuilding")}
-                </div>
-              )}
-              {planProgressData?.progressNote && (
-                <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
-                  <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("whatToDoNext")}</div>
-                  <p className="text-sm" style={{ color: NAVY }}>{planProgressData.progressNote}</p>
-                </div>
-              )}
+              <div className="space-y-2">
+                {(activeProduct?.planData ?? planData).checklist.map((it) => (
+                  <button key={it.id} onClick={() => toggleChecklistItem(it.id)}
+                    className="w-full text-left rounded-lg p-3 border flex items-start gap-2.5"
+                    style={{ borderColor: it.done ? "#0F6E56" : "#E5E7EB", background: it.done ? "#E7F5EF" : "#fff" }}>
+                    <div className="w-4 h-4 rounded shrink-0 mt-0.5 flex items-center justify-center border"
+                      style={{ borderColor: it.done ? "#0F6E56" : "#D1D5DB", background: it.done ? "#0F6E56" : "transparent" }}>
+                      {it.done && <Check size={11} style={{ color: "#fff" }} />}
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium" style={{ color: it.done ? "#0F6E56" : NAVY, textDecoration: it.done ? "line-through" : "none" }}>{it.task}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{it.how}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
+
+          <div className="mb-6">
+            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourJournal")}</div>
+            {(activeProduct?.journal || []).length ? (
+              <div className="space-y-2">
+                {(activeProduct.journal || []).slice(0, 20).map((e, i) => (
+                  <div key={i} className="rounded-lg p-3 border border-gray-200">
+                    <div className="text-[11px] text-gray-400 mb-1">{e.date}</div>
+                    <p className="text-sm text-gray-700 italic mb-1">"{e.observation}"</p>
+                    {e.guidance && <p className="text-xs text-gray-600">{e.guidance}</p>}
+                    {e.progressNote && <p className="text-xs mt-1" style={{ color: BLUE }}>{e.progressNote}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">{t("journalEmpty")}</p>
+            )}
+          </div>
         </div>
       ) : tab === "collaborate" ? (
         <div className="px-6 py-6 bg-white">
@@ -3261,6 +3277,11 @@ function UpscaleAppInner() {
                       <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-700">
                         {guidance}
                       </div>
+                      {progressNote && (
+                        <div className="rounded-lg p-3 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+                          <p className="text-sm" style={{ color: NAVY }}>{progressNote}</p>
+                        </div>
+                      )}
                       <PrimaryButton onClick={() => setStage("reward")}>
                         {t("unlockCollaboration")} <ArrowRight size={14} />
                       </PrimaryButton>

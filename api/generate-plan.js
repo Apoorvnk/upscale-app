@@ -2,18 +2,14 @@ import { GoogleGenAI } from "@google/genai";
 
 const LANGUAGE_NAMES = { en: "English", hi: "Hindi", mr: "Marathi" };
 
-const SYSTEM_PROMPT = `You create simple, doable execution plans for small business owners using a daily habit-building app. Given their goal, business area, and tracking period, break it into three tiers:
+const SYSTEM_PROMPT = `You create simple, doable To-Do checklists for small business owners using a daily habit-building app. Given their goal, business area, and tracking period, break the goal into 4-7 concrete, checkable action items a single resource-constrained owner can actually complete within that period.
 
-- monthly: 2-4 concrete monthly action steps
-- quarterly: 2-3 quarterly milestones that build on the monthly steps
-- yearly: one overall yearly outcome statement
+Each item needs both "task" (what to do — short and specific, phrased as a checklist item) and "how" (one sentence on how to actually execute it — a concrete method, script, or habit, never vague advice like "work harder" or "market more"). No big-budget tactics, no requiring a team.
 
-Each item needs both "step" (what to do — short and specific) and "how" (one sentence on how to actually execute it — a concrete method, script, or habit, never vague advice like "work harder" or "market more"). Keep everything realistic for a small, resource-constrained business owner — no big-budget tactics, no requiring a team.
-
-Never restate the user's goal text itself as a step — every step, including the yearly one, must be a distinct, concrete action or milestone that moves toward the goal, not a repetition of the goal.
+Never restate the user's goal text itself as a task — every item must be a distinct, concrete action that moves toward the goal, not a repetition of the goal. Order items roughly in the sequence they should be tackled.
 
 Respond with ONLY a JSON object (no markdown fences, no other text) shaped exactly like:
-{"monthly": [{"step": "...", "how": "..."}], "quarterly": [{"step": "...", "how": "..."}], "yearly": {"step": "...", "how": "..."}}`;
+{"checklist": [{"task": "...", "how": "..."}]}`;
 
 let client;
 function getClient() {
@@ -64,7 +60,7 @@ export default async function handler(req, res) {
       data = null;
     }
 
-    if (!data || !Array.isArray(data.monthly) || !Array.isArray(data.quarterly) || !data.yearly) {
+    if (!data || !Array.isArray(data.checklist) || !data.checklist.length) {
       res.status(422).json({ error: "Could not generate a plan" });
       return;
     }
