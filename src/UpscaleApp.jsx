@@ -565,7 +565,10 @@ const STRINGS = {
     buildingPlan: "Building your checklist...",
     yourChecklist: "Your checklist",
     refreshChecklist: "Refresh checklist",
-    yourJournal: "Journal",
+    tabJournal: "Journal",
+    journalIntro: "Where things actually stand, and what to work on next.",
+    whatToWorkOn: "What to work on",
+    journalHistory: "History",
     journalEmpty: "Your daily observations and AI Validation notes will show up here.",
     dailyLoopNote: "Each day: content → observation → guidance → collaboration. Complete it daily to stay on track.",
     daysCompleted: "{done}/{total} days completed",
@@ -713,7 +716,10 @@ const STRINGS = {
     buildingPlan: "आपकी चेकलिस्ट बनाई जा रही है...",
     yourChecklist: "आपकी चेकलिस्ट",
     refreshChecklist: "चेकलिस्ट रिफ्रेश करें",
-    yourJournal: "जर्नल",
+    tabJournal: "जर्नल",
+    journalIntro: "चीज़ें असल में कहाँ खड़ी हैं, और आगे क्या काम करना है।",
+    whatToWorkOn: "किस पर काम करें",
+    journalHistory: "इतिहास",
     journalEmpty: "आपके दैनिक अवलोकन और AI Validation नोट्स यहां दिखेंगे।",
     dailyLoopNote: "हर दिन: सामग्री → अवलोकन → मार्गदर्शन → सहयोग। ट्रैक पर बने रहने के लिए इसे रोज़ पूरा करें।",
     daysCompleted: "{done}/{total} दिन पूरे हुए",
@@ -861,7 +867,10 @@ const STRINGS = {
     buildingPlan: "तुमची चेकलिस्ट तयार होत आहे...",
     yourChecklist: "तुमची चेकलिस्ट",
     refreshChecklist: "चेकलिस्ट रिफ्रेश करा",
-    yourJournal: "जर्नल",
+    tabJournal: "जर्नल",
+    journalIntro: "गोष्टी प्रत्यक्षात कुठे आहेत, आणि पुढे काय काम करायचे आहे.",
+    whatToWorkOn: "कशावर काम करायचे",
+    journalHistory: "इतिहास",
     journalEmpty: "तुमची रोजची निरीक्षणे आणि AI Validation नोट्स इथे दिसतील.",
     dailyLoopNote: "दररोज: सामग्री → निरीक्षण → मार्गदर्शन → सहयोग. ट्रॅकवर राहण्यासाठी हे दररोज पूर्ण करा.",
     daysCompleted: "{done}/{total} दिवस पूर्ण झाले",
@@ -2578,6 +2587,7 @@ function UpscaleAppInner() {
         {[
           { key: "loop", label: t("tabLoop"), icon: Target },
           { key: "progress", label: t("tabProgress"), icon: TrendingUp },
+          { key: "journal", label: t("tabJournal"), icon: LayoutGrid },
           { key: "demand", label: t("tabDemand"), icon: HelpCircle },
           { key: "marketing", label: t("tabMarketing"), icon: Megaphone },
           { key: "collaborate", label: t("tabCollaborate"), icon: Handshake },
@@ -2635,24 +2645,57 @@ function UpscaleAppInner() {
               </div>
             </div>
           )}
+        </div>
+      ) : tab === "journal" ? (
+        <div className="px-6 py-6 bg-white">
+          <div className="text-sm font-medium mb-1" style={{ color: NAVY }}>{t("tabJournal")}</div>
+          <p className="text-sm text-gray-500 mb-4">{t("journalIntro")}</p>
 
-          <div className="mb-6">
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("yourJournal")}</div>
-            {(activeProduct?.journal || []).length ? (
-              <div className="space-y-2">
-                {(activeProduct.journal || []).slice(0, 20).map((e, i) => (
-                  <div key={i} className="rounded-lg p-3 border border-gray-200">
-                    <div className="text-[11px] text-gray-400 mb-1">{e.date}</div>
-                    <p className="text-sm text-gray-700 italic mb-1">"{e.observation}"</p>
-                    {e.guidance && <p className="text-xs text-gray-600">{e.guidance}</p>}
-                    {e.progressNote && <p className="text-xs mt-1" style={{ color: BLUE }}>{e.progressNote}</p>}
-                  </div>
-                ))}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Demand</div>
+              <div className="text-sm font-medium" style={{ color: demandStatusColor === "green" ? "#0F6E56" : demandStatusColor === "orange" ? "#B45309" : demandStatusColor === "red" ? "#B91C1C" : "#9CA3AF" }}>
+                {demandStatusColor === "green" ? t("demandStatusGreen") : demandStatusColor === "orange" ? t("demandStatusOrange") : demandStatusColor === "red" ? t("demandStatusRed") : "Not checked yet"}
               </div>
-            ) : (
-              <p className="text-xs text-gray-400">{t("journalEmpty")}</p>
-            )}
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Checklist</div>
+              <div className="text-sm font-medium" style={{ color: NAVY }}>
+                {(activeProduct?.planData ?? planData)?.checklist
+                  ? `${(activeProduct?.planData ?? planData).checklist.filter((it) => it.done).length}/${(activeProduct?.planData ?? planData).checklist.length} done`
+                  : "—"}
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Net</div>
+              <div className="text-sm font-medium" style={{ color: netAmount >= 0 ? "#0F6E56" : "#B91C1C" }}>
+                {netAmount >= 0 ? "+₹" : "-₹"}{Math.abs(netAmount).toLocaleString("en-IN")}
+              </div>
+            </div>
           </div>
+
+          {activeProduct?.journal?.[0]?.progressNote && (
+            <div className="rounded-lg p-4 mb-6 border" style={{ borderColor: BLUE, background: BLUE_BG }}>
+              <div className="text-[11px] font-medium uppercase tracking-wide mb-1" style={{ color: BLUE }}>{t("whatToWorkOn")}</div>
+              <p className="text-sm" style={{ color: NAVY }}>{activeProduct.journal[0].progressNote}</p>
+            </div>
+          )}
+
+          <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{t("journalHistory")}</div>
+          {(activeProduct?.journal || []).length ? (
+            <div className="space-y-2">
+              {(activeProduct.journal || []).slice(0, 20).map((e, i) => (
+                <div key={i} className="rounded-lg p-3 border border-gray-200">
+                  <div className="text-[11px] text-gray-400 mb-1">{e.date}</div>
+                  <p className="text-sm text-gray-700 italic mb-1">"{e.observation}"</p>
+                  {e.guidance && <p className="text-xs text-gray-600">{e.guidance}</p>}
+                  {e.progressNote && <p className="text-xs mt-1" style={{ color: BLUE }}>{e.progressNote}</p>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">{t("journalEmpty")}</p>
+          )}
         </div>
       ) : tab === "collaborate" ? (
         <div className="px-6 py-6 bg-white">
